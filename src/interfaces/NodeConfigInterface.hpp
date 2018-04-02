@@ -1,18 +1,39 @@
-#include "NodeConfigInterface.hpp"
+#ifndef NODECONFIGINTERFACE_H
+#define NODECONFIGINTERFACE_H
+
+#include "_NodeInterface.hpp"
+#include "NodeMQTTConfigManager.hpp"
 #include <ESP.h>
 #include "NodeMQTT.hpp"
 #include "misc/constants.hpp"
 
+
+
+class NodeConfigInterface : public NodeInterface<NodeMQTTConfig> {
+    public:
+        NodeConfigInterface();
+    private:
+        NodeMQTTConfig sample();
+        void updatePhisicalInterface(NodeMQTTConfig newValue);
+        NodeMQTTConfig fromJSON (JsonObject& rootObject);
+        JsonObject& toJSON (NodeMQTTConfig value);
+        int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue);
+};
+
+
+inline
 NodeConfigInterface::NodeConfigInterface(): NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC, CONFIG_TOPIC) {
-    samplingEnabled = false;
-    hasMQTTSubscribe = true;
+    setSamplingEnabled(false);
+    setMQTTSubscribe(true);
     interfaceName = CONFIG_TOPIC;
 }
 
+inline
 NodeMQTTConfig NodeConfigInterface::sample() {
     return currentValue;
 }
 
+inline
 NodeMQTTConfig NodeConfigInterface::fromJSON (JsonObject& rootObject){
     NodeMQTTConfig nodeConfig = NodeMQTTConfig();
     NodeMQTTConfigManager.loadInto(nodeConfig);
@@ -39,17 +60,26 @@ NodeMQTTConfig NodeConfigInterface::fromJSON (JsonObject& rootObject){
     return nodeConfig;
 }
 
+inline
 JsonObject& NodeConfigInterface::toJSON (NodeMQTTConfig status){
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
     return root;   
 }
 
+inline
 int NodeConfigInterface::cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue){
     return -1;
 }
 
+inline
 void NodeConfigInterface::updatePhisicalInterface(NodeMQTTConfig newValue)
 {
     NodeMQTTConfigManager.save(newValue);
 }
+
+
+
+
+
+#endif //NODECONFIGINTERFACE_H

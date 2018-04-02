@@ -1,6 +1,7 @@
 #ifndef NODECONFIGURATION_H
 #define NODECONFIGURATION_H
 
+
 #include "misc/config.hpp"
 #include "misc/constants.hpp"
 #include <Arduino.h>

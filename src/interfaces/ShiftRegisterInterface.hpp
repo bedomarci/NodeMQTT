@@ -1,6 +1,6 @@
 #ifndef SHIFTREGISTERINTERFACE_H 
 #define SHIFTREGISTERINTERFACE_H
-#include "_IntegerInterface.hpp"
+#include "IntegerInterface.hpp"
 
 class ShiftRegisterInterface : public IntegerInterface {
     public:
