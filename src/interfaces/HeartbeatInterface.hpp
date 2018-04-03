@@ -36,7 +36,7 @@ inline
 NodeStatus HeartbeatInterface::sample() {
     NodeStatus status;
     status.uptime = millis();
-    status.nodeID = getMQTTDeviceName(); 
+    status.nodeID = DEVICE_NAME.c_str(); 
     status.freeHeap = ESP.getFreeHeap();
     return status;
 }

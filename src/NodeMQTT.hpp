@@ -20,7 +20,6 @@ class NodeMQTT
 
     void setBaseTopic(String baseTopic);
 
-    static const char *getMQTTDeviceName();
     void buzz(int);
     void setSystemBuzzer(BuzzerInterface *interface);
     void addTask(Task &task);
@@ -47,7 +46,7 @@ class NodeMQTT
     NodeMQTTConfig _config;
 
     LinkedList<NodeInterfaceBase *> interfaceList;
-    String _baseTopic = getMQTTDeviceName();
+    String _baseTopic = DEVICE_NAME;
 
     void reconnectBroker();
     bool isConnectionAlive();

@@ -4,6 +4,7 @@
 
 #include "misc/config.hpp"
 #include "misc/constants.hpp"
+#include "misc/helpers.hpp"
 #include <Arduino.h>
 #include <EEPROM.h>
 

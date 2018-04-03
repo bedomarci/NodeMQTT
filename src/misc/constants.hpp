@@ -25,32 +25,43 @@ static const char terminalHR[] PROGMEM = "\t============================\t";
 #define TERMINAL_HR FPSTR(terminalHR)
 
 //INTERFACE NAMES
-#define ANALOG_NAME F("an")
-#define BUTTON_NAME F("btn")
-#define RELAY_NAME F("rly")
-#define STRING_NAME F("str")
-#define BUZZER_NAME F("buz")
+#define ANALOG_NAME "nlg"
+#define BUTTON_NAME "btn"
+#define RELAY_NAME "rly"
+#define STRING_NAME "str"
+#define BUZZER_NAME "buz"
 
 //CONFIGURATION
-static const char configAttribute_baseTopic[] PROGMEM = "basetpc";
-#define ATTR_BASETOPIC FPSTR(configAttribute_baseTopic)
-static const char configAttribute_mqttPassword[] PROGMEM = "mqttpwd";
-#define ATTR_MQTTPASS FPSTR(configAttribute_mqttPassword)
-static const char configAttribute_mqttServer[] PROGMEM = "mqttsrv";
-#define ATTR_MQTTSERV FPSTR(configAttribute_mqttServer)
-static const char configAttribute_mqttUser[] PROGMEM = "mqttusr";
-#define ATTR_MQTTUSER FPSTR(configAttribute_mqttUser)
-static const char configAttribute_wifiPassword[] PROGMEM = "wifipwd";
-#define ATTR_WIFIPASS FPSTR(configAttribute_wifiPassword)
-static const char configAttribute_wifiSsid[] PROGMEM = "wifissi";
-#define ATTR_WIFISSID FPSTR(configAttribute_wifiSsid)
-static const char configAttribute_configVersion[] PROGMEM = "confver";
-#define ATTR_CONFVER FPSTR(configAttribute_configVersion)
-static const char configAttribute_isOnline[] PROGMEM = "on-line";
-#define ATTR_ONLINE FPSTR(configAttribute_isOnline)
-static const char configAttribute_isServiceMode[] PROGMEM = "service";
-#define ATTR_SERVICEMODE FPSTR(configAttribute_isServiceMode)
-static const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
-#define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
+static const char ATTR_BASETOPIC[] = "basetpc";
+static const char ATTR_MQTTPASS[] = "mqttpwd";
+static const char ATTR_MQTTSERV[] = "mqttsrv";
+static const char ATTR_MQTTUSER[] = "mqttusr";
+static const char ATTR_WIFIPASS[] = "wifipwd";
+static const char ATTR_WIFISSID[] = "wifissi";
+static const char ATTR_CONFVER[] = "confver";
+static const char ATTR_ONLINE[] = "on-line";
+static const char ATTR_SERVICEMODE[] = "service";
+static const char ATTR_MQTTPORT[] = "mqttprt";
+
+// static const char configAttribute_baseTopic[] PROGMEM = "basetpc";
+// #define ATTR_BASETOPIC FPSTR(configAttribute_baseTopic)
+// static const char configAttribute_mqttPassword[] PROGMEM = "mqttpwd";
+// #define ATTR_MQTTPASS FPSTR(configAttribute_mqttPassword)
+// static const char configAttribute_mqttServer[] PROGMEM = "mqttsrv";
+// #define ATTR_MQTTSERV FPSTR(configAttribute_mqttServer)
+// static const char configAttribute_mqttUser[] PROGMEM = "mqttusr";
+// #define ATTR_MQTTUSER FPSTR(configAttribute_mqttUser)
+// static const char configAttribute_wifiPassword[] PROGMEM = "wifipwd";
+// #define ATTR_WIFIPASS FPSTR(configAttribute_wifiPassword)
+// static const char configAttribute_wifiSsid[] PROGMEM = "wifissi";
+// #define ATTR_WIFISSID FPSTR(configAttribute_wifiSsid)
+// static const char configAttribute_configVersion[] PROGMEM = "confver";
+// #define ATTR_CONFVER FPSTR(configAttribute_configVersion)
+// static const char configAttribute_isOnline[] PROGMEM = "on-line";
+// #define ATTR_ONLINE FPSTR(configAttribute_isOnline)
+// static const char configAttribute_isServiceMode[] PROGMEM = "service";
+// #define ATTR_SERVICEMODE FPSTR(configAttribute_isServiceMode)
+// static const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
+// #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
 
 #endif

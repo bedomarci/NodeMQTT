@@ -50,11 +50,10 @@
 #define P(x)
 #endif
 
-// String _MQTTDeviceName = String("ESP-" + String((int)ESP.getChipId(), HEX));
-inline const char *getMQTTDeviceName()
-{
-    // return _MQTTDeviceName.c_str();
-    return String((int)ESP.getChipId(), HEX).c_str();
-}
+#define DEVICE_NAME String((int)ESP.getChipId(), HEX)
+// inline String getMQTTDeviceName()
+// {
+//     return ;
+// }
 
 #endif

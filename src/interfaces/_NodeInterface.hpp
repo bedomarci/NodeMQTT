@@ -6,6 +6,7 @@
 
 #include "misc/config.hpp"
 #include "misc/constants.hpp"
+#include "misc/helpers.hpp"
 #include <Arduino.h>
 #include <PubSubClient.h>
 #include <LinkedList.h>
@@ -91,6 +92,7 @@ class NodeInterface : public NodeInterfaceBase
   private:
     unsigned long _sampleRate = DEFAULT_SAMPLE_RATE;
     Task _task;
+    DynamicJsonBuffer jsonBuffer;
     String _publishTopic;
     String _subscribeTopic;
     String _publishFullTopic;
@@ -195,8 +197,9 @@ inline void NodeInterface<T>::handle()
 template <typename T>
 inline JsonObject &NodeInterface<T>::fromString(String newValue)
 {
-    DynamicJsonBuffer jsonBuffer;
     JsonObject &rootObject = jsonBuffer.parseObject(newValue);
+    if (!rootObject.success())
+        e("Failed to parse JSON data!");
     return rootObject;
 }
 

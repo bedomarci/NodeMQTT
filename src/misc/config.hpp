@@ -4,13 +4,16 @@
 
 #define DEBUG_ALL
 
-#include "helpers.hpp"
+// #include "helpers.hpp"
 
 #define MQTT_MAX_PACKET_SIZE 140 //140
 #define SERIAL_BUFFER_SIZE 512
 
 #define MQTT_CONNECT_ATTEMPT_WAITING 60000L
 #define SERIAL_READ_INTERVAL 2000L
+
+#define LOG_MAX_MESSAGE_LENGTH 256
+#define LOG_MAX_QUEUE_LENGTH 50
 
 // if connection is established, and then lost for some reason,
 // ESP will automatically reconnect to last used access point
