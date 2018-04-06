@@ -1,6 +1,6 @@
 #ifndef RELAYINTERFACE_H
 #define RELAYINTERFACE_H
-#include "IntegerInterface.hpp"
+#include "_IntegerInterface.hpp"
 
 
 class RelayInterface : public IntegerInterface {

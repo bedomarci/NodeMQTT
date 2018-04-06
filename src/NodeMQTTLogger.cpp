@@ -43,12 +43,7 @@ void NodeMQTTLoggerClass::log(String &message, LOG_LEVEL level)
     sprintf(buffer, "[%c|%d] %s", level, millis(), message.c_str());
     String formattedMessage = String(buffer);
     Serial.println(formattedMessage);
-    push(formattedMessage);
+    //push(formattedMessage);
 }
-
-// StringInterface *NodeMQTTLoggerClass::getLoggerInterface()
-// {
-//     return loggerInterface;
-// }
 
 NodeMQTTLoggerClass Logger;

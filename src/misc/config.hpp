@@ -19,7 +19,7 @@
 // ESP will automatically reconnect to last used access point
 // once it is again back on-line. This will be done automatically
 // by Wi-Fi library, without any user intervention. Reconnection triggered after 60s of being offline.
-#define WIFI_CONNECT_ATTEMPT_WAITING 60000L
+#define WIFI_CONNECT_ATTEMPT_WAITING 5000L //60000L
 #define DEFAULT_SAMPLE_RATE 100L
 #define DEFAULT_HEARTBEAT_RATE 9500L
 

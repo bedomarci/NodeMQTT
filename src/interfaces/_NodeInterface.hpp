@@ -51,7 +51,8 @@ class NodeInterface : public NodeInterfaceBase
     void setScheduler(Scheduler &scheduler);
     void setInterfaceName(String &name);
     void init();
-    void enable(bool enabled);
+    void setEnabled(bool enabled);
+    bool isEnabled();
     void setSamplingEnabled(bool enabled);
     bool hasMQTTPublish();
     bool hasMQTTSubscribe();
@@ -224,7 +225,7 @@ inline void NodeInterface<T>::setScheduler(Scheduler &scheduler)
     _scheduler = scheduler;
     _scheduler.addTask(_task);
     if (_enabled)
-        _task.enable();
+        _task.enableIfNot();
 }
 
 template <typename T>
@@ -239,10 +240,14 @@ inline void NodeInterface<T>::setInterfaceName(String &name)
 }
 
 template <typename T>
-inline void NodeInterface<T>::enable(bool en = true)
+inline void NodeInterface<T>::setEnabled(bool en = true)
 {
+    if (en == _enabled)
+    {
+        return;
+    }
     _enabled = en;
-    if (en)
+    if (_enabled)
     {
         _task.enableIfNot();
     }
@@ -251,6 +256,12 @@ inline void NodeInterface<T>::enable(bool en = true)
         _task.disable();
     }
 }
+template <typename T>
+inline bool NodeInterface<T>::isEnabled()
+{
+    return _enabled;
+}
+
 template <typename T>
 inline void NodeInterface<T>::setSamplingEnabled(bool en)
 {

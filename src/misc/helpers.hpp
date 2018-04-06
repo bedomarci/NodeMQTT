@@ -50,7 +50,7 @@
 #define P(x)
 #endif
 
-#define DEVICE_NAME String((int)ESP.getChipId(), HEX)
+#define DEVICE_NAME String(ESP.getChipId(), HEX)
 // inline String getMQTTDeviceName()
 // {
 //     return ;

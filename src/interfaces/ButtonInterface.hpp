@@ -34,6 +34,7 @@ inline void ButtonInterface::updatePhisicalInterface(int newValue)
 
 inline int ButtonInterface::sample()
 {
+    Serial.println("btnsample");
     int reading = digitalRead(_btnPin);
     if (reading != lastButtonState)
     {

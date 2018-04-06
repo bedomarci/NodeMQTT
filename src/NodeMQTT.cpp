@@ -69,7 +69,7 @@ void NodeMQTT::handle()
         }
         else
         {
-            heartbeatInterface->enable(false);
+            heartbeatInterface->setEnabled(false);
             _tWifiConnect.enableIfNot();
         }
     }
@@ -93,7 +93,7 @@ void NodeMQTT::reconnectBroker()
     if (client.connect(DEVICE_NAME.c_str()))
     {
         PMQTT("connected to broker");
-        heartbeatInterface->enable(true);
+        heartbeatInterface->setEnabled(true);
         NodeInterfaceBase *interface;
         for (int i = 0; i < interfaceList.size(); i++)
         {
@@ -154,10 +154,10 @@ void NodeMQTT::setBaseTopic(String baseTopic)
 
 void NodeMQTT::addDefaultInterfaces()
 {
-    heartbeatInterface = new HeartbeatInterface(DEFAULT_HEARTBEAT_RATE);
+    heartbeatInterface = new HeartbeatInterface(1000);
     nodeConfigInterface = new NodeConfigInterface();
-    addInterface(heartbeatInterface);
     addInterface(nodeConfigInterface);
+    addInterface(heartbeatInterface);
     // addInterface(Logger.getLoggerInterface());
 }
 
