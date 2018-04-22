@@ -7,17 +7,19 @@ class IntegerInterface : public NodeInterface<int>
 {
   public:
     IntegerInterface(String publishTopic, String subscribeTopic);
+    virtual void init();
 
   protected:
     int fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(int value);
+    JsonObject &toJSON(int value, JsonObject &root);
     int cmp(int oldValue, int newValue);
+    virtual int sample() = 0;
+    virtual void updatePhisicalInterface(int newValue) = 0;
 };
 
 inline IntegerInterface::IntegerInterface(String publishTopic, String subscribeTopic)
     : NodeInterface<int>(publishTopic, subscribeTopic)
 {
-    _samplingEnabled = false;
 }
 
 inline int IntegerInterface::fromJSON(JsonObject &rootObject)
@@ -26,10 +28,8 @@ inline int IntegerInterface::fromJSON(JsonObject &rootObject)
     return value;
 }
 
-inline JsonObject &IntegerInterface::toJSON(int value)
+inline JsonObject &IntegerInterface::toJSON(int value, JsonObject &root)
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &root = jsonBuffer.createObject();
     root["data"] = value;
     return root;
 }
@@ -37,6 +37,11 @@ inline JsonObject &IntegerInterface::toJSON(int value)
 inline int IntegerInterface::cmp(int oldValue, int newValue)
 {
     return newValue - oldValue;
+}
+
+inline void IntegerInterface::init()
+{
+    setEnabled();
 }
 
 #endif //INTEGERINTERFACE_H

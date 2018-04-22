@@ -7,8 +7,8 @@
 
 struct NodeStatus
 {
-    unsigned long uptime;
-    uint32_t nodeID;
+    uint32_t uptime = 0;
+    uint32_t nodeID = 0;
     uint32_t freeHeap = 0;
 };
 
@@ -16,29 +16,39 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
 {
   public:
     HeartbeatInterface(int beatIntervalSecond);
+    void init();
 
-  private:
+  protected:
+    NodeStatus status;
     NodeStatus sample();
     void updatePhisicalInterface(NodeStatus newValue);
-    NodeStatus fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(NodeStatus value);
+    NodeStatus fromJSON(JsonObject &root);
+    JsonObject &toJSON(NodeStatus value, JsonObject &root);
     int cmp(NodeStatus oldValue, NodeStatus newValue);
+
+    const char *uptimeKey = "uptime";
+    const char *nodeIdKey = "nodeid";
+    const char *freeHeapKey = "freehp";
 };
 
-inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_HEARTBEAT_RATE) : NodeInterface<NodeStatus>(HEARTBEAT_TOPIC, HEARTBEAT_TOPIC)
+inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_HEARTBEAT_RATE)
+    : NodeInterface<NodeStatus>(HEARTBEAT_TOPIC, HEARTBEAT_TOPIC)
+{
+    setEnabled(false);
+    setSamplingRate(beatIntervalMillis);
+    interfaceName = HEARTBEAT_TOPIC;
+}
+
+inline void HeartbeatInterface::init()
 {
     setSamplingEnabled(true);
     setMQTTSubscribe(false);
-    setEnabled(false);
-    setSampleRate(beatIntervalMillis);
-    interfaceName = HEARTBEAT_TOPIC;
+    status.nodeID = ESP.getChipId();
 }
 
 inline NodeStatus HeartbeatInterface::sample()
 {
-    NodeStatus status;
     status.uptime = millis();
-    status.nodeID = ESP.getChipId();
     status.freeHeap = ESP.getFreeHeap();
     return status;
 }
@@ -48,13 +58,14 @@ inline NodeStatus HeartbeatInterface::fromJSON(JsonObject &rootObject)
     return NodeStatus();
 }
 
-inline JsonObject &HeartbeatInterface::toJSON(NodeStatus status)
+inline JsonObject &HeartbeatInterface::toJSON(NodeStatus status, JsonObject &root)
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &root = jsonBuffer.createObject();
-    root["uptime"] = status.uptime;
-    root["nodeid"] = status.nodeID;
-    root["freehp"] = status.freeHeap;
+    root[uptimeKey] = status.uptime;
+    root[freeHeapKey] = status.freeHeap;
+    root[nodeIdKey] = status.nodeID;
+    // root.set(uptimeKey, status.uptime);
+    // root.set(freeHeapKey , status.freeHeap);
+    // root.set(nodeIdKey , status.nodeID);
     return root;
 }
 

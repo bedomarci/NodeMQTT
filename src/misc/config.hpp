@@ -6,7 +6,7 @@
 
 // #include "helpers.hpp"
 
-#define MQTT_MAX_PACKET_SIZE 140 //140
+#define MQTT_MAX_PACKET_SIZE 256 //140
 #define SERIAL_BUFFER_SIZE 512
 
 #define MQTT_CONNECT_ATTEMPT_WAITING 60000L
@@ -42,8 +42,7 @@
 
 #define FIRMWARE_URL_BASE "http://192.168.0.1/fota/"
 #ifndef FIRMWARE_VERSION
-    #define FIRMWARE_VERSION -1
+#define FIRMWARE_VERSION -1
 #endif
-
 
 #endif //define CONFIG_H

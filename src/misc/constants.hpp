@@ -17,19 +17,42 @@
 #define TONE_SYSTEM_ONLINE 9
 
 //NODES
-static const char configTopic[] PROGMEM = "config";
-#define CONFIG_TOPIC FPSTR(configTopic)
-static const char heartbeatTopic[] PROGMEM = "heartbeat";
-#define HEARTBEAT_TOPIC FPSTR(heartbeatTopic)
-static const char terminalHR[] PROGMEM = "\t============================\t";
-#define TERMINAL_HR FPSTR(terminalHR)
+// static const char configTopic[] PROGMEM = "config";
+// #define CONFIG_TOPIC FPSTR(configTopic)
+// static const char logTopic[] PROGMEM = "log";
+// #define LOG_TOPIC FPSTR(logTopic)
+// static const char PROGMEM heartbeatTopic[] = "hrtbt";
+// #define HEARTBEAT_TOPIC FPSTR(heartbeatTopic)
+// static const char terminalHR[] PROGMEM = "\t============================\t";
+// #define TERMINAL_HR FPSTR(terminalHR)
+
+#define WILL_MESSAGE "OFFLINE"
+#define CONFIG_TOPIC ("config")
+#define CONFIG_TOPIC_ECHO F("configecho")
+#define LOG_TOPIC ("log")
+#define HEARTBEAT_TOPIC ("hrtbt")
+#define TERMINAL_HR ("\t============================\t")
 
 //INTERFACE NAMES
-#define ANALOG_NAME "nlg"
-#define BUTTON_NAME "btn"
-#define RELAY_NAME "rly"
-#define STRING_NAME "str"
-#define BUZZER_NAME "buz"
+// static constexpr char analogName[] PROGMEM = "nlg";
+// static constexpr char buttonName[] PROGMEM = "btn";
+// static constexpr char relayName[] PROGMEM = "rly";
+// static constexpr char stringName[] PROGMEM = "str";
+// static constexpr char buzzerName[] PROGMEM = "buz";
+// static constexpr char dfplayerName[] PROGMEM = "dfp";
+// #define ANALOG_NAME FPSTR(analogName)
+// #define BUTTON_NAME FPSTR(buttonName)
+// #define RELAY_NAME FPSTR(relayName)
+// #define STRING_NAME FPSTR(stringName)
+// #define BUZZER_NAME FPSTR(buzzerName)
+// #define DFPLAYER_NAME FPSTR(dfplayerName)
+
+#define ANALOG_NAME F("nlg")
+#define BUTTON_NAME F("btn")
+#define RELAY_NAME F("rly")
+#define STRING_NAME F("str")
+#define BUZZER_NAME F("buz")
+#define DFPLAYER_NAME F("dfp")
 
 //CONFIGURATION
 static const char ATTR_BASETOPIC[] = "basetpc";
@@ -39,7 +62,7 @@ static const char ATTR_MQTTUSER[] = "mqttusr";
 static const char ATTR_WIFIPASS[] = "wifipwd";
 static const char ATTR_WIFISSID[] = "wifissi";
 static const char ATTR_CONFVER[] = "confver";
-static const char ATTR_ONLINE[] = "on-line";
+static const char ATTR_ONLINE[] = "on_line";
 static const char ATTR_SERVICEMODE[] = "service";
 static const char ATTR_MQTTPORT[] = "mqttprt";
 

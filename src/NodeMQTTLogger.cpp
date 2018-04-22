@@ -1,5 +1,4 @@
 #include "NodeMQTTLogger.hpp"
-#include "interfaces/StringInterface.hpp"
 
 NodeMQTTLoggerClass::NodeMQTTLoggerClass()
 {
@@ -7,6 +6,8 @@ NodeMQTTLoggerClass::NodeMQTTLoggerClass()
 }
 void NodeMQTTLoggerClass::push(String message)
 {
+    if (logQueue.size() >= _queueLength)
+        pop();
     logQueue.add(message);
 }
 String NodeMQTTLoggerClass::pop()
@@ -33,17 +34,18 @@ void NodeMQTTLoggerClass::log(int message, LOG_LEVEL level)
 
 void NodeMQTTLoggerClass::log(const __FlashStringHelper *message, LOG_LEVEL level)
 {
-    Serial.println(message);
-    //TODO convert to string and push to log queue.
+    String msg = String(message);
+    log(msg, level);
 }
 
-void NodeMQTTLoggerClass::log(String &message, LOG_LEVEL level)
+void NodeMQTTLoggerClass::log(String message, LOG_LEVEL level)
 {
     char buffer[LOG_MAX_MESSAGE_LENGTH];
     sprintf(buffer, "[%c|%d] %s", level, millis(), message.c_str());
     String formattedMessage = String(buffer);
     Serial.println(formattedMessage);
-    //push(formattedMessage);
+    if (level != DEBUG)
+        push(formattedMessage);
 }
 
 NodeMQTTLoggerClass Logger;

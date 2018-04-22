@@ -68,7 +68,7 @@ inline BuzzerInterface::BuzzerInterface(String topic, uint8_t buzzerPin) : Integ
 
 inline void BuzzerInterface::init()
 {
-    _scheduler.addTask(_noteTask);
+    _scheduler->addTask(_noteTask);
 }
 
 inline void BuzzerInterface::updatePhisicalInterface(int toneId)

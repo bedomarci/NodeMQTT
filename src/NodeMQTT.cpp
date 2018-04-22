@@ -4,6 +4,7 @@
 
 NodeMQTT::NodeMQTT()
 {
+    Serial.begin(115200);
     client = PubSubClient(espClient);
     interfaceList = LinkedList<NodeInterfaceBase *>();
     client.setCallback([=](char *t, byte *p, unsigned int l) { mqttParser(t, p, l); });
@@ -75,25 +76,32 @@ void NodeMQTT::handle()
     }
     client.loop();
     if (_isServiceMode)
+    {
         readSerial();
+    }
     _scheduler.execute();
 }
 
 void NodeMQTT::addInterface(NodeInterfaceBase *interface)
 {
     interfaceList.add(interface);
-    interface->setClient(client);
-    interface->setScheduler(_scheduler);
+    interface->setClient(&client);
+    interface->setScheduler(&_scheduler);
     interface->init();
 }
 
 void NodeMQTT::reconnectBroker()
 {
     PMQTT(DEVICE_NAME + " is attempting to connect to broker");
-    if (client.connect(DEVICE_NAME.c_str()))
+    // const char * mqttUser = &_config.mqttUser;
+    if (
+        client.connect(DEVICE_NAME.c_str(),
+                       (const char *)_config.mqttUser,
+                       (const char *)_config.mqttPassword,
+                       heartbeatInterface->getPublishTopic().c_str(),
+                       1, true, WILL_MESSAGE))
     {
         PMQTT("connected to broker");
-        heartbeatInterface->setEnabled(true);
         NodeInterfaceBase *interface;
         for (int i = 0; i < interfaceList.size(); i++)
         {
@@ -103,6 +111,8 @@ void NodeMQTT::reconnectBroker()
                 client.subscribe((interface->getSubscribeTopic()).c_str());
             }
         }
+        heartbeatInterface->setEnabled(true);
+        nodeConfigInterface->publishCurrentConfig(_config);
         buzz(TONE_SYSTEM_ONLINE);
         _tBrokerConnect.disable();
     }
@@ -154,11 +164,12 @@ void NodeMQTT::setBaseTopic(String baseTopic)
 
 void NodeMQTT::addDefaultInterfaces()
 {
-    heartbeatInterface = new HeartbeatInterface(1000);
+    heartbeatInterface = new HeartbeatInterface();
     nodeConfigInterface = new NodeConfigInterface();
+    logInterface = new LogInterface();
     addInterface(nodeConfigInterface);
     addInterface(heartbeatInterface);
-    // addInterface(Logger.getLoggerInterface());
+    addInterface(logInterface);
 }
 
 void NodeMQTT::setSystemBuzzer(BuzzerInterface *interface)

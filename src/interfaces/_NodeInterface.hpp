@@ -12,6 +12,7 @@
 #include <LinkedList.h>
 #include <ArduinoJson.h>
 #include <TaskScheduler.h>
+#include <ArduinoJson/Serialization/JsonSerializerImpl.hpp>
 #include <functional>
 
 #define ONCHANGE_CALLBACK_SIGNATURE std::function<void(T, T)>
@@ -19,13 +20,14 @@
 class NodeInterfaceBase
 {
   public:
-    virtual void setClient(PubSubClient &client) = 0;
-    virtual void setScheduler(Scheduler &scheduler) = 0;
-    virtual String readRaw() = 0;
+    virtual void setClient(PubSubClient *client) = 0;
+    virtual void setScheduler(Scheduler *scheduler) = 0;
     virtual void writeRaw(String value, bool publishable = true) = 0;
     virtual void handle() = 0;
-    virtual void setSampleRate(unsigned long sampleRate) = 0;
+    virtual void setSamplingRate(unsigned long samplingRate) = 0;
     virtual void init() = 0;
+    virtual void setEnabled(bool enabled) = 0;
+    virtual bool isEnabled() = 0;
 
     virtual bool hasMQTTPublish() = 0;
     virtual bool hasMQTTSubscribe() = 0;
@@ -33,6 +35,7 @@ class NodeInterfaceBase
     virtual void setMQTTSubscribe(bool subscribe) = 0;
     virtual void setBaseTopic(String &baseTopic) = 0;
     virtual String getSubscribeTopic() = 0;
+    virtual String getPublishTopic() = 0;
 };
 
 template <typename T>
@@ -40,17 +43,16 @@ class NodeInterface : public NodeInterfaceBase
 {
   public:
     NodeInterface(String publishTopic, String subscribeTopic);
-    void setClient(PubSubClient &client);
+    NodeInterface(String topic);
+    void setClient(PubSubClient *client);
     void write(T newValue, bool publishable = true);
     T read();
     void onChange(ONCHANGE_CALLBACK_SIGNATURE);
-    String readRaw();
     void writeRaw(String value, bool publishable);
     void handle();
-    void setSampleRate(unsigned long sampleRate);
-    void setScheduler(Scheduler &scheduler);
+    void setSamplingRate(unsigned long samplingRate);
+    void setScheduler(Scheduler *scheduler);
     void setInterfaceName(String &name);
-    void init();
     void setEnabled(bool enabled);
     bool isEnabled();
     void setSamplingEnabled(bool enabled);
@@ -60,27 +62,27 @@ class NodeInterface : public NodeInterfaceBase
     void setMQTTSubscribe(bool subscribe);
     void setBaseTopic(String &baseTopic);
     String getSubscribeTopic();
+    String getPublishTopic();
 
   protected:
     ONCHANGE_CALLBACK_SIGNATURE _onChangeCallback;
 
     //JSON
-    JsonObject &fromString(String newValue);
+    JsonObject &fromString(String newValue, DynamicJsonBuffer &buffer);
     String toString(JsonObject &rootObject);
 
     //MQTT
     bool _hasMQTTPublish = true;
     bool _hasMQTTSubscribe = true;
     String interfaceName = "INTERFACE";
-    PubSubClient _client;
+    PubSubClient *_client = nullptr;
     // NodeMQTT _device;
     void publish(T value);
 
     //SAMPLING + SCHEDULER
-    Scheduler _scheduler;
+    Scheduler *_scheduler = nullptr;
     T currentValue;
-    bool _samplingEnabled = true;
-    bool _enabled = true;
+    void forceResample();
 
     //VIRTUAL
     virtual T sample();
@@ -88,12 +90,15 @@ class NodeInterface : public NodeInterfaceBase
     virtual void updatePhisicalInterface(T newValue);
 
     virtual T fromJSON(JsonObject &value) = 0;
-    virtual JsonObject &toJSON(T value) = 0;
+    virtual JsonObject &toJSON(T value, JsonObject &root) = 0;
+
+    Task _task;
 
   private:
-    unsigned long _sampleRate = DEFAULT_SAMPLE_RATE;
-    Task _task;
-    DynamicJsonBuffer jsonBuffer;
+    bool _samplingEnabled = true;
+    bool _forceResample = false;
+    bool _enabled = true;
+    unsigned long _samplingRate = DEFAULT_SAMPLE_RATE;
     String _publishTopic;
     String _subscribeTopic;
     String _publishFullTopic;
@@ -108,11 +113,17 @@ inline NodeInterface<T>::NodeInterface(String publishTopic, String subscribeTopi
     _subscribeTopic = subscribeTopic;
     _publishFullTopic = publishTopic;
     _subscribeFullTopic = subscribeTopic;
-    _task.set(_sampleRate, TASK_FOREVER, [this]() { handle(); });
+    _task.set(_samplingRate, TASK_FOREVER, [this]() { handle(); });
 }
 
 template <typename T>
-inline void NodeInterface<T>::setClient(PubSubClient &client)
+inline NodeInterface<T>::NodeInterface(String topic)
+    : NodeInterface(topic, topic)
+{
+}
+
+template <typename T>
+inline void NodeInterface<T>::setClient(PubSubClient *client)
 {
     _client = client;
 }
@@ -150,9 +161,13 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
         currentValue = newValue;
         updatePhisicalInterface(newValue);
         if (publishable)
+        {
             publish(newValue);
+        }
         if (_onChangeCallback)
+        {
             _onChangeCallback(oldValue, newValue);
+        }
     }
 }
 
@@ -165,26 +180,28 @@ inline T NodeInterface<T>::read()
 template <typename T>
 inline void NodeInterface<T>::publish(T value)
 {
-    if (_hasMQTTPublish && _client.connected())
+    if (_client == nullptr)
+        return;
+
+    if (_hasMQTTPublish && _client->connected())
     {
-        String msg = toString(toJSON(value));
-        //ITT VALAMI NEM STIMMEL
-        _client.publish(_publishFullTopic.c_str(), msg.c_str());
-        PMQTT("publishing=");
-        PMQTT(msg);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject &root = jsonBuffer.createObject();
+        String msg = toString(toJSON(value, root));
+        _client->publish(_publishFullTopic.c_str(), msg.c_str());
+        PMQTT("publishing " + msg);
     }
 }
 
 template <typename T>
 inline void NodeInterface<T>::writeRaw(String newValue, bool publishable)
 {
-    write(fromJSON(fromString(newValue)), publishable);
-}
-
-template <typename T>
-inline String NodeInterface<T>::readRaw()
-{
-    return toString(toJSON(read()));
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject &rootObject = fromString(newValue, jsonBuffer);
+    if (rootObject.success())
+        write(fromJSON(rootObject), publishable);
+    else
+        e("Failed to parse JSON data @ " + getSubscribeTopic());
 }
 
 template <typename T>
@@ -192,16 +209,22 @@ inline void NodeInterface<T>::handle()
 {
     //SAMPLING
     if (_samplingEnabled)
-        write(sample());
+    {
+        do
+        {
+            _forceResample = false;
+            write(sample());
+        } while (_forceResample);
+    }
 }
 
 template <typename T>
-inline JsonObject &NodeInterface<T>::fromString(String newValue)
+inline void NodeInterface<T>::forceResample() { _forceResample = true; }
+
+template <typename T>
+inline JsonObject &NodeInterface<T>::fromString(String newValue, DynamicJsonBuffer &buffer)
 {
-    JsonObject &rootObject = jsonBuffer.parseObject(newValue);
-    if (!rootObject.success())
-        e("Failed to parse JSON data!");
-    return rootObject;
+    return buffer.parseObject(newValue);
 }
 
 template <typename T>
@@ -213,24 +236,21 @@ inline String NodeInterface<T>::toString(JsonObject &rootObject)
 }
 
 template <typename T>
-inline void NodeInterface<T>::setSampleRate(unsigned long sampleRate)
+inline void NodeInterface<T>::setSamplingRate(unsigned long samplingRate)
 {
-    _sampleRate = sampleRate;
-    _task.setInterval(sampleRate);
+    _samplingRate = samplingRate;
+    _task.setInterval(samplingRate);
 }
 
 template <typename T>
-inline void NodeInterface<T>::setScheduler(Scheduler &scheduler)
+inline void NodeInterface<T>::setScheduler(Scheduler *scheduler)
 {
     _scheduler = scheduler;
-    _scheduler.addTask(_task);
+    _scheduler->addTask(_task);
     if (_enabled)
+    {
         _task.enableIfNot();
-}
-
-template <typename T>
-inline void NodeInterface<T>::init()
-{
+    }
 }
 
 template <typename T>
@@ -243,18 +263,9 @@ template <typename T>
 inline void NodeInterface<T>::setEnabled(bool en = true)
 {
     if (en == _enabled)
-    {
         return;
-    }
     _enabled = en;
-    if (_enabled)
-    {
-        _task.enableIfNot();
-    }
-    else
-    {
-        _task.disable();
-    }
+    (_enabled) ? _task.enableIfNot() : _task.disable();
 }
 template <typename T>
 inline bool NodeInterface<T>::isEnabled()
@@ -301,4 +312,9 @@ inline String NodeInterface<T>::getSubscribeTopic()
     return _subscribeFullTopic;
 }
 
+template <typename T>
+inline String NodeInterface<T>::getPublishTopic()
+{
+    return _publishFullTopic;
+}
 #endif //NODEINTERFACE_H

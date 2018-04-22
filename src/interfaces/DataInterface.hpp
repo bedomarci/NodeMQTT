@@ -5,23 +5,60 @@
 template <typename T>
 class DataInterface : public NodeInterface<T>
 {
-  public:
-    DataInterface(String topic);
+public:
+  DataInterface(String publishTopic, String subscribeTopic);
+  DataInterface(String topic);
+  void init();
 
-  protected:
-    void updatePhisicalInterface(int newValue);
+protected:
+  T fromJSON(JsonObject &rootObject);
+  JsonObject &toJSON(T value, JsonObject &root);
+  int cmp(T oldValue, T newValue);
+  void updatePhisicalInterface(T newValue);
 };
 
 template <typename T>
-inline DataInterface<T>::DataInterface(String topic, uint8_t btnPin, unsigned long debounceDelay) : NodeInterface<T>(topic, topic)
+inline DataInterface<T>::DataInterface(String publishTopic, String subscribeTopic)
+    : NodeInterface<T>(publishTopic, subscribeTopic)
 {
-    setSamplingEnabled(false);
-    setMQTTPublish(true);
 }
 
 template <typename T>
-inline void DataInterface<T>::updatePhisicalInterface(int newValue)
+inline DataInterface<T>::DataInterface(String topic)
+    : DataInterface<T>(topic, topic)
 {
+}
+
+template <typename T>
+inline void DataInterface<T>::updatePhisicalInterface(T newValue) {}
+
+template <typename T>
+inline void DataInterface<T>::init()
+{
+  this->setSamplingEnabled(false);
+  this->setMQTTPublish(true);
+}
+
+template <typename T>
+inline T DataInterface<T>::fromJSON(JsonObject &rootObject)
+{
+  T value;
+  if (rootObject["data"].is<T>())
+    value = rootObject["data"].as<T>();
+  return value;
+}
+
+template <typename T>
+inline JsonObject &DataInterface<T>::toJSON(T value, JsonObject &root)
+{
+  root["data"] = value;
+  return root;
+}
+
+template <typename T>
+inline int DataInterface<T>::cmp(T oldValue, T newValue)
+{
+  return newValue - oldValue;
 }
 
 #endif //BUTTONINTERFACE_H

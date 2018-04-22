@@ -1,30 +1,27 @@
 #ifndef BUTTONINTERFACE_H
 #define BUTTONINTERFACE_H
-#include "_IntegerInterface.hpp"
+#include "DataInterface.hpp"
+#include "Button.h"
 
-class ButtonInterface : public IntegerInterface
+class ButtonInterface : public DataInterface<int>
 {
   public:
-    ButtonInterface(String topic, uint8_t btnPin, unsigned long debounceDelay);
+    ButtonInterface(String topic, uint8_t buttonPin, bool invert = false, unsigned long debounceDelay = 50);
+    void init();
+    void press();
+    void release();
 
   protected:
-    uint8_t _btnPin;
     int sample();
     void updatePhisicalInterface(int newValue);
-
-    int buttonState;                    // the current reading from the input pin
-    int lastButtonState = LOW;          // the previous reading from the input pin
-    unsigned long lastDebounceTime = 0; // the last time the output pin was toggled
-    unsigned long _debounceDelay = 50;  // the debounce time; increase if the output flickers
+    Button *button;
 };
 
-inline ButtonInterface::ButtonInterface(String topic, uint8_t btnPin, unsigned long debounceDelay) : IntegerInterface(topic, topic)
+inline ButtonInterface::ButtonInterface(String topic, uint8_t buttonPin, bool invert, unsigned long debounceDelay)
+    : DataInterface<int>(topic)
 {
-    _btnPin = btnPin;
-    _debounceDelay = debounceDelay;
-    pinMode(btnPin, INPUT_PULLUP);
+    button = new Button(buttonPin, true, invert, debounceDelay);
     interfaceName = BUTTON_NAME;
-    setSamplingEnabled(true);
 }
 
 inline void ButtonInterface::updatePhisicalInterface(int newValue)
@@ -34,21 +31,21 @@ inline void ButtonInterface::updatePhisicalInterface(int newValue)
 
 inline int ButtonInterface::sample()
 {
-    Serial.println("btnsample");
-    int reading = digitalRead(_btnPin);
-    if (reading != lastButtonState)
-    {
-        lastDebounceTime = millis();
-    }
-    if ((millis() - lastDebounceTime) > _debounceDelay)
-    {
-        if (reading != buttonState)
-        {
-            buttonState = reading;
-        }
-    }
-    lastButtonState = reading;
-    return buttonState;
+    button->read();
+    return button->isPressed();
+}
+inline void ButtonInterface::press()
+{
+    write(1);
+}
+inline void ButtonInterface::release()
+{
+    write(0);
+}
+inline void ButtonInterface::init()
+{
+    // IntegerInterface::init();
+    this->setSamplingEnabled(true);
 }
 
 #endif //BUTTONINTERFACE_H

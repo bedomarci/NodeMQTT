@@ -1,33 +1,39 @@
 #ifndef RELAYINTERFACE_H
 #define RELAYINTERFACE_H
-#include "_IntegerInterface.hpp"
+#include "DataInterface.hpp"
 
+class RelayInterface : public DataInterface<int>
+{
+  public:
+    RelayInterface(String topic, uint8_t relayPin);
 
-class RelayInterface : public IntegerInterface {
-    public:
-        RelayInterface(String topic, uint8_t relayPin);
-        
-    protected:
-        uint8_t _relayPin;
+  protected:
+    uint8_t _relayPin;
 
-        int sample();
-        void updatePhisicalInterface(int newValue);
+    int sample();
+    void updatePhisicalInterface(int newValue);
 };
 
-inline
-RelayInterface::RelayInterface(String topic, uint8_t relayPin) : IntegerInterface(topic, topic) {
+inline RelayInterface::RelayInterface(String topic, uint8_t relayPin)
+    : DataInterface<int>(topic)
+{
     _relayPin = relayPin;
-    setSamplingEnabled(false);
     pinMode(relayPin, OUTPUT);
     interfaceName = RELAY_NAME;
 }
-inline
-void RelayInterface::updatePhisicalInterface(int newValue) {
+inline void RelayInterface::updatePhisicalInterface(int newValue)
+{
     digitalWrite(_relayPin, newValue);
 }
-inline
-int RelayInterface::sample() {
-    return currentValue;
+
+inline void RelayInterface::init()
+{
+    DataInterface<int>::init();
+    setSamplingEnabled(false);
 }
+// inline int RelayInterface::sample()
+// {
+//     return currentValue;
+// }
 
 #endif //RELAYINTERFACE_H

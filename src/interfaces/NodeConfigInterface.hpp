@@ -11,19 +11,19 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
 {
   public:
     NodeConfigInterface();
+    void init();
+    void publishCurrentConfig(NodeMQTTConfig config);
 
-  private:
+  protected:
     NodeMQTTConfig sample();
     void updatePhisicalInterface(NodeMQTTConfig newValue);
     NodeMQTTConfig fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(NodeMQTTConfig value);
+    JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root);
     int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue);
 };
 
-inline NodeConfigInterface::NodeConfigInterface() : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC, CONFIG_TOPIC)
+inline NodeConfigInterface::NodeConfigInterface() : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC)
 {
-    setSamplingEnabled(false);
-    setMQTTSubscribe(true);
     interfaceName = CONFIG_TOPIC;
 }
 
@@ -59,10 +59,18 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
     return nodeConfig;
 }
 
-inline JsonObject &NodeConfigInterface::toJSON(NodeMQTTConfig status)
+inline JsonObject &NodeConfigInterface::toJSON(NodeMQTTConfig status, JsonObject &root)
 {
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject &root = jsonBuffer.createObject();
+    root[ATTR_BASETOPIC] = status.baseTopic;
+    // root[ATTR_CONFVER] = status.configVersion;
+    // root[ATTR_ONLINE] = status.isOnline;
+    // root[ATTR_SERVICEMODE] = status.isServiceMode;
+    // root[ATTR_MQTTPASS] = status.mqttPassword;
+    // root[ATTR_MQTTPORT] = status.mqttPort;
+    // root[ATTR_MQTTSERV] = status.mqttServer;
+    root[ATTR_MQTTUSER] = status.mqttUser;
+    root[ATTR_WIFIPASS] = status.wifiPassword;
+    root[ATTR_WIFISSID] = status.wifiSsid;
     return root;
 }
 
@@ -74,6 +82,18 @@ inline int NodeConfigInterface::cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newV
 inline void NodeConfigInterface::updatePhisicalInterface(NodeMQTTConfig newValue)
 {
     NodeMQTTConfigManager.save(newValue);
+}
+
+inline void NodeConfigInterface::init()
+{
+    setSamplingEnabled(false);
+    setMQTTSubscribe(true);
+    setMQTTPublish(true);
+}
+
+inline void NodeConfigInterface::publishCurrentConfig(NodeMQTTConfig config)
+{
+    publish(config);
 }
 
 #endif //NODECONFIGINTERFACE_H
