@@ -20,34 +20,28 @@
 #define DEBUG_MQTT
 #define DEBUG_CONFIG
 #define DEBUG_INTERFACE
-#define DEBUG_OTHER
 #define SERVICE_MODE
 #endif //define DEBUG
 
 #ifdef DEBUG_NETWORK
-#define PNET(x) d(x)
+#define D_NET(x) d(x)
 #else
-#define PNET(x)
+#define D_NET(x)
 #endif
 #ifdef DEBUG_MQTT
-#define PMQTT(x) d(x)
+#define D_MQTT(x) d(x)
 #else
-#define PMQTT(x)
+#define D_MQTT(x)
 #endif
 #ifdef DEBUG_CONFIG
-#define PCON(x) d(x)
+#define D_CONF(x) d(x)
 #else
-#define PCON(x)
+#define D_CONF(x)
 #endif
 #ifdef DEBUG_INTERFACE
-#define PINT(x) d(x)
+#define D_INTR(x) d(x)
 #else
-#define PINT(x)
-#endif
-#ifdef DEBUG_OTHER
-#define P(x) d(x)
-#else
-#define P(x)
+#define D_INTR(x)
 #endif
 
 #define DEVICE_NAME String(ESP.getChipId(), HEX)

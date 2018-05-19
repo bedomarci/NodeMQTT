@@ -156,7 +156,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
 {
     if (cmp(newValue, currentValue) != 0)
     {
-        PINT("Value changed on " + interfaceName);
+        D_INTR("Value changed on " + interfaceName);
         T oldValue = currentValue;
         currentValue = newValue;
         updatePhisicalInterface(newValue);
@@ -189,7 +189,7 @@ inline void NodeInterface<T>::publish(T value)
         JsonObject &root = jsonBuffer.createObject();
         String msg = toString(toJSON(value, root));
         _client->publish(_publishFullTopic.c_str(), msg.c_str());
-        PMQTT("publishing " + msg);
+        D_MQTT("Publishing: " + msg);
     }
 }
 

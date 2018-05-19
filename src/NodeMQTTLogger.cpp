@@ -37,7 +37,6 @@ void NodeMQTTLoggerClass::log(const __FlashStringHelper *message, LOG_LEVEL leve
     String msg = String(message);
     log(msg, level);
 }
-
 void NodeMQTTLoggerClass::log(String message, LOG_LEVEL level)
 {
     char buffer[LOG_MAX_MESSAGE_LENGTH];

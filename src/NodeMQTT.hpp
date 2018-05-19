@@ -10,6 +10,8 @@
 #include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
 
+typedef std::function<void()> NodeMQTTCallback;
+
 class NodeMQTT
 {
 public:
@@ -18,6 +20,11 @@ public:
   void begin(NodeMQTTConfig &configuration);
   void handle();
   void addInterface(NodeInterfaceBase *);
+
+  void setOnWifiConnecting(NodeMQTTCallback);
+  void setOnWifiConnected(NodeMQTTCallback);
+  void setOnBrokerConnecting(NodeMQTTCallback);  
+  void setOnBrokerConnected(NodeMQTTCallback);  
 
   void setBaseTopic(String baseTopic);
 
@@ -37,6 +44,11 @@ protected:
   const char *_mqttPass;
   WiFiClient espClient;
   PubSubClient client;
+
+  NodeMQTTCallback wifiConnectedCallback;
+  NodeMQTTCallback wifiConnectingCallback;
+  NodeMQTTCallback brokerConnectedCallback;
+  NodeMQTTCallback brokerConnectingCallback;
 
   //SCHEDULER
   Scheduler _scheduler;

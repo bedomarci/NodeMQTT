@@ -163,7 +163,6 @@ inline void DFPlayerInterface::init()
     }
     else
     {
-        // DFPlayer->reset();
         DFPlayer->setTimeOut(DEFAULT_SERIAL_TIMEOUT);
         _scheduler->addTask(_tReadState);
         _tReadState.restart();

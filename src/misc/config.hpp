@@ -9,7 +9,8 @@
 #define MQTT_MAX_PACKET_SIZE 256 //140
 #define SERIAL_BUFFER_SIZE 512
 
-#define MQTT_CONNECT_ATTEMPT_WAITING 60000L
+#define MQTT_CONNECT_ATTEMPT_WAITING 5000L //
+#define MQTT_SOCKET_TIMEOUT 1 // MQTT_SOCKET_TIMEOUT: socket timeout interval in Seconds
 #define SERIAL_READ_INTERVAL 2000L
 
 #define LOG_MAX_MESSAGE_LENGTH 256
@@ -29,7 +30,7 @@
 
 #define DEFAULT_WIFI_SSID "nodenetwork"
 #define DEFAULT_WIFI_PASSWORD "thereisnospoon"
-#define DEFAULT_MQTT_SERVER "server"
+#define DEFAULT_MQTT_SERVER "broker.orangepixel.hu"
 #define DEFAULT_MQTT_PORT 1883
 #define DEFAULT_MQTT_USER ""
 #define DEFAULT_MQTT_PASSWORD ""

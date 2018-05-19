@@ -18,34 +18,34 @@ uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig &config)
 
 void NodeMQTTConfigManagerClass::save(NodeMQTTConfig &configuration)
 {
-    PCON("Storing configuration.");
+    D_CONF(F("Storing configuration in EEPROM."));
     configuration.configVersion = DEFAULT_CONFIGURATION_VERSION;
     uint32_t chksum = calculateChkSum(configuration);
 
     EEPROM.put(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, chksum);
     EEPROM.put(EEPROM_CONFIGURATION_ADDRESS, configuration);
     EEPROM.commit();
-    PMQTT("reset");
+    D_CONF(F("Node restarts. Good bye!"));
     ESP.reset();
 }
 
 void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig &configuration)
 {
-    PCON("Loading configuration from EEPROM.");
+    D_CONF(F("Loading configuration from EEPROM."));
     uint32_t storedChkSum;
     EEPROM.get(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum);
     EEPROM.get(EEPROM_CONFIGURATION_ADDRESS, configuration);
     uint32_t calculatedChkSum = calculateChkSum(configuration);
     if (calculatedChkSum != storedChkSum || configuration.configVersion != DEFAULT_CONFIGURATION_VERSION)
     {
-        PCON("Configuration is invalid in EEPROM.");
+        D_CONF(F("Configuration is invalid in EEPROM."));
         loadDefaultsInto(configuration);
     }
 }
 
 void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig &configuration)
 {
-    PCON("Loading default configuration.");
+    D_CONF(F("Loading default configuration."));
     configuration = defaultConfig;
     save(configuration);
 }
