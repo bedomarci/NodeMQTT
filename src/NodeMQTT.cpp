@@ -5,14 +5,9 @@
 NodeMQTT::NodeMQTT()
 {
     Serial.begin(115200);
-    client = PubSubClient(espClient);
+    printHeader();
     interfaceList = LinkedList<NodeInterfaceBase *>();
-    client.setCallback([=](char *t, byte *p, unsigned int l) { mqttParser(t, p, l); });
     _scheduler.init();
-    _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
-    _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
-    _scheduler.addTask(_tWifiConnect);
-    _scheduler.addTask(_tBrokerConnect);
     _scheduler.addTask(_tReadSerial);
 }
 void NodeMQTT::begin()
@@ -22,69 +17,39 @@ void NodeMQTT::begin()
 }
 void NodeMQTT::begin(NodeMQTTConfig &configuration)
 {
-    D_MQTT(("Initializing MQTT NODE"));
-    _wifiSsid = &configuration.wifiSsid[0];
-    _wifiPassword = &configuration.wifiPassword[0];
-    _mqttServer = &configuration.mqttServer[0];
-    _mqttUser = &configuration.mqttUser[0];
-    _mqttPass = &configuration.mqttPassword[0];
-    _isOnline = &configuration.isOnline;
-#ifndef SERVICE_MODE
+    d(("Initializing MQTT NODE"));
+    _transport.setScheduler(&_scheduler);
+    _transport.setConfiguration(&_config);
+    _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { mqttParser(t, p, l); });
+    _transport.setBrokerConnectedCallback([=]() { onBrokerConnected(); });
+    _transport.setBrokerConnectingCallback([=]() { onBrokerConnecting(); });
+    _transport.setBrokerDisconnectedCallback([=]() { onBrokerDisconnected(); });
+    _transport.setNetworkConnectedCallback([=]() { onNetworkConnected(); });
+    _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
+    _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
+    _transport.init();
+#ifndef NODEMQTT_SERVICE_MODE
     _isServiceMode = &configuration.isServiceMode;
 #else
     _isServiceMode = true;
 #endif
-    client.setServer(_mqttServer, configuration.mqttPort);
+    // client.setServer(_mqttServer, configuration.mqttPort);
 
     if (_isServiceMode)
         NodeMQTTConfigManager.print(_config);
     addDefaultInterfaces();
 
     setBaseTopic(String(configuration.baseTopic));
-    if(_isOnline) {
-        _tWifiConnect.enable();
+    if (_isOnline)
+    {
+        _transport.connectNetwork();
     }
     buzz(TONE_SYSTEM_BOOT);
 }
 
-void NodeMQTT::reconnectWifi()
-{
-    D_NET("Connecting to " + String(_wifiSsid));
-    if (wifiConnectingCallback != nullptr)
-        wifiConnectingCallback();
-    WiFi.begin(_wifiSsid, _wifiPassword);   
-}
-
 void NodeMQTT::handle()
 {
-    if (_isOnline)
-    {
-        if (WiFi.status() == WL_CONNECTED)
-        {
-            if (_tWifiConnect.isEnabled())
-            {
-                delay(500);
-                if (wifiConnectedCallback != nullptr)
-                    wifiConnectedCallback();
-                D_NET("WiFi connected. IP address: " + WiFi.localIP().toString());
-                _tWifiConnect.disable();
-            } else {
-                if (!client.connected())
-                {
-                    _tBrokerConnect.enableIfNot();
-                }
-            }
-        }
-        else
-        {
-            if (heartbeatInterface->isEnabled())
-                heartbeatInterface->setEnabled(false);
-            if(_isOnline)
-                _tWifiConnect.enableIfNot();
-        }
-    }
-
-    client.loop();        //PUBSUB PULL
+    _transport.loop();
     readSerial();         //SERIAL PULL
     _scheduler.execute(); //TASK EXECUTION
 }
@@ -92,45 +57,21 @@ void NodeMQTT::handle()
 void NodeMQTT::addInterface(NodeInterfaceBase *interface)
 {
     interfaceList.add(interface);
-    interface->setClient(&client);
+    interface->setTransport(&_transport);
     interface->setScheduler(&_scheduler);
     interface->init();
 }
 
-void NodeMQTT::reconnectBroker()
+void NodeMQTT::subscribeTopics()
 {
-    D_MQTT(DEVICE_NAME + " is attempting to connect to broker");
-    if (brokerConnectingCallback != nullptr)
-        brokerConnectingCallback();
-    if (
-        client.connect(DEVICE_NAME.c_str(),
-                       (const char *)_config.mqttUser,
-                       (const char *)_config.mqttPassword,
-                       heartbeatInterface->getPublishTopic().c_str(),
-                       1, true, WILL_MESSAGE))
+    NodeInterfaceBase *interface;
+    for (int i = 0; i < interfaceList.size(); i++)
     {
-        D_MQTT(("Connected to broker!"));
-        NodeInterfaceBase *interface;
-        for (int i = 0; i < interfaceList.size(); i++)
+        interface = interfaceList.get(i);
+        if (interface->hasMQTTSubscribe())
         {
-            interface = interfaceList.get(i);
-            if (interface->hasMQTTSubscribe())
-            {
-                client.subscribe((interface->getSubscribeTopic()).c_str());
-            }
+            _transport.subscribe((interface->getSubscribeTopic()).c_str());
         }
-        heartbeatInterface->setEnabled(true);
-        nodeConfigInterface->publishCurrentConfig(_config);
-        buzz(TONE_SYSTEM_ONLINE);
-
-        if (brokerConnectedCallback != nullptr)
-            brokerConnectedCallback();
-        _tBrokerConnect.disable();
-    }
-    else
-    {
-        buzz(TONE_WARNING);
-        D_MQTT("Failed to connect broker, rc=" + client.state());
     }
 }
 
@@ -151,7 +92,7 @@ void NodeMQTT::mqttParser(char *topic, byte *payload, unsigned int length)
     NodeInterfaceBase *interface;
     payload[length] = '\0';
     String s_payload = String((char *)payload);
-    D_MQTT("receiving payload=" + s_payload);
+    D_MQTT("Receiving payload: " + s_payload);
     for (int i = 0; i < interfaceList.size(); i++)
     {
         interface = interfaceList.get(i);
@@ -171,6 +112,11 @@ void NodeMQTT::setBaseTopic(String baseTopic)
         interface = interfaceList.get(i);
         interface->setBaseTopic(_baseTopic);
     }
+}
+
+String NodeMQTT::getBaseTopic()
+{
+    return _baseTopic;
 }
 
 void NodeMQTT::addDefaultInterfaces()
@@ -201,19 +147,80 @@ void NodeMQTT::buzz(int noteId)
     }
 }
 
-void NodeMQTT::setOnWifiConnected(NodeMQTTCallback cb)
+void NodeMQTT::onNetworkConnecting()
 {
-    wifiConnectedCallback = cb;
+    if (networkConnectingCallback != nullptr)
+        networkConnectingCallback();
 }
-void NodeMQTT::setOnBrokerConnected(NodeMQTTCallback cb)
+void NodeMQTT::onNetworkConnected()
+{
+    if (networkConnectedCallback != nullptr)
+        networkConnectedCallback();
+}
+void NodeMQTT::onNetworkDisconnected()
+{
+    if (networkDisconnectedCallback != nullptr)
+        networkDisconnectedCallback();
+
+    if (heartbeatInterface->isEnabled())
+        heartbeatInterface->setEnabled(false);
+
+    buzz(TONE_WARNING);
+}
+void NodeMQTT::onBrokerConnecting()
+{
+    if (brokerConnectingCallback != nullptr)
+        brokerConnectingCallback();
+}
+void NodeMQTT::onBrokerConnected()
+{
+    if (brokerConnectedCallback != nullptr)
+        brokerConnectedCallback();
+
+    subscribeTopics();
+    heartbeatInterface->setEnabled(true);
+    nodeConfigInterface->publishCurrentConfig(_config);
+    buzz(TONE_SYSTEM_ONLINE);
+}
+void NodeMQTT::onBrokerDisconnected()
+{
+    if (brokerDisconnectedCallback != nullptr)
+        brokerDisconnectedCallback();
+
+    if (heartbeatInterface->isEnabled())
+        heartbeatInterface->setEnabled(false);
+}
+
+void NodeMQTT::setNetworkConnectingCallback(NodeMQTTCallback cb)
+{
+    networkConnectingCallback = cb;
+}
+void NodeMQTT::setNetworkConnectedCallback(NodeMQTTCallback cb)
+{
+    networkConnectedCallback = cb;
+}
+void NodeMQTT::setNetworkDisconnectedCallback(NodeMQTTCallback cb)
+{
+    networkDisconnectedCallback = cb;
+}
+void NodeMQTT::setBrokerConnectingCallback(NodeMQTTCallback cb)
+{
+    brokerConnectingCallback = cb;
+}
+void NodeMQTT::setBrokerConnectedCallback(NodeMQTTCallback cb)
 {
     brokerConnectedCallback = cb;
 }
-void NodeMQTT::setOnWifiConnecting(NodeMQTTCallback cb)
+void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
 {
-    wifiConnectingCallback = cb;
+    brokerDisconnectedCallback = cb;
 }
-void NodeMQTT::setOnBrokerConnecting(NodeMQTTCallback cb)
+
+void NodeMQTT::printHeader()
 {
-    brokerConnectingCallback = cb;
+    Serial.print("\n\n\n");
+    // Serial.println(FPSTR(TERMINAL_HR));
+    // Serial.print(FPSTR(NODEMQTT_TERMINAL_HEADER));
+    // Serial.print("\n");
+    // Serial.println(FPSTR(TERMINAL_HR));
 }

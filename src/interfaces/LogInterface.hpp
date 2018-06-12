@@ -18,7 +18,7 @@ class LogInterface : public StringInterface
 inline LogInterface::LogInterface()
     : StringInterface(LOG_TOPIC)
 {
-    interfaceName = LOG_TOPIC;
+    _interfaceName = LOG_TOPIC;
 }
 
 inline void LogInterface::init()

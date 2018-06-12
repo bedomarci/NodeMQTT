@@ -1,7 +1,7 @@
 #ifndef BUZZERINTERFACE_H
 #define BUZZERINTERFACE_H
 
-#include "_IntegerInterface.hpp"
+#include "DataInterface.hpp"
 #include "misc/pitches.hpp"
 
 #define PLAYER_CALLBACK [this]() { notePlayerCallback(); }
@@ -29,7 +29,7 @@ const Note sadTone[] PROGMEM = {{100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE
 const Note systemBoot[] PROGMEM = {{100, NOTE_C6, 0}};   // 1 ,{100,NOTE_E5,0}}; //2
 const Note systemOnline[] PROGMEM = {{100, NOTE_G6, 0}}; // 1 ,{100,NOTE_C6,0}}; //2
 
-class BuzzerInterface : public IntegerInterface
+class BuzzerInterface : public DataInterface<int>
 {
   public:
     BuzzerInterface(String topic, uint8_t buzzerPin);
@@ -56,14 +56,14 @@ class BuzzerInterface : public IntegerInterface
     const uint8_t noteLengthArray[TONE_COUNT] = {1, 4, 2, 6, 5, 4, 5, 5, 1, 1};
 };
 
-inline BuzzerInterface::BuzzerInterface(String topic, uint8_t buzzerPin) : IntegerInterface(topic, topic)
+inline BuzzerInterface::BuzzerInterface(String topic, uint8_t buzzerPin) : DataInterface<int>(topic)
 {
     _buzzerPin = buzzerPin;
     setSamplingEnabled(false);
     setMQTTPublish(false);
     pinMode(buzzerPin, OUTPUT);
     _noteTask.set(TASK_IMMEDIATE, TASK_FOREVER, PLAYER_CALLBACK, 0, DISABLE_CALLBACK);
-    interfaceName = BUZZER_NAME;
+    _interfaceName = BUZZER_NAME;
 }
 
 inline void BuzzerInterface::init()
@@ -97,7 +97,12 @@ inline void BuzzerInterface::notePlayerCallback()
         return;
     }
     _currentNote = _noteBuffer[_noteCounter];
+#ifdef ESP8266
     tone(_buzzerPin, _currentNote.frequency, _currentNote.duration);
+#endif
+#ifdef ESP32
+    //not implemented yet
+#endif
     _noteTask.setInterval(_currentNote.duration);
     _noteTask.setCallback(STOP_CALLBACK);
     _noteCounter++;
@@ -105,7 +110,13 @@ inline void BuzzerInterface::notePlayerCallback()
 
 inline void BuzzerInterface::noteStopCallback()
 {
+
+#ifdef ESP8266
     noTone(_buzzerPin);
+#endif
+#ifdef ESP32
+    //not implemented yet
+#endif
     _noteTask.setInterval(_currentNote.pause);
     _noteTask.setCallback(PLAYER_CALLBACK);
 }

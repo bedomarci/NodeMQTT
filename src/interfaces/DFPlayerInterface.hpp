@@ -2,7 +2,13 @@
 #define DDFPLAYERINTERFACE_H
 #include "_NodeInterface.hpp"
 
+#ifdef ESP8266
 #include "SoftwareSerial.h"
+#endif
+#ifdef ESP32
+#include "HardwareSerial.h"
+#endif
+
 #include "DFRobotDFPlayerMini.h"
 
 #define READ_STATE_CALLBACK [this]() { readStateCallback(); }
@@ -34,8 +40,8 @@ struct DFPlayerCommand
 class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
 {
   public:
-    DFPlayerInterface(String publishTopic, String subscribeTopic, uint8_t serialRxPin, uint8_t serialTxPin);
-    DFPlayerInterface(String topic, uint8_t serialRxPin, uint8_t serialTxPin);
+    DFPlayerInterface(String publishTopic, String subscribeTopic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
+    DFPlayerInterface(String topic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
     void init();
 
     uint8_t readCommand();
@@ -89,7 +95,7 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     int cmp(DFPlayerCommand oldValue, DFPlayerCommand newValue);
     void updatePhisicalInterface(DFPlayerCommand newValue);
     void readStateCallback();
-    SoftwareSerial *DFSoftwareSerial;
+    SoftwareSerial *DFSerial;
     DFRobotDFPlayerMini *DFPlayer;
     uint8_t _serialRxPin, _serialTxPin;
     Task _tReadState;
@@ -102,7 +108,7 @@ inline DFPlayerInterface::DFPlayerInterface(String publishTopic, String subscrib
 {
     _serialRxPin = serialRxPin;
     _serialTxPin = serialTxPin;
-    interfaceName = DFPLAYER_NAME;
+    _interfaceName = DFPLAYER_NAME;
     _tReadState.set(STATUS_PULL_RATE, TASK_FOREVER, READ_STATE_CALLBACK);
 }
 
@@ -113,7 +119,7 @@ inline DFPlayerInterface::DFPlayerInterface(String topic, uint8_t serialRxPin, u
 
 inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
 {
-    if (DFSoftwareSerial == nullptr)
+    if (DFSerial == nullptr)
         return;
     switch (newValue.task)
     {
@@ -150,15 +156,19 @@ inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
 inline void DFPlayerInterface::init()
 {
     this->setSamplingEnabled(false);
-    DFSoftwareSerial = new SoftwareSerial(_serialRxPin, _serialTxPin);
+#ifdef ESP8266
+    DFSerial = new SoftwareSerial(_serialRxPin, _serialTxPin);
+#endif
+#ifdef ESP32
+    DFSerial = new HardwareSerial(1);
+#endif
+
     DFPlayer = new DFRobotDFPlayerMini();
-    DFSoftwareSerial->begin(9600);
-    DFSoftwareSerial->listen();
-    if (!DFPlayer->begin(*DFSoftwareSerial))
+    DFSerial->begin(9600);
+    DFSerial->listen();
+    if (!DFPlayer->begin(*DFSerial))
     {
-        e(F("Unable to begin:"));
-        e(F("1.Please recheck the connection!"));
-        e(F("2.Please insert the SD card!"));
+        e(F("Unable to connect to DFPlayer! 1) Please recheck the connection! 2) Please insert the SD card!"));
         setEnabled(false);
     }
     else
@@ -195,7 +205,7 @@ inline int DFPlayerInterface::cmp(DFPlayerCommand oldValue, DFPlayerCommand newV
 
 inline void DFPlayerInterface::readStateCallback()
 {
-    DFSoftwareSerial->listen();
+    DFSerial->listen();
     if (DFPlayer->available())
     {
         printDetail(DFPlayer->readType(), DFPlayer->read()); //Print the detail message from DFPlayer to handle different errors and states.
@@ -203,7 +213,7 @@ inline void DFPlayerInterface::readStateCallback()
 }
 inline void DFPlayerInterface::activateSerial()
 {
-    DFSoftwareSerial->listen();
+    DFSerial->listen();
     delay(SOFTWARE_SERIAL_PAUSE);
 }
 

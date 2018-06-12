@@ -21,7 +21,7 @@ inline ButtonInterface::ButtonInterface(String topic, uint8_t buttonPin, bool in
     : DataInterface<int>(topic)
 {
     button = new Button(buttonPin, true, invert, debounceDelay);
-    interfaceName = BUTTON_NAME;
+    _interfaceName = BUTTON_NAME;
 }
 
 inline void ButtonInterface::updatePhisicalInterface(int newValue)

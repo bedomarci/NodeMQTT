@@ -20,11 +20,12 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
     NodeMQTTConfig fromJSON(JsonObject &rootObject);
     JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root);
     int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue);
+    void parseBssid(int *bssidBytes, char *bssidHex);
 };
 
 inline NodeConfigInterface::NodeConfigInterface() : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC)
 {
-    interfaceName = CONFIG_TOPIC;
+    _interfaceName = CONFIG_TOPIC;
 }
 
 inline NodeMQTTConfig NodeConfigInterface::sample()
@@ -48,6 +49,18 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
         strcpy(nodeConfig.wifiPassword, rootObject[ATTR_WIFIPASS].as<const char *>());
     if (rootObject.containsKey(ATTR_WIFISSID))
         strcpy(nodeConfig.wifiSsid, rootObject[ATTR_WIFISSID].as<const char *>());
+    if (rootObject.containsKey(ATTR_WIFIBSSID)) {
+        char bssidHex[12];
+        strcpy(bssidHex, rootObject[ATTR_WIFIBSSID].as<const char *>());
+        char buff[2];
+        for (int i = 0; i < 6; i++)
+        {
+            memcpy(buff, &bssidHex[i * 2], 2);
+            nodeConfig.wifiBssid[i] = (int)strtol(&(buff[0]), NULL, 16);
+        }
+    }
+    if (rootObject.containsKey(ATTR_WIFICHANNEL))
+        nodeConfig.wifiChannel = rootObject[ATTR_WIFICHANNEL].as<unsigned char>();
     if (rootObject.containsKey(ATTR_CONFVER))
         nodeConfig.configVersion = rootObject[ATTR_CONFVER].as<unsigned char>();
     if (rootObject.containsKey(ATTR_ONLINE))
@@ -94,6 +107,11 @@ inline void NodeConfigInterface::init()
 inline void NodeConfigInterface::publishCurrentConfig(NodeMQTTConfig config)
 {
     publish(config);
+}
+
+inline void NodeConfigInterface::parseBssid(int *bssidBytes, char *bssidHex)
+{
+
 }
 
 #endif //NODECONFIGINTERFACE_H

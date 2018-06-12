@@ -40,11 +40,13 @@ void NodeMQTTLoggerClass::log(const __FlashStringHelper *message, LOG_LEVEL leve
 void NodeMQTTLoggerClass::log(String message, LOG_LEVEL level)
 {
     char buffer[LOG_MAX_MESSAGE_LENGTH];
-    sprintf(buffer, "[%c|%d] %s", level, millis(), message.c_str());
+    sprintf(buffer, "[%c|%10lu] %s", level, millis(), message.c_str());
     String formattedMessage = String(buffer);
     Serial.println(formattedMessage);
+#ifdef NODEMQTT_PUBLISH_LOG
     if (level != DEBUG)
         push(formattedMessage);
+#endif
 }
 
 NodeMQTTLoggerClass Logger;

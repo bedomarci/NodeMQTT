@@ -4,6 +4,31 @@
 
 #include <Arduino.h>
 
+#if defined(ESP8266) || defined(ESP32)
+#include <functional>
+typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
+typedef std::function<void()> NodeMQTTCallback;
+#define NodeMQTTChangeCallback std::function<void(T, T)>
+#else
+typedef void (*NodeMQTTMessageCallback)(char *, uint8_t *, unsigned int);
+typedef void (*NodeMQTTCallback)();
+#define NodeMQTTChangeCallback void (*)(T, T)
+#endif
+
+#ifdef WIFI_TRANSPORT
+#define TRANSPORT_CLASS WifiTransport
+#endif
+#ifdef RF_TRANSPORT
+#define TRANSPORT_CLASS RF24Transport
+#endif
+
+template <typename T, unsigned int LENGTH>
+struct Array
+{
+    uint16_t length = LENGTH;
+    T item[LENGTH];
+};
+
 //BUZZER
 #define TONE_INFO 0
 #define TONE_SUCCESS 1
@@ -28,10 +53,10 @@
 
 #define WILL_MESSAGE "OFFLINE"
 #define CONFIG_TOPIC ("config")
-#define CONFIG_TOPIC_ECHO F("configecho")
+#define CONFIG_TOPIC_ECHO ("configecho")
 #define LOG_TOPIC ("log")
 #define HEARTBEAT_TOPIC ("hrtbt")
-#define TERMINAL_HR ("\t============================\t")
+static const char TERMINAL_HR[] PROGMEM = "==============================================";
 
 //INTERFACE NAMES
 // static constexpr char analogName[] PROGMEM = "nlg";
@@ -47,12 +72,12 @@
 // #define BUZZER_NAME FPSTR(buzzerName)
 // #define DFPLAYER_NAME FPSTR(dfplayerName)
 
-#define ANALOG_NAME F("nlg")
-#define BUTTON_NAME F("btn")
-#define RELAY_NAME F("rly")
-#define STRING_NAME F("str")
-#define BUZZER_NAME F("buz")
-#define DFPLAYER_NAME F("dfp")
+#define ANALOG_NAME ("nlg")
+#define BUTTON_NAME ("btn")
+#define RELAY_NAME ("rly")
+#define STRING_NAME ("str")
+#define BUZZER_NAME ("buz")
+#define DFPLAYER_NAME ("dfp")
 
 //CONFIGURATION
 static const char ATTR_BASETOPIC[] = "basetpc";
@@ -61,6 +86,8 @@ static const char ATTR_MQTTSERV[] = "mqttsrv";
 static const char ATTR_MQTTUSER[] = "mqttusr";
 static const char ATTR_WIFIPASS[] = "wifipwd";
 static const char ATTR_WIFISSID[] = "wifissi";
+static const char ATTR_WIFIBSSID[] = "wifibss";
+static const char ATTR_WIFICHANNEL[] = "wifichn";
 static const char ATTR_CONFVER[] = "confver";
 static const char ATTR_ONLINE[] = "on_line";
 static const char ATTR_SERVICEMODE[] = "service";
@@ -86,5 +113,11 @@ static const char ATTR_MQTTPORT[] = "mqttprt";
 // #define ATTR_SERVICEMODE FPSTR(configAttribute_isServiceMode)
 // static const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
 // #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
+
+static const char NODEMQTT_TERMINAL_HEADER[] PROGMEM = "\
+  _  _         _     __  __  ___ _____ _____ \n\
+ | \\| |___  __| |___|  \\/  |/ _ \\_   _|_   _|\n\
+ | .` / _ \\/ _` / -_) |\\/| | (_) || |   | |  \n\
+ |_|\\_\\___/\\__,_\\___|_|  |_|\\__\\_\\|_|   |_|  \n";
 
 #endif

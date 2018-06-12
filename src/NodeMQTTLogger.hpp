@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include <LinkedList.h>
 #include "misc/config.hpp"
-// #include "interfaces/StringInterface.hpp"
 
 enum LOG_LEVEL
 {

@@ -36,14 +36,19 @@ inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_H
 {
     setEnabled(false);
     setSamplingRate(beatIntervalMillis);
-    interfaceName = HEARTBEAT_TOPIC;
+    _interfaceName = HEARTBEAT_TOPIC;
 }
 
 inline void HeartbeatInterface::init()
 {
     setSamplingEnabled(true);
     setMQTTSubscribe(false);
+#ifdef ESP8266
     status.nodeID = ESP.getChipId();
+#endif
+#ifdef ESP32
+    status.nodeID = (uint32_t)ESP.getEfuseMac();
+#endif
 }
 
 inline NodeStatus HeartbeatInterface::sample()

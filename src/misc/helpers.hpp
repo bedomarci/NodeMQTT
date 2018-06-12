@@ -20,7 +20,8 @@
 #define DEBUG_MQTT
 #define DEBUG_CONFIG
 #define DEBUG_INTERFACE
-#define SERVICE_MODE
+#define NODEMQTT_SERVICE_MODE
+#define NODEMQTT_PUBLISH_LOG
 #endif //define DEBUG
 
 #ifdef DEBUG_NETWORK
@@ -44,7 +45,13 @@
 #define D_INTR(x)
 #endif
 
+#ifdef ESP8266
 #define DEVICE_NAME String(ESP.getChipId(), HEX)
+#endif
+#ifdef ESP32
+#define DEVICE_NAME String((uint32_t)ESP.getEfuseMac(), HEX)
+#endif
+
 // inline String getMQTTDeviceName()
 // {
 //     return ;

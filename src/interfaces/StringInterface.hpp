@@ -18,7 +18,7 @@ class StringInterface : public NodeInterface<String>
 inline StringInterface::StringInterface(String topic)
     : NodeInterface<String>(topic, topic)
 {
-    interfaceName = STRING_NAME;
+    _interfaceName = STRING_NAME;
 }
 
 inline String StringInterface::fromJSON(JsonObject &rootObject)

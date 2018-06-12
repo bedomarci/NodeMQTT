@@ -3,6 +3,14 @@
 NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
 {
     EEPROM.begin(512);
+    // Serial.println(EEPROM.length());
+    // if (!EEPROM.begin(EEPROM.length()))
+    // {
+    //     Serial.println("Failed to initialise EEPROM");
+    //     Serial.println("Restarting...");
+    //     delay(1000);
+    //     ESP.restart();
+    // }
 }
 
 uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig &config)
@@ -26,7 +34,12 @@ void NodeMQTTConfigManagerClass::save(NodeMQTTConfig &configuration)
     EEPROM.put(EEPROM_CONFIGURATION_ADDRESS, configuration);
     EEPROM.commit();
     D_CONF(F("Node restarts. Good bye!"));
+#ifdef ESP8266
     ESP.reset();
+#endif
+#ifdef ESP32
+    ESP.restart();
+#endif
 }
 
 void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig &configuration)
@@ -57,7 +70,7 @@ void NodeMQTTConfigManagerClass::setDefault(NodeMQTTConfig &configuration)
 
 void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
 {
-    Serial.println(TERMINAL_HR);
+    Serial.println(FPSTR(TERMINAL_HR));
     Serial.print(ATTR_CONFVER);
     Serial.print("\t");
     Serial.println(configuration.configVersion);
@@ -67,6 +80,14 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
     Serial.print(ATTR_WIFIPASS);
     Serial.print("\t");
     Serial.println(configuration.wifiPassword);
+    Serial.print(ATTR_WIFIBSSID);
+    Serial.print("\t");
+    for (int i = 0; i < 6; i++)
+        Serial.print(configuration.wifiBssid[i], HEX);
+    Serial.println();
+    Serial.print(ATTR_WIFICHANNEL);
+    Serial.print("\t");
+    Serial.println(configuration.wifiChannel);
     Serial.print(ATTR_MQTTSERV);
     Serial.print("\t");
     Serial.println(configuration.mqttServer);
@@ -88,6 +109,6 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
     Serial.print(ATTR_SERVICEMODE);
     Serial.print("\t");
     Serial.println(configuration.isServiceMode);
-    Serial.println(TERMINAL_HR);
+    Serial.println(FPSTR(TERMINAL_HR));
 }
 NodeMQTTConfigManagerClass NodeMQTTConfigManager;

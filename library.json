@@ -12,17 +12,71 @@
     },
     "license": "AGPL-3.0-or-later",
     "frameworks": "arduino",
-    "platforms": "espressif8266",
-    "dependencies": {
-        "TaskScheduler": "*",
-        "LinkedList": "*",
-        "PubSubClient": "*",
-        "ArduinoJson": "*",
-        "ESP8266WiFi": "*",
-        "ESP8266HTTPClient": "*",
-        "ESP8266httpUpdate": "*",
-        "Button": "*",
-        "DFRobotDFPlayerMini": "*",
-        "EspSoftwareSerial": "*"
-    }
+    "platforms": [
+        "espressif32",
+        "espressif8266",
+        "atmelavr"
+    ],
+    "dependencies": [
+        {
+            "TaskScheduler": "*",
+            "LinkedList": "*",
+            "PubSubClient": "*",
+            "ArduinoJson": "*",
+            "Button": "*",
+            "DFRobotDFPlayerMini": "*"
+        },
+        {
+            "name": "RF24",
+            "version": "*",
+            "platforms": "atmelavr",
+            "repository": {
+                "type": "git",
+                "url": "https://github.com/nRF24/RF24.git"
+            }
+        },
+        {
+            "name": "RF24Network",
+            "version": "*",
+            "platforms": "atmelavr",
+            "repository": {
+                "type": "git",
+                "url": "https://github.com/nRF24/RF24Network.git"
+            }
+        },
+        {
+            "name": "RF24Mesh",
+            "version": "*",
+            "platforms": "atmelavr",
+            "repository": {
+                "type": "git",
+                "url": "https://github.com/nRF24/RF24Mesh.git"
+            }
+        },
+        {
+            "name": "ESP8266WiFi",
+            "version": "*",
+            "platforms": "espressif8266"
+        },
+        {
+            "name": "PCF8574_ESP",
+            "version": "*",
+            "platforms": "espressif8266"
+        },
+        {
+            "name": "ESP8266HTTPClient",
+            "version": "*",
+            "platforms": "espressif8266"
+        },
+        {
+            "name": "ESP8266httpUpdate",
+            "version": "*",
+            "platforms": "espressif8266"
+        },
+        {
+            "name": "EspSoftwareSerial",
+            "version": "*",
+            "platforms": "espressif8266"
+        }
+    ]
 }

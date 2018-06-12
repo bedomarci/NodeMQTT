@@ -14,13 +14,16 @@
 #include <TaskScheduler.h>
 #include <ArduinoJson/Serialization/JsonSerializerImpl.hpp>
 #include <functional>
+#include "../transport/_AbstractTransport.hpp"
 
-#define ONCHANGE_CALLBACK_SIGNATURE std::function<void(T, T)>
+
+
+
 
 class NodeInterfaceBase
 {
   public:
-    virtual void setClient(PubSubClient *client) = 0;
+    virtual void setTransport(AbstractTransport *transport) = 0;
     virtual void setScheduler(Scheduler *scheduler) = 0;
     virtual void writeRaw(String value, bool publishable = true) = 0;
     virtual void handle() = 0;
@@ -44,16 +47,16 @@ class NodeInterface : public NodeInterfaceBase
   public:
     NodeInterface(String publishTopic, String subscribeTopic);
     NodeInterface(String topic);
-    void setClient(PubSubClient *client);
+    void setTransport(AbstractTransport *transport);
     void write(T newValue, bool publishable = true);
     T read();
-    void onChange(ONCHANGE_CALLBACK_SIGNATURE);
+    void onChange(NodeMQTTChangeCallback);
     void writeRaw(String value, bool publishable);
     void handle();
     void setSamplingRate(unsigned long samplingRate);
     void setScheduler(Scheduler *scheduler);
     void setInterfaceName(String &name);
-    void setEnabled(bool enabled);
+    void setEnabled(bool enabled = true);
     bool isEnabled();
     void setSamplingEnabled(bool enabled);
     bool hasMQTTPublish();
@@ -65,7 +68,7 @@ class NodeInterface : public NodeInterfaceBase
     String getPublishTopic();
 
   protected:
-    ONCHANGE_CALLBACK_SIGNATURE _onChangeCallback;
+    NodeMQTTChangeCallback _onChangeCallback;
 
     //JSON
     JsonObject &fromString(String newValue, DynamicJsonBuffer &buffer);
@@ -74,8 +77,8 @@ class NodeInterface : public NodeInterfaceBase
     //MQTT
     bool _hasMQTTPublish = true;
     bool _hasMQTTSubscribe = true;
-    String interfaceName = "INTERFACE";
-    PubSubClient *_client = nullptr;
+    String _interfaceName = "INTERFACE";
+    AbstractTransport *_transport = nullptr;
     // NodeMQTT _device;
     void publish(T value);
 
@@ -123,13 +126,13 @@ inline NodeInterface<T>::NodeInterface(String topic)
 }
 
 template <typename T>
-inline void NodeInterface<T>::setClient(PubSubClient *client)
+inline void NodeInterface<T>::setTransport(AbstractTransport *transport)
 {
-    _client = client;
+    _transport = transport;
 }
 
 template <typename T>
-inline void NodeInterface<T>::onChange(ONCHANGE_CALLBACK_SIGNATURE onChangeCallback)
+inline void NodeInterface<T>::onChange(NodeMQTTChangeCallback onChangeCallback)
 {
     _onChangeCallback = onChangeCallback;
 }
@@ -156,7 +159,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
 {
     if (cmp(newValue, currentValue) != 0)
     {
-        D_INTR("Value changed on " + interfaceName);
+        D_INTR("Value changed on " + _interfaceName + " @ " + _publishTopic);
         T oldValue = currentValue;
         currentValue = newValue;
         updatePhisicalInterface(newValue);
@@ -180,15 +183,15 @@ inline T NodeInterface<T>::read()
 template <typename T>
 inline void NodeInterface<T>::publish(T value)
 {
-    if (_client == nullptr)
+    if (_transport == nullptr)
         return;
 
-    if (_hasMQTTPublish && _client->connected())
+    if (_hasMQTTPublish && _transport->isNetworkConnected())
     {
         DynamicJsonBuffer jsonBuffer;
         JsonObject &root = jsonBuffer.createObject();
         String msg = toString(toJSON(value, root));
-        _client->publish(_publishFullTopic.c_str(), msg.c_str());
+        _transport->publish(_publishFullTopic.c_str(), msg.c_str());
         D_MQTT("Publishing: " + msg);
     }
 }
@@ -256,11 +259,11 @@ inline void NodeInterface<T>::setScheduler(Scheduler *scheduler)
 template <typename T>
 inline void NodeInterface<T>::setInterfaceName(String &name)
 {
-    interfaceName = name;
+    _interfaceName = name;
 }
 
 template <typename T>
-inline void NodeInterface<T>::setEnabled(bool en = true)
+inline void NodeInterface<T>::setEnabled(bool en)
 {
     if (en == _enabled)
         return;

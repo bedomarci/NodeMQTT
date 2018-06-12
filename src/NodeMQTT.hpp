@@ -1,16 +1,14 @@
 #ifndef NODEMQTT_H
 #define NODEMQTT_H
-#include <ESP8266WiFi.h>
 #include "misc/config.hpp"
 #include "interfaces/_NodeInterface.hpp"
 #include "interfaces/HeartbeatInterface.hpp"
 #include "interfaces/NodeConfigInterface.hpp"
 #include "interfaces/BuzzerInterface.hpp"
 #include "interfaces/LogInterface.hpp"
+#include "transport/WifiTransport.hpp"
 #include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
-
-typedef std::function<void()> NodeMQTTCallback;
 
 class NodeMQTT
 {
@@ -21,12 +19,15 @@ public:
   void handle();
   void addInterface(NodeInterfaceBase *);
 
-  void setOnWifiConnecting(NodeMQTTCallback);
-  void setOnWifiConnected(NodeMQTTCallback);
-  void setOnBrokerConnecting(NodeMQTTCallback);  
-  void setOnBrokerConnected(NodeMQTTCallback);  
+  void setNetworkConnectingCallback(NodeMQTTCallback);
+  void setNetworkConnectedCallback(NodeMQTTCallback);
+  void setNetworkDisconnectedCallback(NodeMQTTCallback);
+  void setBrokerConnectingCallback(NodeMQTTCallback);
+  void setBrokerConnectedCallback(NodeMQTTCallback);
+  void setBrokerDisconnectedCallback(NodeMQTTCallback);
 
   void setBaseTopic(String baseTopic);
+  String getBaseTopic();
 
   void buzz(int);
   void setSystemBuzzer(BuzzerInterface *interface);
@@ -42,14 +43,7 @@ protected:
   const char *_mqttServer;
   const char *_mqttUser;
   const char *_mqttPass;
-  WiFiClient espClient;
-  PubSubClient client;
-
-  NodeMQTTCallback wifiConnectedCallback;
-  NodeMQTTCallback wifiConnectingCallback;
-  NodeMQTTCallback brokerConnectedCallback;
-  NodeMQTTCallback brokerConnectingCallback;
-
+  TRANSPORT_CLASS _transport;
   //SCHEDULER
   Scheduler _scheduler;
   Task _tWifiConnect;
@@ -67,6 +61,15 @@ protected:
   void readSerial();
   void mqttParser(char *topic, byte *payload, unsigned int length);
   void addDefaultInterfaces();
+  void subscribeTopics();
+  void printHeader();
+
+  void onNetworkConnecting();
+  void onNetworkConnected();
+  void onNetworkDisconnected();
+  void onBrokerConnecting();
+  void onBrokerConnected();
+  void onBrokerDisconnected();
 
   //STATIC
   static String _MQTTDeviceName;
@@ -76,5 +79,13 @@ protected:
   NodeConfigInterface *nodeConfigInterface;
   LogInterface *logInterface;
   BuzzerInterface *buzzerInterface;
+
+private:
+  NodeMQTTCallback networkConnectingCallback;
+  NodeMQTTCallback networkConnectedCallback;
+  NodeMQTTCallback networkDisconnectedCallback;
+  NodeMQTTCallback brokerConnectingCallback;
+  NodeMQTTCallback brokerConnectedCallback;
+  NodeMQTTCallback brokerDisconnectedCallback;
 };
 #endif //NODEMQTT_H
