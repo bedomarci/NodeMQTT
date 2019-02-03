@@ -1,14 +1,14 @@
 #include "NodeMQTT.hpp"
-#include "misc/constants.hpp"
+#include "constants.hpp"
 #include "misc/helpers.hpp"
 
 NodeMQTT::NodeMQTT()
 {
-    Serial.begin(115200);
+    Serial.begin(NODEMQTT_SERIAL_SPEED);
     printHeader();
     interfaceList = LinkedList<NodeInterfaceBase *>();
     _scheduler.init();
-    _scheduler.addTask(_tReadSerial);
+    Logger.setFatalCallback([=]() { onFatalError(); });
 }
 void NodeMQTT::begin()
 {
@@ -17,7 +17,7 @@ void NodeMQTT::begin()
 }
 void NodeMQTT::begin(NodeMQTTConfig &configuration)
 {
-    d(("Initializing MQTT NODE"));
+    d(F("Initializing MQTT NODE"));
     _transport.setScheduler(&_scheduler);
     _transport.setConfiguration(&_config);
     _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { mqttParser(t, p, l); });
@@ -27,20 +27,23 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
     _transport.setNetworkConnectedCallback([=]() { onNetworkConnected(); });
     _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
     _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
-    _transport.init();
+    if (_config.isOnline)
+        _transport.init();
+    Logger.setLogging(_config.isLogging);
 #ifndef NODEMQTT_SERVICE_MODE
     _isServiceMode = &configuration.isServiceMode;
 #else
     _isServiceMode = true;
 #endif
-    // client.setServer(_mqttServer, configuration.mqttPort);
 
     if (_isServiceMode)
         NodeMQTTConfigManager.print(_config);
-    addDefaultInterfaces();
 
-    setBaseTopic(String(configuration.baseTopic));
-    if (_isOnline)
+    this->addDefaultInterfaces();
+    this->setBaseTopic(String(configuration.baseTopic));
+    this->initializeInterfaces();
+
+    if (_config.isOnline)
     {
         _transport.connectNetwork();
     }
@@ -49,7 +52,16 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
 
 void NodeMQTT::handle()
 {
-    _transport.loop();
+    if (_config.isOnline)
+    {
+        _transport.loop();
+#ifdef WIFI_TRANSPORT
+        if (_config.isServiceMode && _transport.isNetworkConnected())
+        {
+            NodeMQTTUpdateManager.checkForUpload();
+        }
+#endif
+    }
     readSerial();         //SERIAL PULL
     _scheduler.execute(); //TASK EXECUTION
 }
@@ -59,7 +71,6 @@ void NodeMQTT::addInterface(NodeInterfaceBase *interface)
     interfaceList.add(interface);
     interface->setTransport(&_transport);
     interface->setScheduler(&_scheduler);
-    interface->init();
 }
 
 void NodeMQTT::subscribeTopics()
@@ -73,6 +84,12 @@ void NodeMQTT::subscribeTopics()
             _transport.subscribe((interface->getSubscribeTopic()).c_str());
         }
     }
+}
+
+void NodeMQTT::initializeInterfaces()
+{
+    for (int i = 0; i < interfaceList.size(); i++)
+        interfaceList.get(i)->init();
 }
 
 void NodeMQTT::readSerial()
@@ -92,7 +109,7 @@ void NodeMQTT::mqttParser(char *topic, byte *payload, unsigned int length)
     NodeInterfaceBase *interface;
     payload[length] = '\0';
     String s_payload = String((char *)payload);
-    D_MQTT("Receiving payload: " + s_payload);
+    Logger.logf(DEBUG, ("Receiving payload: %s"), s_payload.c_str());
     for (int i = 0; i < interfaceList.size(); i++)
     {
         interface = interfaceList.get(i);
@@ -110,7 +127,10 @@ void NodeMQTT::setBaseTopic(String baseTopic)
     for (int i = 0; i < interfaceList.size(); i++)
     {
         interface = interfaceList.get(i);
-        interface->setBaseTopic(_baseTopic);
+        if (interface->getBaseTopic().length() == 0)
+        {
+            interface->setBaseTopic(baseTopic);
+        }
     }
 }
 
@@ -141,6 +161,7 @@ void NodeMQTT::addTask(Task &task)
 
 void NodeMQTT::buzz(int noteId)
 {
+
     if (buzzerInterface)
     {
         buzzerInterface->write(noteId, false);
@@ -154,6 +175,7 @@ void NodeMQTT::onNetworkConnecting()
 }
 void NodeMQTT::onNetworkConnected()
 {
+    NodeMQTTUpdateManager.begin(&_config);
     if (networkConnectedCallback != nullptr)
         networkConnectedCallback();
 }
@@ -164,7 +186,6 @@ void NodeMQTT::onNetworkDisconnected()
 
     if (heartbeatInterface->isEnabled())
         heartbeatInterface->setEnabled(false);
-
     buzz(TONE_WARNING);
 }
 void NodeMQTT::onBrokerConnecting()
@@ -177,7 +198,7 @@ void NodeMQTT::onBrokerConnected()
     if (brokerConnectedCallback != nullptr)
         brokerConnectedCallback();
 
-    subscribeTopics();
+    this->subscribeTopics();
     heartbeatInterface->setEnabled(true);
     nodeConfigInterface->publishCurrentConfig(_config);
     buzz(TONE_SYSTEM_ONLINE);
@@ -219,8 +240,12 @@ void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
 void NodeMQTT::printHeader()
 {
     Serial.print("\n\n\n");
-    // Serial.println(FPSTR(TERMINAL_HR));
-    // Serial.print(FPSTR(NODEMQTT_TERMINAL_HEADER));
-    // Serial.print("\n");
-    // Serial.println(FPSTR(TERMINAL_HR));
+    Serial.println(FPSTR(TERMINAL_HR));
+    Serial.print(FPSTR(NODEMQTT_TERMINAL_HEADER));
+    Serial.print("\n");
+    Serial.println(FPSTR(TERMINAL_HR));
+}
+void NodeMQTT::onFatalError()
+{
+    buzz(TONE_FAIL);
 }

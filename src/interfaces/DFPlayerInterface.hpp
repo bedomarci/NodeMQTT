@@ -17,6 +17,8 @@
 #define DEFAULT_SERIAL_TIMEOUT 500
 #define SOFTWARE_SERIAL_PAUSE 50
 
+#define VOLUME_MAX 30
+
 enum DFPlayerCommandTask
 {
     NEXT = 0,
@@ -43,6 +45,7 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     DFPlayerInterface(String publishTopic, String subscribeTopic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
     DFPlayerInterface(String topic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
     void init();
+    void valueToString(String &sValue);
 
     uint8_t readCommand();
     bool begin(Stream &stream, bool isACK = true, bool doReset = true);
@@ -90,10 +93,10 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     int readCurrentFileNumber();
 
   protected:
-    DFPlayerCommand fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(DFPlayerCommand value, JsonObject &root);
-    int cmp(DFPlayerCommand oldValue, DFPlayerCommand newValue);
-    void updatePhisicalInterface(DFPlayerCommand newValue);
+    DFPlayerCommand fromJSON(JsonObject &rootObject) override;
+    JsonObject &toJSON(DFPlayerCommand value, JsonObject &root) override;
+    int cmp(DFPlayerCommand oldValue, DFPlayerCommand newValue) override;
+    void updatePhisicalInterface(DFPlayerCommand newValue) override;
     void readStateCallback();
     SoftwareSerial *DFSerial;
     DFRobotDFPlayerMini *DFPlayer;
@@ -110,6 +113,7 @@ inline DFPlayerInterface::DFPlayerInterface(String publishTopic, String subscrib
     _serialTxPin = serialTxPin;
     _interfaceName = DFPLAYER_NAME;
     _tReadState.set(STATUS_PULL_RATE, TASK_FOREVER, READ_STATE_CALLBACK);
+    this->setSamplingEnabled(false);
 }
 
 inline DFPlayerInterface::DFPlayerInterface(String topic, uint8_t serialRxPin, uint8_t serialTxPin)
@@ -155,7 +159,6 @@ inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
 
 inline void DFPlayerInterface::init()
 {
-    this->setSamplingEnabled(false);
 #ifdef ESP8266
     DFSerial = new SoftwareSerial(_serialRxPin, _serialTxPin);
 #endif
@@ -166,15 +169,15 @@ inline void DFPlayerInterface::init()
     DFPlayer = new DFRobotDFPlayerMini();
     DFSerial->begin(9600);
     DFSerial->listen();
-    if (!DFPlayer->begin(*DFSerial))
+    if (!DFPlayer->begin(*DFSerial), false)
     {
-        e(F("Unable to connect to DFPlayer! 1) Please recheck the connection! 2) Please insert the SD card!"));
+        fatal(F("Unable to connect to DFPlayer! 1) Please recheck the connection! 2) Please insert the SD card!"));
         setEnabled(false);
     }
     else
     {
         DFPlayer->setTimeOut(DEFAULT_SERIAL_TIMEOUT);
-        _scheduler->addTask(_tReadState);
+        this->getScheduler()->addTask(_tReadState);
         _tReadState.restart();
     }
 }
@@ -201,6 +204,10 @@ inline JsonObject &DFPlayerInterface::toJSON(DFPlayerCommand value, JsonObject &
 inline int DFPlayerInterface::cmp(DFPlayerCommand oldValue, DFPlayerCommand newValue)
 {
     return -1;
+}
+
+inline void DFPlayerInterface::valueToString(String &sValue)
+{
 }
 
 inline void DFPlayerInterface::readStateCallback()
@@ -431,13 +438,13 @@ inline void DFPlayerInterface::printDetail(uint8_t type, int value)
         i(F("Time Out!"));
         break;
     case WrongStack:
-        i(F("Stack Wrong!"));
+        error(F("Stack Wrong!"));
         break;
     case DFPlayerCardInserted:
         i(F("Card Inserted!"));
         break;
     case DFPlayerCardRemoved:
-        i(F("Card Removed!"));
+        fatal(F("Card Removed!"));
         break;
     case DFPlayerCardOnline:
         i(F("Card Online!"));

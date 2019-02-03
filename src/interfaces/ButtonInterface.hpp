@@ -1,12 +1,12 @@
 #ifndef BUTTONINTERFACE_H
 #define BUTTONINTERFACE_H
 #include "DataInterface.hpp"
-#include "Button.h"
+#include "JC_Button.h"
 
 class ButtonInterface : public DataInterface<int>
 {
   public:
-    ButtonInterface(String topic, uint8_t buttonPin, bool invert = false, unsigned long debounceDelay = 50);
+    ButtonInterface(String topic, uint8_t buttonPin, bool invert = false, unsigned long debounceDelay = DEFAULT_BUTTON_DEBOUNCE);
     void init();
     void press();
     void release();
@@ -21,7 +21,8 @@ inline ButtonInterface::ButtonInterface(String topic, uint8_t buttonPin, bool in
     : DataInterface<int>(topic)
 {
     button = new Button(buttonPin, true, invert, debounceDelay);
-    _interfaceName = BUTTON_NAME;
+    this->setInterfaceName(BUTTON_NAME);
+    this->setSamplingEnabled(true);
 }
 
 inline void ButtonInterface::updatePhisicalInterface(int newValue)
@@ -44,8 +45,6 @@ inline void ButtonInterface::release()
 }
 inline void ButtonInterface::init()
 {
-    // IntegerInterface::init();
-    this->setSamplingEnabled(true);
 }
 
 #endif //BUTTONINTERFACE_H

@@ -1,9 +1,16 @@
 #include "NodeMQTTLogger.hpp"
+#include <stdio.h>
 
 NodeMQTTLoggerClass::NodeMQTTLoggerClass()
 {
     logQueue = LinkedList<String>();
 }
+
+void NodeMQTTLoggerClass::setLogging(bool isLogging)
+{
+    _isLogging = isLogging;
+}
+
 void NodeMQTTLoggerClass::push(String message)
 {
     if (logQueue.size() >= _queueLength)
@@ -20,33 +27,89 @@ int NodeMQTTLoggerClass::queueSize()
     return logQueue.size();
 }
 
-void NodeMQTTLoggerClass::log(const char *message, LOG_LEVEL level)
+void NodeMQTTLoggerClass::log(LOG_LEVEL level, String message)
 {
-    String msg = String(message);
-    log(msg, level);
+    log(level, message.c_str());
+}
+void NodeMQTTLoggerClass::logf(LOG_LEVEL level, String message, ...)
+{
+    va_list arg;
+    va_start(arg, message);
+    logf(level, message.c_str(), arg);
 }
 
-void NodeMQTTLoggerClass::log(int message, LOG_LEVEL level)
+void NodeMQTTLoggerClass::log(LOG_LEVEL level, int value, uint8_t base)
 {
-    String msg = String(message);
-    log(msg, level);
+    char buffer[24];
+    switch (base)
+    {
+    case OCT:
+        sprintf(buffer, "%o", value);
+        break;
+    case HEX:
+        sprintf(buffer, "%x", value);
+        break;
+    case DEC:
+    default:
+        sprintf(buffer, "%d", value);
+        break;
+    }
+    log(level, buffer);
 }
 
-void NodeMQTTLoggerClass::log(const __FlashStringHelper *message, LOG_LEVEL level)
+void NodeMQTTLoggerClass::log(LOG_LEVEL level, const __FlashStringHelper *message)
 {
     String msg = String(message);
-    log(msg, level);
+    log(level, msg.c_str());
 }
-void NodeMQTTLoggerClass::log(String message, LOG_LEVEL level)
+void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const __FlashStringHelper *message, ...)
+{
+    va_list arg;
+    va_start(arg, message);
+    String msg = String(message);
+    logf(level, msg.c_str(), arg);
+}
+void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, ...)
+{
+    va_list arg;
+    va_start(arg, message);
+    logf(level, message, arg);
+}
+
+void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, va_list arg)
+{
+    char temp[LOG_MAX_MESSAGE_LENGTH];
+    char *buffer = temp;
+    vsnprintf(temp, sizeof(temp), message, arg);
+    va_end(arg);
+    log(level, buffer);
+    if (buffer != temp)
+    {
+        delete[] buffer;
+    }
+}
+
+void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
 {
     char buffer[LOG_MAX_MESSAGE_LENGTH];
-    sprintf(buffer, "[%c|%10lu] %s", level, millis(), message.c_str());
+    if (level == FATAL)
+        onFatal();
+    sprintf(buffer, "[%c|%10lu] %s", level, millis(), message);
     String formattedMessage = String(buffer);
-    Serial.println(formattedMessage);
-#ifdef NODEMQTT_PUBLISH_LOG
-    if (level != DEBUG)
+    if ((level != DEBUG && !_isLogging) || _isLogging)
+        Serial.println(formattedMessage);
+    if (level != DEBUG && _isLogging)
         push(formattedMessage);
-#endif
+}
+void NodeMQTTLoggerClass::setFatalCallback(NodeMQTTCallback callback)
+{
+    fatalCallback = callback;
+}
+
+void NodeMQTTLoggerClass::onFatal()
+{
+    if (fatalCallback != nullptr)
+        fatalCallback();
 }
 
 NodeMQTTLoggerClass Logger;

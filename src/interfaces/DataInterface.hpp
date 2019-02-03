@@ -9,18 +9,21 @@ public:
   DataInterface(String publishTopic, String subscribeTopic);
   DataInterface(String topic);
   void init();
+  void valueToString(String &sValue);
 
 protected:
-  T fromJSON(JsonObject &rootObject);
-  JsonObject &toJSON(T value, JsonObject &root);
-  int cmp(T oldValue, T newValue);
-  void updatePhisicalInterface(T newValue);
+  T fromJSON(JsonObject &rootObject) override;
+  JsonObject &toJSON(T value, JsonObject &root) override;
+  int cmp(T oldValue, T newValue) override;
+  void updatePhisicalInterface(T newValue) override;
 };
 
 template <typename T>
 inline DataInterface<T>::DataInterface(String publishTopic, String subscribeTopic)
     : NodeInterface<T>(publishTopic, subscribeTopic)
 {
+  this->setSamplingEnabled(false);
+  this->setMQTTPublish(true);
 }
 
 template <typename T>
@@ -35,8 +38,6 @@ inline void DataInterface<T>::updatePhisicalInterface(T newValue) {}
 template <typename T>
 inline void DataInterface<T>::init()
 {
-  this->setSamplingEnabled(false);
-  this->setMQTTPublish(true);
 }
 
 template <typename T>
@@ -61,4 +62,10 @@ inline int DataInterface<T>::cmp(T oldValue, T newValue)
   return newValue - oldValue;
 }
 
-#endif //BUTTONINTERFACE_H
+template <typename T>
+inline void DataInterface<T>::valueToString(String &sValue)
+{
+  sValue = String(this->read());
+}
+
+#endif //DATAINTERFACE_H

@@ -10,6 +10,7 @@ struct NodeStatus
     uint32_t uptime = 0;
     uint32_t nodeID = 0;
     uint32_t freeHeap = 0;
+    char networkAddress[16];
 };
 
 class HeartbeatInterface : public NodeInterface<NodeStatus>
@@ -17,32 +18,35 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
   public:
     HeartbeatInterface(int beatIntervalSecond);
     void init();
+    void valueToString(String &sValue);
 
   protected:
     NodeStatus status;
-    NodeStatus sample();
-    void updatePhisicalInterface(NodeStatus newValue);
-    NodeStatus fromJSON(JsonObject &root);
-    JsonObject &toJSON(NodeStatus value, JsonObject &root);
-    int cmp(NodeStatus oldValue, NodeStatus newValue);
+    virtual NodeStatus sample() override;
+    virtual void updatePhisicalInterface(NodeStatus newValue) override;
+    virtual NodeStatus fromJSON(JsonObject &root) override;
+    virtual JsonObject &toJSON(NodeStatus value, JsonObject &root) override;
+    virtual int cmp(NodeStatus oldValue, NodeStatus newValue) override;
+    // virtual void valueToString(NodeStatus value, String &sValue) override;
 
     const char *uptimeKey = "uptime";
     const char *nodeIdKey = "nodeid";
     const char *freeHeapKey = "freehp";
+    const char *networkAddressKey = "netadd";
 };
 
 inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_HEARTBEAT_RATE)
     : NodeInterface<NodeStatus>(HEARTBEAT_TOPIC, HEARTBEAT_TOPIC)
 {
-    setEnabled(false);
+    this->setEnabled(false);
+    this->setSamplingEnabled(true);
+    this->setMQTTSubscribe(false);
     setSamplingRate(beatIntervalMillis);
     _interfaceName = HEARTBEAT_TOPIC;
 }
 
 inline void HeartbeatInterface::init()
 {
-    setSamplingEnabled(true);
-    setMQTTSubscribe(false);
 #ifdef ESP8266
     status.nodeID = ESP.getChipId();
 #endif
@@ -55,6 +59,7 @@ inline NodeStatus HeartbeatInterface::sample()
 {
     status.uptime = millis();
     status.freeHeap = ESP.getFreeHeap();
+    strcpy(status.networkAddress, _transport->getNetworkAddressString().c_str());
     return status;
 }
 
@@ -68,9 +73,7 @@ inline JsonObject &HeartbeatInterface::toJSON(NodeStatus status, JsonObject &roo
     root[uptimeKey] = status.uptime;
     root[freeHeapKey] = status.freeHeap;
     root[nodeIdKey] = status.nodeID;
-    // root.set(uptimeKey, status.uptime);
-    // root.set(freeHeapKey , status.freeHeap);
-    // root.set(nodeIdKey , status.nodeID);
+    root[networkAddressKey] = status.networkAddress;
     return root;
 }
 
@@ -81,6 +84,11 @@ inline int HeartbeatInterface::cmp(NodeStatus oldValue, NodeStatus newValue)
 
 inline void HeartbeatInterface::updatePhisicalInterface(NodeStatus newValue)
 {
+}
+
+inline void HeartbeatInterface::valueToString(String &sValue)
+{
+    sValue = String("<3");
 }
 
 #endif //HEARTBEATINTERFACE_H

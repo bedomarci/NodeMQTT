@@ -23,6 +23,9 @@ inline Mux8Interface::Mux8Interface(String topic, uint8_t inputPin, uint8_t addr
     _address0Pin = address0Pin;
     _address1Pin = address1Pin;
     _address2Pin = address2Pin;
+    setSamplingEnabled(true);
+    setMQTTPublish(true);
+    setMQTTSubscribe(false);
 }
 
 inline void Mux8Interface::init()
@@ -31,9 +34,6 @@ inline void Mux8Interface::init()
     pinMode(_address1Pin, OUTPUT);
     pinMode(_address2Pin, OUTPUT);
     pinMode(_inputPin, INPUT_PULLUP);
-    setSamplingEnabled(true);
-    setMQTTPublish(true);
-    setMQTTSubscribe(false);
 }
 
 inline Array<uint8_t, 8> Mux8Interface::sample()

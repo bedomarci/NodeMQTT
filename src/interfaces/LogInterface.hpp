@@ -7,6 +7,7 @@ class LogInterface : public StringInterface
   public:
     LogInterface();
     void init();
+    void valueToString(String &sValue);
 
   protected:
     String logMsg = "";
@@ -19,13 +20,14 @@ inline LogInterface::LogInterface()
     : StringInterface(LOG_TOPIC)
 {
     _interfaceName = LOG_TOPIC;
+    setSamplingEnabled(true);
+    setMQTTPublish(true);
+    setMQTTSubscribe(false);
+    setSamplingRate(LOG_SAMPLE_RATE);
 }
 
 inline void LogInterface::init()
 {
-    setSamplingEnabled(true);
-    setMQTTPublish(true);
-    setMQTTSubscribe(true);
 }
 
 inline String LogInterface::sample()
@@ -42,6 +44,10 @@ inline int LogInterface::cmp(String oldValue, String newValue)
 {
     int value = (oldValue == nullptr) ? 0 : -1;
     return value;
+}
+
+inline void LogInterface::valueToString(String &sValue)
+{
 }
 
 #endif //LOGINTERFACE_H

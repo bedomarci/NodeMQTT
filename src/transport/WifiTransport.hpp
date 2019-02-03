@@ -21,6 +21,8 @@ class WifiTransport : public AbstractTransport
     void loop();
     void connectNetwork();
     bool isNetworkConnected();
+    String getNetworkAddressString();
+    bool wasOnline = false;
 
     void publish(const char *topic, const char *msg);
     void subscribe(const char *topic);
@@ -28,6 +30,8 @@ class WifiTransport : public AbstractTransport
   protected:
     void reconnectBroker();
     void reconnectWifi();
+    int32_t getRSSI();
+    void logWifiInfo();
 
     WiFiClient espClient;
     PubSubClient client;
@@ -75,7 +79,7 @@ inline void WifiTransport::reconnectBroker()
                        (const char *)_config->mqttUser,
                        (const char *)_config->mqttPassword,
                        (const char *)_config->baseTopic,
-                       1, true, WILL_MESSAGE))
+                       1, false, String(OFFLINE_MESSAGE).c_str()))
     {
         onBrokerConnected();
         _tBrokerConnect.disable();
@@ -122,7 +126,7 @@ inline void WifiTransport::loop()
                 onNetworkConnected();
                 wifiConnectionAttampt = 1;
                 delay(500);
-                d("WiFi connected. IP address: " + WiFi.localIP().toString());
+                this->logWifiInfo();
             }
             else
             {
@@ -131,16 +135,44 @@ inline void WifiTransport::loop()
                     _tBrokerConnect.enableIfNot();
                 }
             }
+            wasOnline = true;
         }
         else
         {
-            onNetworkDisconnected();
+            if (wasOnline)
+                onNetworkDisconnected();
+            wasOnline = false;
             _tWifiConnect.enableIfNot();
         }
     }
     noInterrupts();
     client.loop();
     interrupts();
+}
+
+inline void WifiTransport::logWifiInfo()
+{
+    Logger.logf(INFO, ("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
+    if (_config->isServiceMode)
+    {
+        int32_t signalStrength = this->getRSSI();
+        Logger.logf(INFO, ("Signal strength: %d dBm"), signalStrength);
+        if (signalStrength <= -80)
+            fatal("Wifi signal is too weak!");
+    }
+}
+
+inline int32_t WifiTransport::getRSSI()
+{
+    byte available_networks = WiFi.scanNetworks();
+    for (int network = 0; network < available_networks; network++)
+    {
+        if (strcmp(WiFi.SSID(network).c_str(), _config->wifiSsid) == 0)
+        {
+            return WiFi.RSSI(network);
+        }
+    }
+    return 0;
 }
 
 inline void WifiTransport::connectNetwork()
@@ -151,6 +183,18 @@ inline void WifiTransport::connectNetwork()
 inline bool WifiTransport::isNetworkConnected()
 {
     return WiFi.status() == WL_CONNECTED && client.connected();
+}
+
+inline String WifiTransport::getNetworkAddressString()
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        return WiFi.localIP().toString();
+    }
+    else
+    {
+        return OFFLINE_MESSAGE;
+    }
 }
 
 #endif //WIFITRANSPORT_H

@@ -5,7 +5,7 @@
 #include "NodeMQTTConfigManager.hpp"
 #include <ESP.h>
 #include "NodeMQTT.hpp"
-#include "misc/constants.hpp"
+#include "constants.hpp"
 
 class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
 {
@@ -13,19 +13,25 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
     NodeConfigInterface();
     void init();
     void publishCurrentConfig(NodeMQTTConfig config);
+    void valueToString(String &sValue);
 
   protected:
-    NodeMQTTConfig sample();
-    void updatePhisicalInterface(NodeMQTTConfig newValue);
-    NodeMQTTConfig fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root);
-    int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue);
     void parseBssid(int *bssidBytes, char *bssidHex);
+    virtual NodeMQTTConfig sample() override;
+    virtual NodeMQTTConfig fromJSON(JsonObject &rootObject) override;
+    virtual JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root) override;
+    virtual int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue) override;
+    virtual void updatePhisicalInterface(NodeMQTTConfig newValue) override;
+    // virtual void valueToString(NodeMQTTConfig value, String &sValue) override;
 };
 
-inline NodeConfigInterface::NodeConfigInterface() : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC)
+inline NodeConfigInterface::NodeConfigInterface()
+    : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC)
 {
     _interfaceName = CONFIG_TOPIC;
+    setSamplingEnabled(false);
+    setMQTTSubscribe(true);
+    setMQTTPublish(true);
 }
 
 inline NodeMQTTConfig NodeConfigInterface::sample()
@@ -49,7 +55,8 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
         strcpy(nodeConfig.wifiPassword, rootObject[ATTR_WIFIPASS].as<const char *>());
     if (rootObject.containsKey(ATTR_WIFISSID))
         strcpy(nodeConfig.wifiSsid, rootObject[ATTR_WIFISSID].as<const char *>());
-    if (rootObject.containsKey(ATTR_WIFIBSSID)) {
+    if (rootObject.containsKey(ATTR_WIFIBSSID))
+    {
         char bssidHex[12];
         strcpy(bssidHex, rootObject[ATTR_WIFIBSSID].as<const char *>());
         char buff[2];
@@ -99,9 +106,6 @@ inline void NodeConfigInterface::updatePhisicalInterface(NodeMQTTConfig newValue
 
 inline void NodeConfigInterface::init()
 {
-    setSamplingEnabled(false);
-    setMQTTSubscribe(true);
-    setMQTTPublish(true);
 }
 
 inline void NodeConfigInterface::publishCurrentConfig(NodeMQTTConfig config)
@@ -111,7 +115,11 @@ inline void NodeConfigInterface::publishCurrentConfig(NodeMQTTConfig config)
 
 inline void NodeConfigInterface::parseBssid(int *bssidBytes, char *bssidHex)
 {
+}
 
+inline void NodeConfigInterface::valueToString(String &sValue)
+{
+    sValue = "";
 }
 
 #endif //NODECONFIGINTERFACE_H

@@ -2,7 +2,13 @@
 
 NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
 {
-    EEPROM.begin(512);
+
+    setStaticFlagDefaultValues();
+    // if (!NodeMQTTConfigManagerClass::EEPROMInitialized)
+    {
+        EEPROM.begin(512);
+        // NodeMQTTConfigManagerClass::EEPROMInitialized = true;
+    }
     // Serial.println(EEPROM.length());
     // if (!EEPROM.begin(EEPROM.length()))
     // {
@@ -11,6 +17,12 @@ NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
     //     delay(1000);
     //     ESP.restart();
     // }
+}
+
+void NodeMQTTConfigManagerClass::setStaticFlagDefaultValues()
+{
+    // NodeMQTTConfigManagerClass::I2CInitialized = false;
+    // NodeMQTTConfigManagerClass::EEPROMInitialized = false;
 }
 
 uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig &config)
@@ -26,14 +38,14 @@ uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig &config)
 
 void NodeMQTTConfigManagerClass::save(NodeMQTTConfig &configuration)
 {
-    D_CONF(F("Storing configuration in EEPROM."));
+    i(F("Storing configuration in EEPROM."));
     configuration.configVersion = DEFAULT_CONFIGURATION_VERSION;
     uint32_t chksum = calculateChkSum(configuration);
 
     EEPROM.put(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, chksum);
     EEPROM.put(EEPROM_CONFIGURATION_ADDRESS, configuration);
     EEPROM.commit();
-    D_CONF(F("Node restarts. Good bye!"));
+    i(F("Node restarts. Good bye!"));
 #ifdef ESP8266
     ESP.reset();
 #endif
@@ -44,21 +56,21 @@ void NodeMQTTConfigManagerClass::save(NodeMQTTConfig &configuration)
 
 void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig &configuration)
 {
-    D_CONF(F("Loading configuration from EEPROM."));
+    i(F("Loading configuration from EEPROM."));
     uint32_t storedChkSum;
     EEPROM.get(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum);
     EEPROM.get(EEPROM_CONFIGURATION_ADDRESS, configuration);
     uint32_t calculatedChkSum = calculateChkSum(configuration);
     if (calculatedChkSum != storedChkSum || configuration.configVersion != DEFAULT_CONFIGURATION_VERSION)
     {
-        D_CONF(F("Configuration is invalid in EEPROM."));
+        i(F("Configuration is invalid in EEPROM."));
         loadDefaultsInto(configuration);
     }
 }
 
 void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig &configuration)
 {
-    D_CONF(F("Loading default configuration."));
+    i(F("Loading default configuration."));
     configuration = defaultConfig;
     save(configuration);
 }
@@ -70,45 +82,48 @@ void NodeMQTTConfigManagerClass::setDefault(NodeMQTTConfig &configuration)
 
 void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
 {
-    Serial.println(FPSTR(TERMINAL_HR));
+    Serial.println(TERMINAL_HR);
     Serial.print(ATTR_CONFVER);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.configVersion);
     Serial.print(ATTR_WIFISSID);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.wifiSsid);
     Serial.print(ATTR_WIFIPASS);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.wifiPassword);
     Serial.print(ATTR_WIFIBSSID);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     for (int i = 0; i < 6; i++)
         Serial.print(configuration.wifiBssid[i], HEX);
     Serial.println();
     Serial.print(ATTR_WIFICHANNEL);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.wifiChannel);
     Serial.print(ATTR_MQTTSERV);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.mqttServer);
     Serial.print(ATTR_MQTTPORT);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.mqttPort);
     Serial.print(ATTR_MQTTUSER);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.mqttUser);
     Serial.print(ATTR_MQTTPASS);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.mqttPassword);
     Serial.print(ATTR_BASETOPIC);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.baseTopic);
     Serial.print(ATTR_ONLINE);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.isOnline);
     Serial.print(ATTR_SERVICEMODE);
-    Serial.print("\t");
+    Serial.print(TERMINAL_TAB);
     Serial.println(configuration.isServiceMode);
-    Serial.println(FPSTR(TERMINAL_HR));
+    Serial.print(ATTR_LOGGING);
+    Serial.print(TERMINAL_TAB);
+    Serial.println(configuration.isLogging);
+    Serial.println(TERMINAL_HR);
 }
 NodeMQTTConfigManagerClass NodeMQTTConfigManager;

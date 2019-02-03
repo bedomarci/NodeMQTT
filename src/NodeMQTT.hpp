@@ -1,6 +1,7 @@
 #ifndef NODEMQTT_H
 #define NODEMQTT_H
 #include "misc/config.hpp"
+#include "constants.hpp"
 #include "interfaces/_NodeInterface.hpp"
 #include "interfaces/HeartbeatInterface.hpp"
 #include "interfaces/NodeConfigInterface.hpp"
@@ -46,9 +47,6 @@ protected:
   TRANSPORT_CLASS _transport;
   //SCHEDULER
   Scheduler _scheduler;
-  Task _tWifiConnect;
-  Task _tBrokerConnect;
-  Task _tReadSerial;
 
   NodeMQTTConfig _config;
 
@@ -62,6 +60,7 @@ protected:
   void mqttParser(char *topic, byte *payload, unsigned int length);
   void addDefaultInterfaces();
   void subscribeTopics();
+  void initializeInterfaces();
   void printHeader();
 
   void onNetworkConnecting();
@@ -70,6 +69,8 @@ protected:
   void onBrokerConnecting();
   void onBrokerConnected();
   void onBrokerDisconnected();
+
+  void onFatalError();
 
   //STATIC
   static String _MQTTDeviceName;

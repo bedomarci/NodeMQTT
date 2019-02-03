@@ -13,6 +13,8 @@ class AbstractTransport
     virtual void loop() = 0;
     virtual void connectNetwork() = 0;
     virtual bool isNetworkConnected() = 0;
+    virtual String getNetworkAddressString() = 0;
+
     virtual void publish(const char *topic, const char *msg) = 0;
     virtual void subscribe(const char *topic) = 0;
 

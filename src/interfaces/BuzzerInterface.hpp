@@ -2,7 +2,6 @@
 #define BUZZERINTERFACE_H
 
 #include "DataInterface.hpp"
-#include "misc/pitches.hpp"
 
 #define PLAYER_CALLBACK [this]() { notePlayerCallback(); }
 #define STOP_CALLBACK [this]() { noteStopCallback(); }
@@ -10,30 +9,12 @@
 
 #define TONE_COUNT 10
 
-struct Note
-{
-    uint16_t duration;
-    uint16_t frequency;
-    uint16_t pause;
-};
-
-const Note infoTone[] PROGMEM = {{300, NOTE_C5, 0}};                                                                                                 //1
-const Note successTone[] PROGMEM = {{150, NOTE_C5, 30}, {150, NOTE_E5, 30}, {150, NOTE_G5, 30}, {500, NOTE_C6, 0}};                                  //4
-const Note warningTone[] PROGMEM = {{100, NOTE_C6, 0}, {100, NOTE_F6, 0}};                                                                           //2
-const Note errorTone[] PROGMEM = {{100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}, {100, NOTE_F4, 0}}; //6
-const Note alertTone[] PROGMEM = {{100, NOTE_C6, 0}, {100, NOTE_F6, 0}, {100, NOTE_C6, 0}, {100, NOTE_F6, 0}, {100, NOTE_C6, 0}};                    //5
-const Note failTone[] PROGMEM = {{300, NOTE_C6, 30}, {300, NOTE_G5, 30}, {300, NOTE_E5, 30}, {500, NOTE_C5, 0}};                                     //4
-const Note happyTone[] PROGMEM = {{100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}};                    //5
-const Note sadTone[] PROGMEM = {{100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}, {100, NOTE_F4, 0}, {100, NOTE_C4, 0}};                      //5
-
-const Note systemBoot[] PROGMEM = {{100, NOTE_C6, 0}};   // 1 ,{100,NOTE_E5,0}}; //2
-const Note systemOnline[] PROGMEM = {{100, NOTE_G6, 0}}; // 1 ,{100,NOTE_C6,0}}; //2
-
 class BuzzerInterface : public DataInterface<int>
 {
   public:
     BuzzerInterface(String topic, uint8_t buzzerPin);
     void init();
+    void valueToString(String &sValue);
 
   protected:
     uint8_t _noteCounter = 0;
@@ -44,7 +25,6 @@ class BuzzerInterface : public DataInterface<int>
     Task _noteTask;
 
     uint8_t _buzzerPin;
-    int sample();
     void updatePhisicalInterface(int newValue);
     int cmp(int oldValue, int newValue);
     void notePlayerCallback();
@@ -68,7 +48,7 @@ inline BuzzerInterface::BuzzerInterface(String topic, uint8_t buzzerPin) : DataI
 
 inline void BuzzerInterface::init()
 {
-    _scheduler->addTask(_noteTask);
+    getScheduler()->addTask(_noteTask);
 }
 
 inline void BuzzerInterface::updatePhisicalInterface(int toneId)
@@ -142,9 +122,9 @@ inline int BuzzerInterface::cmp(int oldValue, int newValue)
     return -1;
 }
 
-inline int BuzzerInterface::sample()
+inline void BuzzerInterface::valueToString(String &sValue)
 {
-    return currentValue;
+    sValue = String(this->read());
 }
 
 #endif //BUZZERINTERFACE_H

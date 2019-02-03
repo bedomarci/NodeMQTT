@@ -20,8 +20,6 @@ class ShiftRegisterInterface : public ArrayInterface<uint8_t, LENGTH>
 template <unsigned int LENGTH>
 inline void ShiftRegisterInterface<LENGTH>::init()
 {
-    this->setSamplingEnabled(false);
-    this->setMQTTPublish(false);
 }
 
 template <unsigned int LENGTH>
@@ -40,8 +38,9 @@ inline ShiftRegisterInterface<LENGTH>::ShiftRegisterInterface(String topic, uint
 
     digitalWrite(_latchPin, HIGH);
     digitalWrite(_clockPin, HIGH);
+    this->setSamplingEnabled(false);
+    this->setMQTTPublish(false);
 }
-
 
 template <unsigned int LENGTH>
 inline void ShiftRegisterInterface<LENGTH>::updatePhisicalInterface(Array<uint8_t, LENGTH> newValues)

@@ -2,7 +2,7 @@
 #define NODECONFIGURATION_H
 
 #include "misc/config.hpp"
-#include "misc/constants.hpp"
+#include "constants.hpp"
 #include "misc/helpers.hpp"
 #include <Arduino.h>
 #include <EEPROM.h>
@@ -20,6 +20,7 @@ struct NodeMQTTConfig
   char baseTopic[32] = DEFAULT_MQTT_BASE_TOPIC;
   bool isOnline = DEFAULT_ISONLINE;
   bool isServiceMode = DEFAULT_ISSERVICEMODE;
+  bool isLogging = DEFAULT_ISLOGGING;
   uint16_t mqttPort = DEFAULT_MQTT_PORT;
 };
 
@@ -28,6 +29,7 @@ class NodeMQTTConfigManagerClass
 private:
   uint32_t calculateChkSum(NodeMQTTConfig &config);
   void EEPROMWriteChkSum(uint32_t chksum);
+  void setStaticFlagDefaultValues();
   uint32_t EEPROMReadChkSum();
   bool isValid();
 
@@ -37,14 +39,15 @@ private:
 
 public:
   NodeMQTTConfigManagerClass();
-  // void begin();
   void save(NodeMQTTConfig &configuration);
   void setDefault(NodeMQTTConfig &configuration);
   void loadInto(NodeMQTTConfig &configuration);
   void loadDefaultsInto(NodeMQTTConfig &configuration);
   void print(NodeMQTTConfig &configuration);
+
+  // static volatile bool I2CInitialized;
+  // static volatile bool EEPROMInitialized;
 };
 
 extern NodeMQTTConfigManagerClass NodeMQTTConfigManager;
-
 #endif //NODECONFIGURATION_H

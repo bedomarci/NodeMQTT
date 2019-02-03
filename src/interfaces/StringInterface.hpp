@@ -6,19 +6,25 @@ class StringInterface : public NodeInterface<String>
 {
   public:
     StringInterface(String topic);
+    StringInterface(String publishTopic, String subscribeTopic);
     void init();
+    void valueToString(String &sValue);
 
   protected:
     String parsedValue;
-    String fromJSON(JsonObject &rootObject);
-    JsonObject &toJSON(String value, JsonObject &root);
-    int cmp(String oldValue, String newValue);
+    String fromJSON(JsonObject &rootObject) override;
+    JsonObject &toJSON(String value, JsonObject &root) override;
+    int cmp(String oldValue, String newValue) override;
 };
 
-inline StringInterface::StringInterface(String topic)
-    : NodeInterface<String>(topic, topic)
+inline StringInterface::StringInterface(String publishTopic, String subscribeTopic) : NodeInterface<String>(publishTopic, subscribeTopic)
 {
-    _interfaceName = STRING_NAME;
+}
+inline StringInterface::StringInterface(String topic) : NodeInterface<String>(topic, topic)
+{
+    this->setSamplingEnabled(false);
+    this->setMQTTPublish(false);
+    // setMQTTPublish(this->getSubscribeTopic() != this->getPublishTopic());
 }
 
 inline String StringInterface::fromJSON(JsonObject &rootObject)
@@ -40,8 +46,12 @@ inline int StringInterface::cmp(String oldValue, String newValue)
 
 inline void StringInterface::init()
 {
-    setSamplingEnabled(false);
-    setMQTTPublish(false);
+    _interfaceName = STRING_NAME;
+}
+
+inline void StringInterface::valueToString(String &sValue)
+{
+    sValue = currentValue;
 }
 
 #endif //StringInterface_H

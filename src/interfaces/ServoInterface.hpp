@@ -20,14 +20,14 @@ class ServoInterface : public DataInterface<int>
 inline ServoInterface::ServoInterface(String topic, uint8_t servoPin) : DataInterface<int>(topic)
 {
     _servoPin = servoPin;
+    setSamplingEnabled(false);
+    setMQTTPublish(false);
 }
 
 inline void ServoInterface::init()
 {
     pinMode(_servoPin, OUTPUT);
     attach();
-    setSamplingEnabled(false);
-    setMQTTPublish(false);
 }
 
 inline void ServoInterface::updatePhisicalInterface(int newValue)

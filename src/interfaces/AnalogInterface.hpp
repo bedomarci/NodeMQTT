@@ -22,7 +22,8 @@ inline AnalogInterface::AnalogInterface(String topic, uint8_t analogPin, uint8_t
     _analogPin = analogPin;
     _tolerance = tolerance;
     pinMode(analogPin, INPUT);
-    interfaceName = ANALOG_NAME;
+    _interfaceName = ANALOG_NAME;
+    setMQTTSubscribe(false);
 }
 
 inline void AnalogInterface::updatePhisicalInterface(int newValue)
@@ -45,7 +46,6 @@ inline int AnalogInterface::cmp(int oldValue, int newValue)
 inline void AnalogInterface::init()
 {
     DataInterface<int>::init();
-    setMQTTSubscribe(false);
 }
 
 #endif //ANALOGINTERFACE_H
