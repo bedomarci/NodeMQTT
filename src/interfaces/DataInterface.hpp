@@ -24,6 +24,7 @@ inline DataInterface<T>::DataInterface(String publishTopic, String subscribeTopi
 {
   this->setSamplingEnabled(false);
   this->setMQTTPublish(true);
+  this->setInterfaceName(DATA_NAME);
 }
 
 template <typename T>

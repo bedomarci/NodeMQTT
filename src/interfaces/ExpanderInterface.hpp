@@ -405,12 +405,14 @@ template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::startTransaction()
 {
     transactionState = TRANSACTION_SUSPENDED;
+    this->preventDebugLogging(true);
 }
 
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::commitTransaction(bool publishable)
 {
     transactionState = TRANSACTION_IMMEDIATE;
+    this->preventDebugLogging(false);
     if (publishable)
         this->publish(this->read());
 }

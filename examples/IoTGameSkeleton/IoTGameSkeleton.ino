@@ -1,7 +1,7 @@
 // [env:d1_mini]
-// upload_port = 192.168.0.1
-// upload_flags =
-//     --auth=AUTH
+// ;upload_port = 192.168.0.1
+// ;upload_flags =
+// ;    --auth=AUTH
 // platform = espressif8266
 // board = d1_mini
 // framework = arduino
@@ -10,8 +10,8 @@
 // upload_speed = 921600
 // monitor_speed = 115200
 // lib_extra_dirs =
-//     C:/Users/bedom/Dropbox/!BUSINESS/escaperooms/libs
 //     D:/Dropbox/!BUSINESS/escaperooms/libs
+//     W:/Dropbox/!BUSINESS/escaperooms/libs
 // lib_deps =
 //     NodeMQTT
 //     RF24
@@ -22,33 +22,42 @@
 
 #include <Arduino.h>
 #include <NodeMQTT.hpp>
-#include <interfaces/StringInterface.hpp>
+#include <interfaces/FiniteStateMachineInterface.hpp>
 #include <interfaces/DFPlayerInterface.hpp>
+#include <interfaces/BuzzerInterface.hpp>
 
 #define DF_SERIAL_RX D7
 #define DF_SERIAL_TX D8
+#define PIN_BUZZER D5
 
 void onControlChange(String oldValue, String newValue);
 void unlockGame();
 void initGame();
-void maintenanceMode();
+void maintainGame();
 void disableGame();
 void boot();
 
 NodeMQTT thisNode;
-StringInterface *controlInterface;
+FiniteStateMachineInterface *controlInterface;
 DFPlayerInterface *playerInterface;
+BuzzerInterface *buzzerInterface;
 
 void setup()
 {
-    controlInterface = new StringInterface("control");
-    controlInterface->onChange(onControlChange);
+    controlInterface = new FiniteStateMachineInterface("control");
+    controlInterface->addState(0, "INIT", initGame, nullptr, nullptr, true);
+    controlInterface->addState(1, "UNLOCK", unlockGame);
+    controlInterface->addState(2, "MAINTENANCE", maintainGame);
+    controlInterface->addState(3, "DISABLE", disableGame);
+
+    buzzerInterface = new BuzzerInterface("buz", PIN_BUZZER);
     playerInterface = new DFPlayerInterface("player", DF_SERIAL_RX, DF_SERIAL_TX);
     thisNode.addInterface(controlInterface);
     thisNode.addInterface(playerInterface);
-    thisNode.begin();
+    thisNode.addInterface(buzzerInterface);
+    thisNode.setSystemBuzzer(buzzerInterface);
     boot();
-    initGame();
+    thisNode.begin();
 }
 
 void loop()
@@ -56,25 +65,6 @@ void loop()
     thisNode.handle();
 }
 
-void onControlChange(String oldValue, String newValue)
-{
-    if (newValue == "INIT")
-    {
-        initGame();
-    }
-    if (newValue == "UNLOCK")
-    {
-        unlockGame();
-    }
-    if (newValue == "MAINTENANCE")
-    {
-        maintenanceMode();
-    }
-    if (newValue == "DISABLE")
-    {
-        disableGame();
-    }
-}
 void boot()
 {
 }

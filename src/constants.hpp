@@ -90,7 +90,9 @@ extern const char stringName[] PROGMEM;
 extern const char buzzerName[] PROGMEM;
 extern const char dfplayerName[] PROGMEM;
 extern const char pwmName[] PROGMEM;
-extern const char inetrfaceName[] PROGMEM;
+extern const char arrayInterfaceName[] PROGMEM;
+extern const char dataInterfaceName[] PROGMEM;
+extern const char interfaceName[] PROGMEM;
 #define ANALOG_NAME FPSTR(analogName)
 #define BUTTON_NAME FPSTR(buttonName)
 #define BUTTON_ARRAY_NAME FPSTR(buttonArrayName)
@@ -99,7 +101,9 @@ extern const char inetrfaceName[] PROGMEM;
 #define BUZZER_NAME FPSTR(buzzerName)
 #define DFPLAYER_NAME FPSTR(dfplayerName)
 #define PWM_NAME FPSTR(pwmName)
-#define INTERFACE_NAME FPSTR(inetrfaceName)
+#define DATA_NAME FPSTR(dataInterfaceName)
+#define ARRAY_NAME FPSTR(arrayInterfaceName)
+#define INTERFACE_NAME FPSTR(interfaceName)
 
 extern const char configAttribute_baseTopic[] PROGMEM;
 #define ATTR_BASETOPIC FPSTR(configAttribute_baseTopic)

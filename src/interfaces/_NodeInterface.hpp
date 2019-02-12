@@ -28,7 +28,7 @@ class NodeInterfaceBase
     virtual void init() = 0;
     virtual void setEnabled(bool enabled) = 0;
     virtual bool isEnabled() = 0;
-    virtual void valueToString(String &sValue)=0;
+    virtual void valueToString(String &sValue) = 0;
 
     virtual bool hasMQTTPublish() = 0;
     virtual bool hasMQTTSubscribe() = 0;
@@ -89,6 +89,7 @@ class NodeInterface : public NodeInterfaceBase
     T currentValue;
     // String sCurrentValue;
     void forceResample();
+    void preventDebugLogging(bool prevent = true);
 
     //VIRTUAL
     virtual T sample();
@@ -104,6 +105,7 @@ class NodeInterface : public NodeInterfaceBase
   private:
     bool _samplingEnabled = true;
     bool _forceResample = false;
+    bool _preventDebugLogging = false;
     bool _enabled = true;
     bool _valueInitialized = false;
     unsigned long _samplingRate = DEFAULT_SAMPLE_RATE;
@@ -171,7 +173,12 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
         return;
     if (cmp(newValue, currentValue) != 0 or !_valueInitialized)
     {
-        Logger.logf(DEBUG, MSG_VALUE_CHANGED, _interfaceName.c_str(), _publishTopic.c_str());
+        if (!_preventDebugLogging)
+        {
+            String sValue;
+            this->valueToString(sValue);
+            Logger.logf(DEBUG, MSG_VALUE_CHANGED, _interfaceName.c_str(), _publishTopic.c_str(), publishable, sValue.c_str());
+        }
         T oldValue = currentValue;
         currentValue = newValue;
         updatePhisicalInterface(newValue);
@@ -205,7 +212,7 @@ inline void NodeInterface<T>::publish(T value)
         JsonObject &root = jsonBuffer.createObject();
         String msg = toString(toJSON(value, root));
         _transport->publish(this->getPublishTopic().c_str(), msg.c_str());
-        Logger.logf(DEBUG, MSG_PUBLISHING, msg.c_str());
+        // Logger.logf(DEBUG, MSG_PUBLISHING, msg.c_str());
     }
 }
 
@@ -236,6 +243,9 @@ inline void NodeInterface<T>::handle()
 
 template <typename T>
 inline void NodeInterface<T>::forceResample() { _forceResample = true; }
+
+template <typename T>
+inline void NodeInterface<T>::preventDebugLogging(bool prevent) { _preventDebugLogging = prevent; }
 
 template <typename T>
 inline JsonObject &NodeInterface<T>::fromString(String newValue, DynamicJsonBuffer &buffer)

@@ -34,6 +34,7 @@ inline ArrayInterface<T, LENGTH>::ArrayInterface(String topic)
 {
     this->setSamplingEnabled(false);
     this->setMQTTPublish(true);
+    this->setInterfaceName(ARRAY_NAME);
 }
 
 template <typename T, uint16_t LENGTH>

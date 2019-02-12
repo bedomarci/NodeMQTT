@@ -106,17 +106,38 @@ inline void FiniteStateMachineInterface::makeTransition(int nextStateId)
 {
     State *currentState = states.get(currentStateId);
     State *nextState = states.get(nextStateId);
+    Transition *t;
     if (nextStateId != this->currentStateId)
     {
+        //LEAVING PREVIOUS STATE
         if (currentState && currentState->onExit != nullptr)
         {
             currentState->onExit();
         }
+
+        //TRANSITION
+        for (int i = 0; i < transitions.size(); i++)
+        {
+            t = transitions.get(i);
+            if (t->stateFromId == this->currentStateId &&
+                t->stateToId == nextStateId)
+            {
+                if (t->onTransition != nullptr)
+                {
+                    t->onTransition();
+                }
+                break;
+            }
+        }
+
+        //ENTERING NEW STATE
         if (nextState->onEnter != nullptr)
         {
             nextState->onEnter();
         }
     }
+
+    //CURRENT STATE
     if (nextState->onState != nullptr)
     {
         nextState->onState();
@@ -156,10 +177,6 @@ inline void FiniteStateMachineInterface::trigger(int event)
             if (t->stateFromId == this->currentStateId &&
                 t->event == event)
             {
-                if (t->onTransition != nullptr)
-                {
-                    t->onTransition();
-                }
                 this->write(t->stateToId);
                 return;
             }

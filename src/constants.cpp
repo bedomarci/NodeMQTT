@@ -34,7 +34,9 @@ const char stringName[] PROGMEM = "str";
 const char buzzerName[] PROGMEM = "buz";
 const char dfplayerName[] PROGMEM = "dfp";
 const char pwmName[] PROGMEM = "pwm";
-const char inetrfaceName[] PROGMEM = "INTERFACE";
+const char dataInterfaceName[] PROGMEM = "data";
+const char arrayInterfaceName[] PROGMEM = "array";
+const char interfaceName[] PROGMEM = "INTERFACE";
 
 //CONFIGURATION
 
@@ -53,7 +55,7 @@ const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
 const char configAttribute_isLogging[] PROGMEM = "logging";
 
 //MESSAGES
-const char message_ValueChanged[] PROGMEM = "Value changed on %s (%s)";
+const char message_ValueChanged[] PROGMEM = "Value changed on %s (%s, pub:%d) - %s";
 const char message_Publishing[] PROGMEM = "Publishing: %s";
 const char message_FailedToParse[] PROGMEM = "Failed to parse JSON data @ %s";
 const char message_UnknownState[] PROGMEM = "There is no state like [%s]";
