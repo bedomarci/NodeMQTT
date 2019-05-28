@@ -99,7 +99,7 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
     if ((level != DEBUG && !_isLogging) || _isLogging)
         Serial.println(formattedMessage);
     if (level != DEBUG && _isLogging)
-        push(formattedMessage);
+        push(formattedMessage); 
 }
 void NodeMQTTLoggerClass::setFatalCallback(NodeMQTTCallback callback)
 {

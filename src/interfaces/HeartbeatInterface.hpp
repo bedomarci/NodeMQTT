@@ -8,8 +8,8 @@
 struct NodeStatus
 {
     uint32_t uptime = 0;
-    uint32_t nodeID = 0;
     uint32_t freeHeap = 0;
+    char nodeID[9] = "";
     char networkAddress[16];
 };
 
@@ -47,19 +47,23 @@ inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_H
 
 inline void HeartbeatInterface::init()
 {
-#ifdef ESP8266
-    status.nodeID = ESP.getChipId();
-#endif
-#ifdef ESP32
-    status.nodeID = (uint32_t)ESP.getEfuseMac();
-#endif
+    char sUUID[9];
+    formatUUID(sUUID);
+    strncpy(status.nodeID, sUUID, sizeof(status.nodeID));
+
+    // #ifdef ESP8266
+    //     status.nodeID = ESP.getChipId();
+    // #endif
+    // #ifdef ESP32
+    //     status.nodeID = (uint32_t)ESP.getEfuseMac();
+    // #endif
 }
 
 inline NodeStatus HeartbeatInterface::sample()
 {
     status.uptime = millis();
     status.freeHeap = ESP.getFreeHeap();
-    strcpy(status.networkAddress, _transport->getNetworkAddressString().c_str());
+    strcpy(status.networkAddress, this->getContext()->transport->getNetworkAddressString().c_str());
     return status;
 }
 

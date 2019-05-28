@@ -24,6 +24,8 @@ inline AnalogInterface::AnalogInterface(String topic, uint8_t analogPin, uint8_t
     pinMode(analogPin, INPUT);
     _interfaceName = ANALOG_NAME;
     setMQTTSubscribe(false);
+    setMQTTPublish(true);
+    setSamplingEnabled(true);
 }
 
 inline void AnalogInterface::updatePhisicalInterface(int newValue)

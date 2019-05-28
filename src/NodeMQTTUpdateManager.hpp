@@ -12,11 +12,19 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266HTTPUpdate.h>
+#define UPDATE ESPhttpUpdate
+#endif
+
+#ifdef ESP32
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#define UPDATE httpUpdate
 #endif
 
 class NodeMQTTUpdateManagerClass
 {
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 protected:
   const char *fwUrlBase = FIRMWARE_URL_BASE;
   const int FW_VERSION = FIRMWARE_VERSION;

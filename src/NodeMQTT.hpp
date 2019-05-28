@@ -5,12 +5,15 @@
 #include "interfaces/_NodeInterface.hpp"
 #include "interfaces/HeartbeatInterface.hpp"
 #include "interfaces/NodeConfigInterface.hpp"
+#include "interfaces/CommandInterface.hpp"
 #include "interfaces/BuzzerInterface.hpp"
 #include "interfaces/LogInterface.hpp"
-#include "transport/WifiTransport.hpp"
-#include "NodeMQTTConfigManager.hpp"
-#include "NodeMQTTUpdateManager.hpp"
-
+// #define TRANSPORT_PATH "transports/" #TRANSPORT_CLASS 
+// #include TRANSPORT_PATH
+// #define PARSER_PATH "parsers/" #PARSER_CLASS ".hpp"
+// #include PARSER_PATH
+#include "transports/WifiTransport.hpp"
+#include "parsers/PubSubParser.hpp"
 class NodeMQTT
 {
 public:
@@ -34,30 +37,25 @@ public:
   void setSystemBuzzer(BuzzerInterface *interface);
   void addTask(Task &task);
 
-protected:
-  bool _isSerialDebugging = false;
-  bool _isOnline = true;
-  bool _isServiceMode = false;
-  byte *_serialBuffer = 0;
-  const char *_wifiSsid;
-  const char *_wifiPassword;
-  const char *_mqttServer;
-  const char *_mqttUser;
-  const char *_mqttPass;
-  TRANSPORT_CLASS _transport;
-  //SCHEDULER
-  Scheduler _scheduler;
+  ApplicationContext* getContext();
 
+protected:
+  char *_serialBuffer = 0;
+
+  TRANSPORT_CLASS _transport;
+  PARSER_CLASS _parser;
+  Scheduler _scheduler;
   NodeMQTTConfig _config;
+  ApplicationContext _context;
 
   LinkedList<NodeInterfaceBase *> interfaceList;
-  String _baseTopic = DEVICE_NAME;
+  String _baseTopic = String(UUID);
 
   void reconnectBroker();
   bool isConnectionAlive();
   void reconnectWifi();
   void readSerial();
-  void mqttParser(char *topic, byte *payload, unsigned int length);
+  void parse(char *topic, char *payload, unsigned int length);
   void addDefaultInterfaces();
   void subscribeTopics();
   void initializeInterfaces();
@@ -77,6 +75,7 @@ protected:
 
   //BUILTIN INTERFACES
   HeartbeatInterface *heartbeatInterface;
+  CommandInterface *commandInterface;
   NodeConfigInterface *nodeConfigInterface;
   LogInterface *logInterface;
   BuzzerInterface *buzzerInterface;

@@ -1,8 +1,10 @@
+#pragma once
 #ifndef HELPERS_H
 #define HELPERS_H
 #include <Arduino.h>
 #include <Wire.h>
 #include "NodeMQTTLogger.hpp"
+#include "../constants.hpp"
 
 #define d(x) Logger.log(DEBUG, x)
 #define debug(x) Logger.log(DEBUG, x)
@@ -19,17 +21,17 @@
 #define fatal(x) Logger.log(FATAL, x)
 
 //DEVICE NAME
-#ifdef ESP8266
-#define DEVICE_NAME String(ESP.getChipId(), HEX)
-#endif
-#ifdef ESP32
-#define DEVICE_NAME String((uint32_t)ESP.getEfuseMac(), HEX)
-#endif
-// inline String getMQTTDeviceName()
-// {
-//     return ;
-// }
+inline void formatUUID(char buffer[9])
+{
+    sprintf(buffer, "%08X", UUID);
+}
 
+inline void formatUUID(String &buffer)
+{
+    char charBuffer[9];
+    formatUUID(charBuffer);
+    buffer = String(charBuffer);
+}
 inline void pinModes(uint8_t *pinArray, uint8_t length, uint8_t mode)
 {
     for (int i = 0; i < length; i++)
@@ -52,12 +54,12 @@ inline void array_shiftRight(Array<T, LENGTH> &array, uint8_t shift)
         return;
     for (uint8_t s = 0; s < shift; s++)
     {
-        T temp = array.item[LENGTH - 1];
+        T temp = array[LENGTH - 1];
         for (uint16_t i = LENGTH - 1; i > 0; i--)
         {
-            array.item[i] = array.item[i - 1];
+            array[i] = array[i - 1];
         }
-        array.item[0] = temp;
+        array[0] = temp;
     }
 }
 
@@ -69,12 +71,12 @@ inline void array_shiftLeft(Array<T, LENGTH> &array, uint8_t shift)
 
     for (uint8_t s = 0; s < shift; s++)
     {
-        T temp = array.item[0];
+        T temp = array[0];
         for (uint16_t i = 0; i < LENGTH - 2; i++)
         {
-            array.item[i] = array.item[i + 1];
+            array[i] = array[i + 1];
         }
-        array.item[LENGTH - 1] = temp;
+        array[LENGTH - 1] = temp;
     }
 }
 
@@ -83,7 +85,7 @@ inline void array_fill(Array<T, LENGTH> &array, T value)
 {
     for (uint16_t i = 0; i < LENGTH; i++)
     {
-        array.item[i] = value;
+        array[i] = value;
     }
 }
 
@@ -93,7 +95,7 @@ inline String array_toString(Array<T, LENGTH> &array)
     String str = "[";
     for (uint16_t i = 0; i < LENGTH; i++)
     {
-        str += String(array.item[i]);
+        str += String(array[i]);
         if (i < LENGTH - 1)
             str += ", ";
     }
@@ -104,6 +106,7 @@ inline String array_toString(Array<T, LENGTH> &array)
 template <typename T, uint16_t LENGTH>
 inline void array_fromInt32(uint32_t newValue, Array<T, LENGTH> &array, uint8_t bitOrder = MSBFIRST)
 {
+
     if (LENGTH > 32)
         return;
 
@@ -159,11 +162,58 @@ template <typename T, uint16_t LENGTH>
 inline int array_sum(Array<T, LENGTH> &array)
 {
     int sum = 0;
-    for (int i = 1; i < LENGTH; i++)
+    for (int i = 0; i < LENGTH; i++)
     {
         sum += array[i];
     }
     return sum;
+}
+
+inline String find_i2c_devices()
+{
+    byte error, address;
+    uint8_t nDevices;
+    nDevices = 0;
+    String response = "";
+    for (address = 1; address < 127; address++)
+    {
+        Wire.beginTransmission(address);
+        error = Wire.endTransmission();
+
+        if (error == 0)
+        {
+            if (nDevices > 0)
+                response += ", ";
+            response += "0x";
+            if (address < 16)
+                response += "0";
+            response += String(address, HEX);
+            nDevices++;
+        }
+    }
+    return response;
+}
+
+inline bool hasBSSID(uint8_t bssid[6])
+{
+    int hasBSSID = 0;
+    for (int i = 0; i < 6; i++)
+    {
+        hasBSSID += bssid[i];
+    }
+    return !!hasBSSID;
+}
+
+inline void restartNode()
+{
+#ifdef ESP8266
+    ESP.eraseConfig();
+    delay(5);
+    ESP.reset();
+#endif
+#ifdef ESP32
+    ESP.restart();
+#endif
 }
 
 #endif

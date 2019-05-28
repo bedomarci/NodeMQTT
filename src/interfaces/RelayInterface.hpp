@@ -7,6 +7,8 @@ class RelayInterface : public DataInterface<int>
   public:
     RelayInterface(String topic, uint8_t relayPin, bool invertPin = false);
     void init();
+    void close();
+    void open();
 
   protected:
     uint8_t _relayPin;
@@ -33,5 +35,15 @@ inline void RelayInterface::init()
 {
     DataInterface<int>::init();
     pinMode(_relayPin, OUTPUT);
+}
+
+inline void RelayInterface::open()
+{
+    this->write(1);
+}
+
+inline void RelayInterface::close()
+{
+    this->write(0);
 }
 #endif //RELAYINTERFACE_H

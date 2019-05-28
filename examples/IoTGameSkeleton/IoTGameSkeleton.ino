@@ -14,11 +14,6 @@
 //     W:/Dropbox/!BUSINESS/escaperooms/libs
 // lib_deps =
 //     NodeMQTT
-//     RF24
-//     RF24Network
-//     RF24Mesh
-//     Wire
-//     SPI
 
 #include <Arduino.h>
 #include <NodeMQTT.hpp>
@@ -47,7 +42,7 @@ void setup()
     controlInterface = new FiniteStateMachineInterface("control");
     controlInterface->addState(0, "INIT", initGame, nullptr, nullptr, true);
     controlInterface->addState(1, "UNLOCK", unlockGame);
-    controlInterface->addState(2, "MAINTENANCE", maintainGame);
+    controlInterface->addState(2, "MAINTAIN", maintainGame);
     controlInterface->addState(3, "DISABLE", disableGame);
 
     buzzerInterface = new BuzzerInterface("buz", PIN_BUZZER);
@@ -79,7 +74,7 @@ void unlockGame()
     i("Game unlocked.");
 }
 
-void maintenanceMode()
+void maintainGame()
 {
     i("Maintenance mode.");
 }

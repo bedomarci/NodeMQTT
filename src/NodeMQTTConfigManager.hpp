@@ -2,27 +2,14 @@
 #define NODECONFIGURATION_H
 
 #include "misc/config.hpp"
+#include "misc/typedef.hpp"
 #include "constants.hpp"
 #include "misc/helpers.hpp"
+#include "LinkedList.h"
 #include <Arduino.h>
 #include <EEPROM.h>
 
-struct NodeMQTTConfig
-{
-  uint8_t configVersion = DEFAULT_CONFIGURATION_VERSION;
-  char wifiSsid[32] = DEFAULT_WIFI_SSID;
-  uint8_t wifiBssid[6] = DEFAULT_WIFI_BSSID;
-  uint8_t wifiChannel = DEFAULT_WIFI_CHANNEL;
-  char wifiPassword[32] = DEFAULT_WIFI_PASSWORD;
-  char mqttServer[64] = DEFAULT_MQTT_SERVER;
-  char mqttUser[32] = DEFAULT_MQTT_USER;
-  char mqttPassword[32] = DEFAULT_MQTT_PASSWORD;
-  char baseTopic[32] = DEFAULT_MQTT_BASE_TOPIC;
-  bool isOnline = DEFAULT_ISONLINE;
-  bool isServiceMode = DEFAULT_ISSERVICEMODE;
-  bool isLogging = DEFAULT_ISLOGGING;
-  uint16_t mqttPort = DEFAULT_MQTT_PORT;
-};
+
 
 class NodeMQTTConfigManagerClass
 {
@@ -31,11 +18,14 @@ private:
   void EEPROMWriteChkSum(uint32_t chksum);
   void setStaticFlagDefaultValues();
   uint32_t EEPROMReadChkSum();
+  void printIp(uint8_t ip[4]);
   bool isValid();
 
   const int EEPROM_CONFIGURATION_CHCKSUM_ADDRESS = 32;
   const int EEPROM_CONFIGURATION_ADDRESS = EEPROM_CONFIGURATION_CHCKSUM_ADDRESS + sizeof(uint32_t);
+  const int EEPROM_PROPERTIES_ADDRESS = EEPROM_CONFIGURATION_ADDRESS + sizeof(NodeMQTTConfig);
   NodeMQTTConfig defaultConfig;
+  LinkedList<NodeMQTTProperty *> properties;
 
 public:
   NodeMQTTConfigManagerClass();
@@ -44,7 +34,12 @@ public:
   void loadInto(NodeMQTTConfig &configuration);
   void loadDefaultsInto(NodeMQTTConfig &configuration);
   void print(NodeMQTTConfig &configuration);
-
+  void addProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyDefaultValue);
+  uint32_t getProperty(uint8_t propertyId);
+  void setProperty(uint8_t propertyId, uint32_t propertyValue);
+  void storePropertiesInEEPROM();
+  void loadPropertiesFromEEPROM();
+  void factoryReset();
   // static volatile bool I2CInitialized;
   // static volatile bool EEPROMInitialized;
 };

@@ -46,7 +46,9 @@ inline T DataInterface<T>::fromJSON(JsonObject &rootObject)
 {
   T value = 0;
   if (rootObject["data"].is<T>())
+  {
     value = rootObject["data"].as<T>();
+  }
   return value;
 }
 

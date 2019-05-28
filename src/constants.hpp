@@ -14,11 +14,14 @@ typedef void (*NodeMQTTCallback)();
 #define NodeMQTTChangeCallback void (*)(T, T)
 #endif
 
-#ifdef WIFI_TRANSPORT
-#define TRANSPORT_CLASS WifiTransport
+
+
+
+#if defined(ESP32)
+#define PWMRANGE 1023
 #endif
-#ifdef RF_TRANSPORT
-#define TRANSPORT_CLASS RF24Transport
+
+#if defined(ESP8266)
 #endif
 
 template <typename T, unsigned int LENGTH>
@@ -38,6 +41,7 @@ struct Note
     uint16_t frequency;
     uint16_t pause;
 };
+
 
 //BUZZER
 #define TONE_INFO 0
@@ -59,7 +63,6 @@ extern const Note alertTone[5] PROGMEM;
 extern const Note failTone[4] PROGMEM;
 extern const Note happyTone[5] PROGMEM;
 extern const Note sadTone[5] PROGMEM;
-
 extern const Note systemBoot[] PROGMEM;
 extern const Note systemOnline[] PROGMEM;
 
@@ -74,8 +77,15 @@ extern const char logTopic[] PROGMEM;
 #define LOG_TOPIC FPSTR(logTopic)
 extern const char heartbeatTopic[] PROGMEM;
 #define HEARTBEAT_TOPIC FPSTR(heartbeatTopic)
+extern const char languageTopic[] PROGMEM;
+#define LANGUAGE_TOPIC FPSTR(languageTopic)
+extern const char commandTopic[] PROGMEM;
+#define COMMAND_TOPIC FPSTR(commandTopic)
 extern const char terminalTab[] PROGMEM;
 #define TERMINAL_TAB FPSTR(terminalTab)
+
+//SYSTEM
+extern uint32_t UUID;
 extern const char terminalHR[] PROGMEM;
 #define TERMINAL_HR FPSTR(terminalHR)
 extern const char terminalHeader[] PROGMEM;
@@ -92,6 +102,7 @@ extern const char dfplayerName[] PROGMEM;
 extern const char pwmName[] PROGMEM;
 extern const char arrayInterfaceName[] PROGMEM;
 extern const char dataInterfaceName[] PROGMEM;
+extern const char languageInterfaceName[] PROGMEM;
 extern const char interfaceName[] PROGMEM;
 #define ANALOG_NAME FPSTR(analogName)
 #define BUTTON_NAME FPSTR(buttonName)
@@ -103,6 +114,8 @@ extern const char interfaceName[] PROGMEM;
 #define PWM_NAME FPSTR(pwmName)
 #define DATA_NAME FPSTR(dataInterfaceName)
 #define ARRAY_NAME FPSTR(arrayInterfaceName)
+#define LANGUAGE_NAME FPSTR(languageInterfaceName)
+#define COMMAND_NAME FPSTR(commandInterfaceName)
 #define INTERFACE_NAME FPSTR(interfaceName)
 
 extern const char configAttribute_baseTopic[] PROGMEM;
@@ -119,6 +132,14 @@ extern const char configAttribute_wifiSsid[] PROGMEM;
 #define ATTR_WIFISSID FPSTR(configAttribute_wifiSsid)
 extern const char configAttribute_wifiBssid[] PROGMEM;
 #define ATTR_WIFIBSSID FPSTR(configAttribute_wifiBssid)
+extern const char configAttribute_ipAddress[] PROGMEM;
+#define ATTR_IPADDRESS FPSTR(configAttribute_ipAddress)
+extern const char configAttribute_gateway[] PROGMEM;
+#define ATTR_GATEWAY FPSTR(configAttribute_gateway)
+extern const char configAttribute_subnet[] PROGMEM;
+#define ATTR_SUBNET FPSTR(configAttribute_subnet)
+extern const char configAttribute_dns[] PROGMEM;
+#define ATTR_DNS FPSTR(configAttribute_dns)
 extern const char configAttribute_wifiChannel[] PROGMEM;
 #define ATTR_WIFICHANNEL FPSTR(configAttribute_wifiChannel)
 extern const char configAttribute_configVersion[] PROGMEM;
@@ -141,5 +162,14 @@ extern const char message_FailedToParse[] PROGMEM;
 #define MSG_FAILED_TO_PARSE FPSTR(message_FailedToParse)
 extern const char message_UnknownState[] PROGMEM;
 #define MSG_UNKNOWN_STATE FPSTR(message_UnknownState)
+extern const char message_MQTTBrokerConnectionAttempt[] PROGMEM;
+;
+#define MSG_BROKER_CONNECTION_ATTEMPT FPSTR(message_MQTTBrokerConnectionAttempt)
+extern const char message_MQTTBrokerCouldNotConnect[] PROGMEM;
+#define MSG_BROKER_COULD_NOT_CONNECT FPSTR(message_MQTTBrokerCouldNotConnect)
+extern const char message_MQTTBrokerDisconnected[] PROGMEM;
+#define MSG_BROKER_DISCONNECTED FPSTR(message_MQTTBrokerDisconnected)
+extern const char message_ContextIsMissing[] PROGMEM;
+#define MSG_CONTEXT_IS_MISSING FPSTR(message_ContextIsMissing)
 
 #endif //CONSTANTS_H

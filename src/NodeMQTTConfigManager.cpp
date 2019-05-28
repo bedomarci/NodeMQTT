@@ -46,12 +46,7 @@ void NodeMQTTConfigManagerClass::save(NodeMQTTConfig &configuration)
     EEPROM.put(EEPROM_CONFIGURATION_ADDRESS, configuration);
     EEPROM.commit();
     i(F("Node restarts. Good bye!"));
-#ifdef ESP8266
-    ESP.reset();
-#endif
-#ifdef ESP32
-    ESP.restart();
-#endif
+    restartNode();
 }
 
 void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig &configuration)
@@ -80,6 +75,77 @@ void NodeMQTTConfigManagerClass::setDefault(NodeMQTTConfig &configuration)
     defaultConfig = configuration;
 }
 
+void NodeMQTTConfigManagerClass::addProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyDefaultValue)
+{
+    NodeMQTTProperty *property = new NodeMQTTProperty(propertyId, propertyName, propertyDefaultValue, false);
+    properties.add(property);
+}
+uint32_t NodeMQTTConfigManagerClass::getProperty(uint8_t propertyId)
+{
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        if (property->id == propertyId)
+            return property->value;
+    }
+    return 0;
+}
+void NodeMQTTConfigManagerClass::setProperty(uint8_t propertyId, uint32_t propertyValue)
+{
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        if (property->id == propertyId)
+            property->value = propertyValue;
+    }
+}
+void NodeMQTTConfigManagerClass::storePropertiesInEEPROM()
+{
+    uint16_t propertyAddress = EEPROM_PROPERTIES_ADDRESS;
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        property->isStored = true;
+        EEPROM.put(propertyAddress, property);
+        propertyAddress += sizeof(NodeMQTTProperty);
+    }
+}
+void NodeMQTTConfigManagerClass::loadPropertiesFromEEPROM()
+{
+    uint16_t propertyAddress = EEPROM_PROPERTIES_ADDRESS;
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        NodeMQTTProperty *eepromProperty;
+        EEPROM.get(propertyAddress, eepromProperty);
+
+        if (eepromProperty->isStored)
+            property->value = eepromProperty->value;
+
+        free(eepromProperty);
+        propertyAddress += sizeof(NodeMQTTProperty);
+    }
+}
+void NodeMQTTConfigManagerClass::printIp(uint8_t ip[4])
+{
+    for (int i = 0; i < 4; i++)
+    {
+        Serial.print(ip[i]);
+        if (i < 3)
+            Serial.print('.');
+    }
+    Serial.println();
+}
+
+void NodeMQTTConfigManagerClass::factoryReset()
+{
+    uint32_t storedChkSum;
+    EEPROM.get(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum);
+    EEPROM.put(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum + 1);
+    EEPROM.commit();
+    restartNode();
+}
+
 void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
 {
     Serial.println(TERMINAL_HR);
@@ -95,8 +161,29 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
     Serial.print(ATTR_WIFIBSSID);
     Serial.print(TERMINAL_TAB);
     for (int i = 0; i < 6; i++)
+    {
         Serial.print(configuration.wifiBssid[i], HEX);
+        if (i < 5)
+            Serial.print(':');
+    }
     Serial.println();
+
+    Serial.print(ATTR_IPADDRESS);
+    Serial.print(TERMINAL_TAB);
+    this->printIp(configuration.ipAddress);
+
+    Serial.print(ATTR_GATEWAY);
+    Serial.print(TERMINAL_TAB);
+    this->printIp(configuration.gateway);
+
+    Serial.print(ATTR_SUBNET);
+    Serial.print(TERMINAL_TAB);
+    this->printIp(configuration.subnetMask);
+
+    Serial.print(ATTR_DNS);
+    Serial.print(TERMINAL_TAB);
+    this->printIp(configuration.dns);
+
     Serial.print(ATTR_WIFICHANNEL);
     Serial.print(TERMINAL_TAB);
     Serial.println(configuration.wifiChannel);
@@ -125,5 +212,14 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
     Serial.print(TERMINAL_TAB);
     Serial.println(configuration.isLogging);
     Serial.println(TERMINAL_HR);
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        Serial.print(property->name);
+        Serial.print(TERMINAL_TAB);
+        Serial.println(property->value);
+    }
+    if (properties.size() > 0)
+        Serial.println(TERMINAL_HR);
 }
 NodeMQTTConfigManagerClass NodeMQTTConfigManager;

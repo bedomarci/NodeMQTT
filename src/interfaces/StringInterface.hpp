@@ -46,7 +46,7 @@ inline int StringInterface::cmp(String oldValue, String newValue)
 
 inline void StringInterface::init()
 {
-    _interfaceName = STRING_NAME;
+    setInterfaceName(STRING_NAME);
 }
 
 inline void StringInterface::valueToString(String &sValue)

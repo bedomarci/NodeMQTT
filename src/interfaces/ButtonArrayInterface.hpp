@@ -43,6 +43,7 @@ inline Array<uint8_t, LENGTH> ButtonArrayInterface<LENGTH>::sample()
         buttons[i]->read();
         buffer[i] = (uint8_t)buttons[i]->isPressed();
     }
+
     return buffer;
 }
 template <uint8_t LENGTH>

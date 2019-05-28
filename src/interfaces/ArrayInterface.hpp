@@ -11,7 +11,7 @@ class ArrayInterface : public NodeInterface<Array<T, LENGTH>>
     ArrayInterface(String topic);
     void init();
     void writeItem(T newValue, uint16_t index, bool publishable = true);
-    void fill(T value);
+    void fill(T value, bool publishable = true);
     void valueToString(String &sValue);
 
   protected:
@@ -45,6 +45,8 @@ inline void ArrayInterface<T, LENGTH>::init()
 template <typename T, uint16_t LENGTH>
 inline void ArrayInterface<T, LENGTH>::writeItem(T newItem, uint16_t index, bool publishable)
 {
+    if (index >= LENGTH)
+        return;
     Array<T, LENGTH> newValue = this->read();
     newValue[index] = newItem;
     this->write(newValue, publishable);
@@ -69,7 +71,7 @@ inline Array<T, LENGTH> ArrayInterface<T, LENGTH>::fromJSON(JsonObject &rootObje
     //ex.: {array:[0,1,2,3]}
     if (rootObject.containsKey("array"))
     {
-        JsonArray &jsonArray = rootObject["array"];
+        JsonArray jsonArray = rootObject["array"];
         if (jsonArray.size() != LENGTH)
         {
             e(F("Incoming JSON array length mismatch!"));
@@ -106,7 +108,7 @@ inline Array<T, LENGTH> ArrayInterface<T, LENGTH>::fromJSON(JsonObject &rootObje
 template <typename T, uint16_t LENGTH>
 inline JsonObject &ArrayInterface<T, LENGTH>::toJSON(Array<T, LENGTH> value, JsonObject &root)
 {
-    JsonArray &array = root.createNestedArray("array");
+    JsonArray array = root.createNestedArray("array");
     for (int i = 0; i < value.length; i++)
     {
         array.add(value.item[i]);
@@ -126,15 +128,16 @@ inline int ArrayInterface<T, LENGTH>::cmp(Array<T, LENGTH> oldValue, Array<T, LE
     return hasChange;
 }
 template <typename T, uint16_t LENGTH>
-inline void ArrayInterface<T, LENGTH>::fill(T value)
+inline void ArrayInterface<T, LENGTH>::fill(T value, bool publishable)
 {
     Array<T, LENGTH> arr;
     array_fill<T, LENGTH>(arr, value);
-    this->write(arr);
+    this->write(arr, publishable);
 }
 
 template <typename T, uint16_t LENGTH>
-inline void ArrayInterface<T, LENGTH>::valueToString(String &sValue) {
+inline void ArrayInterface<T, LENGTH>::valueToString(String &sValue)
+{
     Array<T, LENGTH> arr = this->read();
     sValue = array_toString<T, LENGTH>(arr); //TODO KONVERTALAS
 }

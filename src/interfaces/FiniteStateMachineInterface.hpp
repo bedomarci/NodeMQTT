@@ -6,18 +6,18 @@
 
 struct State
 {
-    const char *stateName;
     int stateId = -1;
+    const char *stateName;
     void (*onState)();
     void (*onEnter)();
     void (*onExit)();
     State(int stateId, const char *stateName, void (*onState)(), void (*onEnter)(), void (*onExit)())
         : stateId(stateId),
           stateName(stateName),
-          onEnter(onEnter),
           onState(onState),
+          onEnter(onEnter),
           onExit(onExit){};
-    State() : stateName(nullptr), onEnter(nullptr), onState(nullptr), onExit(nullptr){};
+    State() : stateId(-1), stateName(nullptr), onState(nullptr), onEnter(nullptr), onExit(nullptr){};
 };
 
 class FiniteStateMachineInterface : public NodeInterface<int>
@@ -53,7 +53,6 @@ class FiniteStateMachineInterface : public NodeInterface<int>
     LinkedList<State *> states;
     LinkedList<Transition *> transitions;
     int currentStateId = -1;
-    int defaultStateId = -1;
     bool initialized = false;
     void makeTransition(int nextStateId);
 };
@@ -73,13 +72,13 @@ FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)
 }
 inline void FiniteStateMachineInterface::init()
 {
-    if (defaultStateId > -1)
+    if (currentStateId > -1)
     {
-        this->write(defaultStateId, false);
+        this->write(currentStateId, false);
     }
     else if (states.size() > 0)
     {
-        defaultStateId = states.get(0)->stateId;
+        currentStateId = states.get(0)->stateId;
         this->init();
     }
     else
@@ -104,8 +103,9 @@ inline void FiniteStateMachineInterface::writeByName(const char *nextStateName)
 }
 inline void FiniteStateMachineInterface::makeTransition(int nextStateId)
 {
-    State *currentState = states.get(currentStateId);
-    State *nextState = states.get(nextStateId);
+    State *currentState = this->getStateById(currentStateId);
+    State *nextState = this->getStateById(nextStateId);
+
     Transition *t;
     if (nextStateId != this->currentStateId)
     {
@@ -129,12 +129,15 @@ inline void FiniteStateMachineInterface::makeTransition(int nextStateId)
                 break;
             }
         }
+    }
 
-        //ENTERING NEW STATE
-        if (nextState->onEnter != nullptr)
-        {
-            nextState->onEnter();
-        }
+    bool sameState = nextStateId == this->currentStateId;
+    this->currentStateId = nextStateId;
+
+    //ENTERING NEW STATE
+    if ((!sameState || !this->hasInitializedValue()) && nextState->onEnter != nullptr)
+    {
+        nextState->onEnter();
     }
 
     //CURRENT STATE
@@ -142,7 +145,6 @@ inline void FiniteStateMachineInterface::makeTransition(int nextStateId)
     {
         nextState->onState();
     }
-    this->currentStateId = nextStateId;
 }
 inline void FiniteStateMachineInterface::addState(uint8_t stateId, const char *stateName, void (*onState)(), void (*onEnter)(), void (*onExit)(), bool initState)
 {
@@ -152,7 +154,9 @@ inline void FiniteStateMachineInterface::addState(uint8_t stateId, const char *s
 inline void FiniteStateMachineInterface::addState(State *state, bool initState)
 {
     if (initState)
-        defaultStateId = state->stateId;
+        currentStateId = state->stateId;
+    // defaultStateId = state->stateId;
+
     states.add(state);
 }
 inline void FiniteStateMachineInterface::addTransition(int event, int stateFromId, int stateToId, void (*onTransition)())
@@ -219,7 +223,7 @@ inline State *FiniteStateMachineInterface::getStateById(int stateId)
     for (int i = 0; i < states.size(); i++)
     {
         State *state = states.get(i);
-        if (stateId = state->stateId)
+        if (stateId == state->stateId)
             return state;
     }
     Logger.logf(ERROR, MSG_UNKNOWN_STATE, stateId);

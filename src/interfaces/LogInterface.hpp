@@ -19,11 +19,12 @@ class LogInterface : public StringInterface
 inline LogInterface::LogInterface()
     : StringInterface(LOG_TOPIC)
 {
-    _interfaceName = LOG_TOPIC;
-    setSamplingEnabled(true);
-    setMQTTPublish(true);
-    setMQTTSubscribe(false);
-    setSamplingRate(LOG_SAMPLE_RATE);
+    this->setInterfaceName(LOG_TOPIC);
+    this->setSamplingEnabled(true);
+    this->setMQTTPublish(true);
+    this->setMQTTSubscribe(false);
+    this->setSamplingRate(LOG_SAMPLE_RATE);
+    this->preventDebugLogging();
 }
 
 inline void LogInterface::init()
@@ -35,7 +36,7 @@ inline String LogInterface::sample()
     logMsg = Logger.pop();
     if (Logger.queueSize())
     {
-        forceResample();
+        this->forceResample();
     }
     return logMsg;
 }

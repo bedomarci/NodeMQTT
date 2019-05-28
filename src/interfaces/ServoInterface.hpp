@@ -1,7 +1,11 @@
 #ifndef SERVOINTERFACE_H
 #define SERVOINTERFACE_H
 #include "DataInterface.hpp"
+// #if defined (ESP32)
+// #include <ESP32_Servo.h>
+// #else
 #include <Servo.h>
+// #endif
 
 class ServoInterface : public DataInterface<int>
 {

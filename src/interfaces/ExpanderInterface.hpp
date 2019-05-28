@@ -19,7 +19,8 @@
 
 #define NO_INTERRUPT_PIN -1
 
-#define ExpanderChangeCallbackSignature std::function<void(uint8_t, Array<uint8_t, LENGTH>, Array<uint8_t, LENGTH>)>
+#define ExpanderPinChangeCallbackSignature std::function<void(uint8_t pin, Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue)>
+#define ExpanderChangeCallbackSignature std::function<void(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue)>
 
 template <uint8_t LENGTH>
 class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
@@ -35,6 +36,7 @@ class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
     uint8_t digitalRead(uint8_t pin);
     void writeChip(uint16_t value);
     uint16_t readChip();
+    void onChange(ExpanderChangeCallbackSignature);
     void write(Array<uint8_t, LENGTH> newValue, bool publishable = true);
     void writePort(uint16_t newValue, bool publishable = true);
     void clear();
@@ -44,8 +46,9 @@ class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
     void pullDown(uint8_t pin);
     void disableInterrupt();
     void checkForInterrupt();
-    void attachPinInterrupt(uint8_t pin, ExpanderChangeCallbackSignature userFunc, uint8_t mode);
-    void detachInterrupt(uint8_t pin);
+    void attachPinInterrupt(uint8_t pin, ExpanderPinChangeCallbackSignature userFunc, uint8_t mode);
+    void detachPinInterrupt(uint8_t pin);
+    Array<uint8_t, LENGTH> sample();
 
     void startTransaction();
     void commitTransaction(bool publishable = true);
@@ -71,15 +74,15 @@ class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
     volatile uint16_t _INV;
 
     volatile uint16_t _oldPIN;
-    volatile uint8_t _isrIgnore;
     uint8_t _pcintPin;
     uint8_t _intMode[8];
-    ExpanderChangeCallbackSignature _intCallback[LENGTH];
+    ExpanderPinChangeCallbackSignature _intCallback[LENGTH];
+    ExpanderChangeCallbackSignature _callback = nullptr;
+    void internalCallback(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue);
     virtual void readGPIO() = 0;
     virtual void updateGPIO() = 0;
 
     void poll();
-    Array<uint8_t, LENGTH> sample();
     Array<uint8_t, LENGTH> binToArray(uint16_t value);
     void expanderInterruptCallback();
 
@@ -118,6 +121,7 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String 
     _hasInterrupt = (_interruptPin != NO_INTERRUPT_PIN);
     _taskPoll.set(_debounceDelay, TASK_FOREVER, [this]() { poll(); });
     _interruptPullup = interruptPu;
+    ArrayInterface<uint8_t, LENGTH>::onChange([this](Array<uint8_t, LENGTH> oV, Array<uint8_t, LENGTH> nV) { internalCallback(oV, nV); });
     this->setMQTTPublish(true);
     this->setMQTTSubscribe(true);
 }
@@ -133,13 +137,16 @@ inline void ExpanderInterface<LENGTH>::init()
     if (!isI2CDeviceWorking(_address))
     {
         Logger.logf(FATAL, F("Device is not responding at address 0x%02X. Expander interface shuts down!"), _address);
+        String devices = find_i2c_devices();
+        Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
         this->setEnabled(false);
         return;
     }
 
     readGPIO();
 
-    this->setSamplingEnabled(!_hasInterrupt);
+    this->setSamplingEnabled(this->isSamplingEnabled() && !_hasInterrupt);
+    this->setSamplingRate(_debounceDelay);
     if (_hasInterrupt)
     {
         ::pinMode(_interruptPin, (_interruptPullup) ? INPUT_PULLUP : INPUT);
@@ -176,7 +183,7 @@ inline void ExpanderInterface<LENGTH>::poll()
 {
     if (PCFInterruptGlobalCounter == PCFInterruptLocalCounter)
         return;
-    PCFInterruptLocalCounter++;
+    PCFInterruptLocalCounter=PCFInterruptGlobalCounter;
     this->write(this->sample());
 }
 template <uint8_t LENGTH>
@@ -230,11 +237,14 @@ inline void ExpanderInterface<LENGTH>::digitalWrite(uint8_t pin, uint8_t value, 
 template <uint8_t LENGTH>
 inline uint8_t ExpanderInterface<LENGTH>::digitalRead(uint8_t pin)
 {
-    readGPIO();
+    // readGPIO();
     /* Check for interrupt (manual detection) */
-    checkForInterrupt();
+    // checkForInterrupt();
     /* Read and return the pin state */
-    return ((_PIN ^ _INV) & (1 << pin)) ? HIGH : LOW;
+    // return ((_PIN ^ _INV) & (1 << pin)) ? HIGH : LOW;
+    Array<uint8_t, LENGTH> arr = this->sample();
+    this->write(arr);
+    return arr[pin];
 }
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::write(Array<uint8_t, LENGTH> newValue, bool publishable)
@@ -261,7 +271,7 @@ inline uint16_t ExpanderInterface<LENGTH>::readChip()
 {
     readGPIO();
     /* Check for interrupt (manual detection) */
-    checkForInterrupt();
+    // checkForInterrupt();
     return _PIN ^ _INV;
 }
 template <uint8_t LENGTH>
@@ -299,6 +309,21 @@ inline void ExpanderInterface<LENGTH>::toggle(uint8_t pin, bool publishable)
 }
 
 template <uint8_t LENGTH>
+inline void ExpanderInterface<LENGTH>::onChange(ExpanderChangeCallbackSignature callback)
+{
+    _callback = callback;
+}
+
+template <uint8_t LENGTH>
+inline void ExpanderInterface<LENGTH>::internalCallback(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue)
+{
+    if (this->_callback != nullptr)
+        this->_callback(oldValue, newValue);
+
+    checkForInterrupt();
+}
+
+template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::checkForInterrupt()
 {
     uint16_t invPin = _PIN ^ _INV;
@@ -307,12 +332,8 @@ inline void ExpanderInterface<LENGTH>::checkForInterrupt()
     oldValue = this->binToArray(invOldPin);
     newValue = this->binToArray(invPin);
 
-    if (_isrIgnore)
-        return;
-    else
-        _isrIgnore = 1;
-    /* Re-enable interrupts to allow Wire library to work */
-    sei();
+    // sei();
+    cli();
     for (uint8_t i = 0; i < LENGTH; ++i)
     {
         /* Check for interrupt handler */
@@ -323,8 +344,9 @@ inline void ExpanderInterface<LENGTH>::checkForInterrupt()
         switch (_intMode[i])
         {
         case CHANGE:
-            if ((1 << i) & (invPin ^ invOldPin))
+            if ((1 << i) & (invPin ^ invOldPin)) {
                 _intCallback[i](i, oldValue, newValue);
+            }
             break;
         case LOW:
             if (!(invPin & (1 << i)))
@@ -340,16 +362,17 @@ inline void ExpanderInterface<LENGTH>::checkForInterrupt()
             break;
         }
     }
-    _isrIgnore = 0;
+    /* Re-enable interrupts to allow Wire library to work */
+    sei();
 }
 template <uint8_t LENGTH>
-inline void ExpanderInterface<LENGTH>::attachPinInterrupt(uint8_t pin, ExpanderChangeCallbackSignature userFunc, uint8_t mode)
+inline void ExpanderInterface<LENGTH>::attachPinInterrupt(uint8_t pin, ExpanderPinChangeCallbackSignature userFunc, uint8_t mode)
 {
     _intMode[pin] = mode;
     _intCallback[pin] = userFunc;
 }
 template <uint8_t LENGTH>
-inline void ExpanderInterface<LENGTH>::detachInterrupt(uint8_t pin)
+inline void ExpanderInterface<LENGTH>::detachPinInterrupt(uint8_t pin)
 {
     _intCallback[pin] = 0;
 }

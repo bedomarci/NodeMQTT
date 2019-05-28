@@ -1,7 +1,7 @@
 #include "NodeMQTTUpdateManager.hpp"
 #include "misc/helpers.hpp"
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 
 NodeMQTTUpdateManagerClass::NodeMQTTUpdateManagerClass()
 {
@@ -28,15 +28,15 @@ void NodeMQTTUpdateManagerClass::onOTAEnd()
 void NodeMQTTUpdateManagerClass::onOTAError(ota_error_t error)
 {
     if (error == OTA_AUTH_ERROR)
-        e(F("Auth Failed"));
+        e(F("OTA update error: auth failed"));
     else if (error == OTA_BEGIN_ERROR)
-        e(F("Begin Failed"));
+        e(F("OTA update error: begin failed"));
     else if (error == OTA_CONNECT_ERROR)
-        e(F("Connect Failed"));
+        e(F("OTA update error: connect failed"));
     else if (error == OTA_RECEIVE_ERROR)
-        e(F("Receive Failed"));
+        e(F("OTA update error: receive failed"));
     else if (error == OTA_END_ERROR)
-        e(F("End Failed"));
+        e(F("OTA update error: end failed"));
 }
 void NodeMQTTUpdateManagerClass::onOTAProgress(unsigned int progress, unsigned int total)
 {
@@ -47,7 +47,7 @@ void NodeMQTTUpdateManagerClass::onOTAProgress(unsigned int progress, unsigned i
 void NodeMQTTUpdateManagerClass::begin(NodeMQTTConfig *config)
 {
     ArduinoOTA.setPassword(config->mqttPassword);
-    ArduinoOTA.setHostname(String(DEVICE_NAME + "-" + String(config->baseTopic)).c_str());
+    ArduinoOTA.setHostname(String(String(UUID) + "-" + String(config->baseTopic)).c_str());
     ArduinoOTA.begin();
 }
 
@@ -76,13 +76,19 @@ void NodeMQTTUpdateManagerClass::checkForUpdates()
 
             String fwImageURL = fwURL;
             fwImageURL.concat(".bin");
-            t_httpUpdate_return ret = ESPhttpUpdate.update(fwImageURL);
+#if defined(ESP8266)
+            t_httpUpdate_return ret = UPDATE.update(fwImageURL);
+#elif defined(ESP32)
+            WiFiClient client;
+            t_httpUpdate_return ret = UPDATE.update(client, fwImageURL);
+            UPDATE.setLedPin(LED_BUILTIN, LOW);
+#endif
 
             switch (ret)
             {
             case HTTP_UPDATE_FAILED:
                 e(F("HTTP_UPDATE_FAILD"));
-                e(ESPhttpUpdate.getLastErrorString().c_str());
+                e(UPDATE.getLastErrorString().c_str());
                 break;
 
             case HTTP_UPDATE_NO_UPDATES:

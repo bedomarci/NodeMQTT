@@ -52,7 +52,8 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     bool waitAvailable();
     bool available();
     uint8_t readType();
-    uint16_t read();
+    uint16_t readDevice();
+    void setRemotePlayer(bool remote = true);
     void setTimeOut(unsigned long timeOutDuration);
     void next();
     void previous();
@@ -101,6 +102,7 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     SoftwareSerial *DFSerial;
     DFRobotDFPlayerMini *DFPlayer;
     uint8_t _serialRxPin, _serialTxPin;
+    bool _remoteInterface = false;
     Task _tReadState;
     void printDetail(uint8_t type, int value);
     void activateSerial();
@@ -121,6 +123,10 @@ inline DFPlayerInterface::DFPlayerInterface(String topic, uint8_t serialRxPin, u
 {
 }
 
+inline void DFPlayerInterface::setRemotePlayer(bool remote) {
+    _remoteInterface = remote;
+    this->setMQTTPublishSubscribe(remote, !remote);
+}
 inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
 {
     if (DFSerial == nullptr)
@@ -156,6 +162,8 @@ inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
         break;
     }
 }
+
+
 
 inline void DFPlayerInterface::init()
 {
@@ -206,10 +214,6 @@ inline int DFPlayerInterface::cmp(DFPlayerCommand oldValue, DFPlayerCommand newV
     return -1;
 }
 
-inline void DFPlayerInterface::valueToString(String &sValue)
-{
-}
-
 inline void DFPlayerInterface::readStateCallback()
 {
     DFSerial->listen();
@@ -234,7 +238,7 @@ inline uint8_t DFPlayerInterface::readType()
     activateSerial();
     return DFPlayer->readType();
 }
-inline uint16_t DFPlayerInterface::read()
+inline uint16_t DFPlayerInterface::readDevice()
 {
     activateSerial();
     return DFPlayer->read();
@@ -432,6 +436,7 @@ inline int DFPlayerInterface::readCurrentFileNumber()
 
 inline void DFPlayerInterface::printDetail(uint8_t type, int value)
 {
+    char buffer[100];
     switch (type)
     {
     case TimeOut:
@@ -441,7 +446,8 @@ inline void DFPlayerInterface::printDetail(uint8_t type, int value)
         error(F("Stack Wrong!"));
         break;
     case DFPlayerCardInserted:
-        i(F("Card Inserted!"));
+        sprintf(buffer, PSTR("Card Inserted! %d files were found on SD card."), this->readFileCounts());
+        i(buffer);
         break;
     case DFPlayerCardRemoved:
         fatal(F("Card Removed!"));
@@ -457,7 +463,7 @@ inline void DFPlayerInterface::printDetail(uint8_t type, int value)
         switch (value)
         {
         case Busy:
-            e(F("Card not found"));
+            e(F("Card not found."));
             break;
         case Sleeping:
             e(F("Sleeping"));
@@ -484,6 +490,14 @@ inline void DFPlayerInterface::printDetail(uint8_t type, int value)
     default:
         break;
     }
+}
+
+inline void DFPlayerInterface::valueToString(String &sValue)
+{
+    DFPlayerCommand c = this->read();
+    char buffer[50];
+    sprintf(buffer, "Task: %d, Param#1: %d, Param#2: %d", (int)c.task, c.param1, c.param2);
+    sValue = String(buffer);
 }
 
 #endif //DDFPLAYERINTERFACE_H
