@@ -14,8 +14,8 @@
 #define READ_STATE_CALLBACK [this]() { readStateCallback(); }
 
 #define STATUS_PULL_RATE 132
-#define DEFAULT_SERIAL_TIMEOUT 500
-#define SOFTWARE_SERIAL_PAUSE 50
+#define DEFAULT_SERIAL_TIMEOUT 200
+#define SOFTWARE_SERIAL_PAUSE 30
 
 #define VOLUME_MAX 30
 
@@ -140,7 +140,7 @@ inline void DFPlayerInterface::updatePhisicalInterface(DFPlayerCommand newValue)
         previous();
         break;
     case PLAY:
-        play(newValue.param1);
+        playMp3Folder(newValue.param1);
         break;
     case LOOP:
         loop(newValue.param1);
@@ -187,6 +187,7 @@ inline void DFPlayerInterface::init()
         DFPlayer->setTimeOut(DEFAULT_SERIAL_TIMEOUT);
         this->getScheduler()->addTask(_tReadState);
         _tReadState.restart();
+        DFPlayer->reset();
     }
 }
 

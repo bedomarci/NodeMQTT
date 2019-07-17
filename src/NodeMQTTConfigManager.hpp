@@ -19,6 +19,7 @@ private:
   void setStaticFlagDefaultValues();
   uint32_t EEPROMReadChkSum();
   void printIp(uint8_t ip[4]);
+  void printAttributeWithTab(String s);
   bool isValid();
 
   const int EEPROM_CONFIGURATION_CHCKSUM_ADDRESS = 32;

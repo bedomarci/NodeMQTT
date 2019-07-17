@@ -25,7 +25,6 @@
 #define DF_SERIAL_TX D8
 #define PIN_BUZZER D5
 
-void onControlChange(String oldValue, String newValue);
 void unlockGame();
 void initGame();
 void maintainGame();

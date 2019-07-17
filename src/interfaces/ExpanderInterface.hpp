@@ -237,11 +237,6 @@ inline void ExpanderInterface<LENGTH>::digitalWrite(uint8_t pin, uint8_t value, 
 template <uint8_t LENGTH>
 inline uint8_t ExpanderInterface<LENGTH>::digitalRead(uint8_t pin)
 {
-    // readGPIO();
-    /* Check for interrupt (manual detection) */
-    // checkForInterrupt();
-    /* Read and return the pin state */
-    // return ((_PIN ^ _INV) & (1 << pin)) ? HIGH : LOW;
     Array<uint8_t, LENGTH> arr = this->sample();
     this->write(arr);
     return arr[pin];
@@ -263,15 +258,15 @@ inline void ExpanderInterface<LENGTH>::writePort(uint16_t newValue, bool publish
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::writeChip(uint16_t value)
 {
+    if (!this->isEnabled()) return;
     _PORT = value;
     updateGPIO();
 }
 template <uint8_t LENGTH>
 inline uint16_t ExpanderInterface<LENGTH>::readChip()
 {
+    if (!this->isEnabled()) return 0;
     readGPIO();
-    /* Check for interrupt (manual detection) */
-    // checkForInterrupt();
     return _PIN ^ _INV;
 }
 template <uint8_t LENGTH>

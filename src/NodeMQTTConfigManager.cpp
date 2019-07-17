@@ -137,6 +137,13 @@ void NodeMQTTConfigManagerClass::printIp(uint8_t ip[4])
     Serial.println();
 }
 
+void NodeMQTTConfigManagerClass::printAttributeWithTab(String s) {
+    Serial.print(s);
+    Serial.print(TERMINAL_TAB);
+    if (s.length()<8)
+        Serial.print(TERMINAL_TAB);
+}
+
 void NodeMQTTConfigManagerClass::factoryReset()
 {
     uint32_t storedChkSum;
@@ -149,17 +156,16 @@ void NodeMQTTConfigManagerClass::factoryReset()
 void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
 {
     Serial.println(TERMINAL_HR);
-    Serial.print(ATTR_CONFVER);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_CONFVER);    
     Serial.println(configuration.configVersion);
-    Serial.print(ATTR_WIFISSID);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_WIFISSID);
     Serial.println(configuration.wifiSsid);
-    Serial.print(ATTR_WIFIPASS);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_WIFIPASS);
     Serial.println(configuration.wifiPassword);
-    Serial.print(ATTR_WIFIBSSID);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_WIFIBSSID);    
     for (int i = 0; i < 6; i++)
     {
         Serial.print(configuration.wifiBssid[i], HEX);
@@ -168,55 +174,51 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig &configuration)
     }
     Serial.println();
 
-    Serial.print(ATTR_IPADDRESS);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_IPADDRESS);    
     this->printIp(configuration.ipAddress);
 
-    Serial.print(ATTR_GATEWAY);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_GATEWAY);    
     this->printIp(configuration.gateway);
 
-    Serial.print(ATTR_SUBNET);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_SUBNET);
     this->printIp(configuration.subnetMask);
 
-    Serial.print(ATTR_DNS);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_DNS);
     this->printIp(configuration.dns);
 
-    Serial.print(ATTR_WIFICHANNEL);
-    Serial.print(TERMINAL_TAB);
+    printAttributeWithTab(ATTR_WIFICHANNEL);
     Serial.println(configuration.wifiChannel);
-    Serial.print(ATTR_MQTTSERV);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_MQTTSERV);
     Serial.println(configuration.mqttServer);
-    Serial.print(ATTR_MQTTPORT);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_MQTTPORT);    
     Serial.println(configuration.mqttPort);
-    Serial.print(ATTR_MQTTUSER);
-    Serial.print(TERMINAL_TAB);
+    
+    printAttributeWithTab(ATTR_MQTTUSER);
     Serial.println(configuration.mqttUser);
-    Serial.print(ATTR_MQTTPASS);
-    Serial.print(TERMINAL_TAB);
+    
+    printAttributeWithTab(ATTR_MQTTPASS);
     Serial.println(configuration.mqttPassword);
-    Serial.print(ATTR_BASETOPIC);
-    Serial.print(TERMINAL_TAB);
+
+    printAttributeWithTab(ATTR_BASETOPIC);    
     Serial.println(configuration.baseTopic);
-    Serial.print(ATTR_ONLINE);
-    Serial.print(TERMINAL_TAB);
+    
+    printAttributeWithTab(ATTR_ONLINE);
     Serial.println(configuration.isOnline);
-    Serial.print(ATTR_SERVICEMODE);
-    Serial.print(TERMINAL_TAB);
+    
+    printAttributeWithTab(ATTR_SERVICEMODE);
     Serial.println(configuration.isServiceMode);
-    Serial.print(ATTR_LOGGING);
-    Serial.print(TERMINAL_TAB);
+    
+    printAttributeWithTab(ATTR_LOGGING);
     Serial.println(configuration.isLogging);
+    
     Serial.println(TERMINAL_HR);
     for (int i = 0; i < properties.size(); i++)
     {
         NodeMQTTProperty *property = properties.get(i);
-        Serial.print(property->name);
-        Serial.print(TERMINAL_TAB);
+        String sPropertyName = String(property->name);
+        printAttributeWithTab(sPropertyName);
         Serial.println(property->value);
     }
     if (properties.size() > 0)

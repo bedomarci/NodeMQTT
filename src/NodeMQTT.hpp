@@ -14,6 +14,8 @@
 // #include PARSER_PATH
 #include "transports/WifiTransport.hpp"
 #include "parsers/PubSubParser.hpp"
+#include "NodeMQTTTScheduler.hpp"
+
 class NodeMQTT
 {
 public:

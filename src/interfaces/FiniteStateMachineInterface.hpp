@@ -63,7 +63,7 @@ FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, St
     states = LinkedList<State *>();
     transitions = LinkedList<Transition *>();
     this->setSamplingEnabled(false);
-    this->setMQTTPublish(false);
+    this->setMQTTPublish(true);
     this->setMQTTSubscribe(true);
 }
 FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)

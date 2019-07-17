@@ -6,15 +6,15 @@
 template <typename T, uint16_t LENGTH>
 class ArrayInterface : public NodeInterface<Array<T, LENGTH>>
 {
-  public:
+public:
     ArrayInterface(String publishTopic, String subscribeTopic);
     ArrayInterface(String topic);
     void init();
-    void writeItem(T newValue, uint16_t index, bool publishable = true);
+    void writeItem(uint16_t index, T newValue, bool publishable = true);
     void fill(T value, bool publishable = true);
     void valueToString(String &sValue);
 
-  protected:
+protected:
     virtual Array<T, LENGTH> sample() override;
     virtual Array<T, LENGTH> fromJSON(JsonObject &rootObject) override;
     virtual JsonObject &toJSON(Array<T, LENGTH> value, JsonObject &root) override;
@@ -43,7 +43,7 @@ inline void ArrayInterface<T, LENGTH>::init()
 }
 
 template <typename T, uint16_t LENGTH>
-inline void ArrayInterface<T, LENGTH>::writeItem(T newItem, uint16_t index, bool publishable)
+inline void ArrayInterface<T, LENGTH>::writeItem(uint16_t index, T newItem, bool publishable)
 {
     if (index >= LENGTH)
         return;

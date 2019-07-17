@@ -34,7 +34,7 @@ void NodeMQTTCommandProcessorClass::execute(const char *command)
     for (int i = 0; i < commands.size(); i++)
     {
         AbstractCommand *cmd = commands.get(i);
-        if (strcmp_P(cmd->getCommandWord(), &sCommandWord[0]) == 0)
+        if (strcmp_P(sCommandWord.c_str(), cmd->getCommandWord()) == 0)
         {
             if (parameter)
                 cmd->setCommandParameter(parameter);
@@ -61,9 +61,12 @@ void NodeMQTTCommandProcessorClass::printHelp()
     for (int i = 0; i < commands.size(); i++)
     {
         AbstractCommand *cmd = commands.get(i);
-        Serial.print(cmd->getCommandWord());
+        String commandWord = FPSTR(cmd->getCommandWord()); 
+        Serial.print(commandWord);
+        if (commandWord.length()<8)
+            Serial.print(TERMINAL_TAB);
         Serial.print(TERMINAL_TAB);
-        Serial.println(cmd->getHelpText());
+        Serial.println(FPSTR(cmd->getHelpText()));
     }
     Serial.println(TERMINAL_HR);
 }

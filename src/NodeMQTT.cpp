@@ -4,7 +4,7 @@
 #include "NodeMQTTCommandProcessor.hpp"
 #include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
-
+#include "NodeMQTTTScheduler.hpp"
 
 NodeMQTT::NodeMQTT()
 {
@@ -32,7 +32,7 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
     _config = configuration;
 
     _transport.setContext(&_context);
-    _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char*)p, l); });
+    _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char *)p, l); });
     _transport.setBrokerConnectedCallback([=]() { onBrokerConnected(); });
     _transport.setBrokerConnectingCallback([=]() { onBrokerConnecting(); });
     _transport.setBrokerDisconnectedCallback([=]() { onBrokerDisconnected(); });
@@ -44,13 +44,14 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
 
     _parser.setContext(&_context);
     _parser.setInterfaces(&interfaceList);
-    
+
     Logger.setLogging(_config.isLogging);
 #ifdef NODEMQTT_SERVICE_MODE
     _config.isServiceMode = true;
 #endif
 
     NodeMQTTCommandProcessor.init(&_context);
+    NodeMQTTScheduler.init(&_context);
 
     if (_config.isServiceMode)
         NodeMQTTConfigManager.print(_config);
@@ -79,6 +80,7 @@ void NodeMQTT::handle()
     }
     readSerial();         //SERIAL PULL
     _scheduler.execute(); //TASK EXECUTION
+    ESP.wdtFeed();
 }
 
 void NodeMQTT::addInterface(NodeInterfaceBase *interface)
@@ -118,7 +120,7 @@ void NodeMQTT::readSerial()
     {
         _serialBuffer = new char[SERIAL_BUFFER_SIZE];
         size_t length = Serial.readBytesUntil('\r', _serialBuffer, SERIAL_BUFFER_SIZE);
-        _serialBuffer[length] = '\0';       
+        _serialBuffer[length] = '\0';
         NodeMQTTCommandProcessor.execute(_serialBuffer);
         free(_serialBuffer);
     }
@@ -265,6 +267,7 @@ void NodeMQTT::onFatalError()
     buzz(TONE_FAIL);
 }
 
-ApplicationContext*  NodeMQTT::getContext() {
+ApplicationContext *NodeMQTT::getContext()
+{
     return &_context;
 }
