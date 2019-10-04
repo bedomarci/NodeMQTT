@@ -14,16 +14,20 @@
 // #include PARSER_PATH
 #include "transports/WifiTransport.hpp"
 #include "parsers/PubSubParser.hpp"
-#include "NodeMQTTTScheduler.hpp"
+#include "io/_AbstractIO.hpp"
+#include "misc/NTPTime.hpp"
+#include "io/TelnetIO.hpp"
+#include "NodeMQTTScheduler.hpp"
 
 class NodeMQTT
 {
 public:
   NodeMQTT();
   void begin();
-  void begin(NodeMQTTConfig &configuration);
+  void begin(NodeMQTTConfig *configuration);
   void handle();
   void addInterface(NodeInterfaceBase *);
+  void addIO(AbstractIO * io);
 
   void setNetworkConnectingCallback(NodeMQTTCallback);
   void setNetworkConnectedCallback(NodeMQTTCallback);
@@ -39,6 +43,7 @@ public:
   void setSystemBuzzer(BuzzerInterface *interface);
   void addTask(Task &task);
 
+
   ApplicationContext* getContext();
 
 protected:
@@ -47,7 +52,7 @@ protected:
   TRANSPORT_CLASS _transport;
   PARSER_CLASS _parser;
   Scheduler _scheduler;
-  NodeMQTTConfig _config;
+  NodeMQTTConfig * _config;
   ApplicationContext _context;
 
   LinkedList<NodeInterfaceBase *> interfaceList;
@@ -56,12 +61,12 @@ protected:
   void reconnectBroker();
   bool isConnectionAlive();
   void reconnectWifi();
-  void readSerial();
   void parse(char *topic, char *payload, unsigned int length);
-  void addDefaultInterfaces();
   void subscribeTopics();
+  void addDefaultInterfaces();
+
   void initializeInterfaces();
-  void printHeader();
+  void initializeIOs();
 
   void onNetworkConnecting();
   void onNetworkConnected();
@@ -89,5 +94,8 @@ private:
   NodeMQTTCallback brokerConnectingCallback;
   NodeMQTTCallback brokerConnectedCallback;
   NodeMQTTCallback brokerDisconnectedCallback;
+  NTPTime ntpTime;
+
 };
+
 #endif //NODEMQTT_H

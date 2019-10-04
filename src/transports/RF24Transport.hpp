@@ -1,6 +1,5 @@
-#if !defined(RF24TRANSPORT_H) && defined(RF_TRANSPORT)
+#if !defined(RF24TRANSPORT_H) && (NODEMQTT_TRANSPORT == RF_TRANSPORT)
 #define RF24TRANSPORT_H
-
 
 
 #include <SPI.h>

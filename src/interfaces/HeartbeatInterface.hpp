@@ -1,7 +1,9 @@
 #ifndef HEARTBEATINTERFACE_H
 #define HEARTBEATINTERFACE_H
 
-#include <ESP.h>
+#if defined(ESP32) || defined(ESP8266)
+    #include <ESP.h>
+#endif
 #include "misc/helpers.hpp"
 #include "_NodeInterface.hpp"
 
@@ -18,7 +20,7 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
   public:
     HeartbeatInterface(int beatIntervalSecond);
     void init();
-    void valueToString(String &sValue);
+    String valueToString() override;
 
   protected:
     NodeStatus status;
@@ -27,7 +29,6 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
     virtual NodeStatus fromJSON(JsonObject &root) override;
     virtual JsonObject &toJSON(NodeStatus value, JsonObject &root) override;
     virtual int cmp(NodeStatus oldValue, NodeStatus newValue) override;
-    // virtual void valueToString(NodeStatus value, String &sValue) override;
 
     const char *uptimeKey = "uptime";
     const char *nodeIdKey = "nodeid";
@@ -62,7 +63,9 @@ inline void HeartbeatInterface::init()
 inline NodeStatus HeartbeatInterface::sample()
 {
     status.uptime = millis();
-    status.freeHeap = ESP.getFreeHeap();
+    #if defined(ESP32) || defined(ESP8266)
+        status.freeHeap = ESP.getFreeHeap();
+    #endif
     strcpy(status.networkAddress, this->getContext()->transport->getNetworkAddressString().c_str());
     return status;
 }
@@ -90,9 +93,9 @@ inline void HeartbeatInterface::updatePhisicalInterface(NodeStatus newValue)
 {
 }
 
-inline void HeartbeatInterface::valueToString(String &sValue)
+inline String HeartbeatInterface::valueToString()
 {
-    sValue = String("<3");
+    return String(F("<3"));
 }
 
 #endif //HEARTBEATINTERFACE_H

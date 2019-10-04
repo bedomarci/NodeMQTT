@@ -15,7 +15,7 @@
 #include "transports/_AbstractTransport.hpp"
 #include "parsers/_AbstractParser.hpp"
 
-#include <functional>
+// #include <functional>
 #include "../NodeMQTTLogger.hpp"
 
 template <typename T>
@@ -49,7 +49,7 @@ class NodeInterface : public NodeInterfaceBase
     void triggerCallback();
     void preventDebugLogging(bool prevent = true);
     void republish();
-
+    
     String getBaseTopic();
     String getSubscribeTopic();
     String getPublishTopic();
@@ -142,6 +142,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
 {
     if (!_enabled)
         return;
+
     if (cmp(newValue, currentValue) != 0 or !_valueInitialized)
     {
         T oldValue = currentValue;
@@ -153,8 +154,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable)
         }
         if (!_preventDebugLogging)
         {
-            String sValue;
-            this->valueToString(sValue);
+            String sValue = this->valueToString();
             Logger.logf(DEBUG, MSG_VALUE_CHANGED, _interfaceName.c_str(), _publishTopic.c_str(), publishable, sValue.c_str());
         }
         if (_onChangeCallback)
@@ -234,6 +234,12 @@ inline String NodeInterface<T>::toString(JsonObject rootObject)
     serializeJson(rootObject, jsonStr);
     return jsonStr;
 }
+
+// template <typename T>
+// inline String NodeInterface<T>::valueToString()
+// {
+//    return String(this->read());
+// }
 
 template <typename T>
 inline void NodeInterface<T>::setSamplingRate(unsigned long samplingRate)

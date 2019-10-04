@@ -45,7 +45,7 @@ class DFPlayerInterface : public NodeInterface<DFPlayerCommand>
     DFPlayerInterface(String publishTopic, String subscribeTopic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
     DFPlayerInterface(String topic, uint8_t serialRxPin = 0, uint8_t serialTxPin = 0);
     void init();
-    void valueToString(String &sValue);
+    String valueToString() override;
 
     uint8_t readCommand();
     bool begin(Stream &stream, bool isACK = true, bool doReset = true);
@@ -438,67 +438,75 @@ inline int DFPlayerInterface::readCurrentFileNumber()
 inline void DFPlayerInterface::printDetail(uint8_t type, int value)
 {
     char buffer[100];
+    strcpy_P(buffer, PSTR("DFPlayer: "));
     switch (type)
     {
     case TimeOut:
-        i(F("Time Out!"));
+        strcat_P(buffer, PSTR("Time Out!"));
+        d(buffer);
         break;
     case WrongStack:
-        error(F("Stack Wrong!"));
+        strcat_P(buffer, PSTR("Stack Wrong!"));
+        d(buffer);
         break;
     case DFPlayerCardInserted:
-        sprintf(buffer, PSTR("Card Inserted! %d files were found on SD card."), this->readFileCounts());
-        i(buffer);
+        strcat_P(buffer, PSTR("Card Inserted! %d files were found on SD card."));
+        Logger.logf(INFO, buffer, this->readFileCounts());
         break;
     case DFPlayerCardRemoved:
-        fatal(F("Card Removed!"));
+        strcat_P(buffer, PSTR("Card Removed!"));
+        fatal(buffer);
         break;
     case DFPlayerCardOnline:
-        i(F("Card Online!"));
+        strcat_P(buffer, PSTR("Card Online!"));
+        i(buffer);
         break;
     case DFPlayerPlayFinished:
-        i(F("Play Finished!"));
+        strcat_P(buffer, PSTR("Play Finished!"));
+        d(buffer);
         break;
     case DFPlayerError:
-        e(F("DFPlayerError:"));
+        strcpy_P(buffer, PSTR("DFPlayerError: "));
         switch (value)
         {
         case Busy:
-            e(F("Card not found."));
+            strcat_P(buffer, PSTR("Card not found."));
             break;
         case Sleeping:
-            e(F("Sleeping"));
+            strcat_P(buffer, PSTR("Sleeping"));
             break;
         case SerialWrongStack:
-            e(F("Get Wrong Stack"));
+            strcat_P(buffer, PSTR("Get Wrong Stack"));
             break;
         case CheckSumNotMatch:
-            e(F("Check Sum Not Match"));
+            strcat_P(buffer, PSTR("Check Sum Not Match"));
             break;
         case FileIndexOut:
-            e(F("File Index Out of Bound"));
+            strcat_P(buffer, PSTR("File Index Out of Bound"));
             break;
         case FileMismatch:
-            e(F("Cannot Find File"));
+            strcat_P(buffer, PSTR("Cannot Find File"));
             break;
         case Advertise:
-            e(F("In Advertise"));
+            strcat_P(buffer, PSTR("In Advertise"));
             break;
         default:
+            strcat_P(buffer, PSTR("Unknown case"));
             break;
         }
+        e(buffer);
         break;
     default:
         break;
     }
 }
 
-inline void DFPlayerInterface::valueToString(String &sValue)
+inline String DFPlayerInterface::valueToString()
 {
     DFPlayerCommand c = this->read();
     char buffer[50];
     sprintf(buffer, "Task: %d, Param#1: %d, Param#2: %d", (int)c.task, c.param1, c.param2);
-    sValue = String(buffer);
+    return String(buffer);
 }
 
 #endif //DDFPLAYERINTERFACE_H

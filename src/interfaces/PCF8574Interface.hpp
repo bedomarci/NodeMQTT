@@ -23,6 +23,7 @@ inline PCF8574Interface::PCF8574Interface(String topic, uint8_t sdaPin, uint8_t 
 inline PCF8574Interface::PCF8574Interface(String publishTopic, String subscribeTopic, uint8_t sdaPin, uint8_t sclPin, uint8_t address, int8_t interruptPin = -1, uint16_t debounceDelay = DEFAULT_BUTTON_DEBOUNCE, bool interruptPu)
     : ExpanderInterface<8U>(publishTopic, subscribeTopic, sdaPin, sclPin, address, interruptPin, debounceDelay, interruptPu)
 {
+    this->setInterfaceName(PCF8574_NAME);
 }
 
 void PCF8574Interface::readGPIO()

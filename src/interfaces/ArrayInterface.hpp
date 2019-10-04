@@ -12,7 +12,7 @@ public:
     void init();
     void writeItem(uint16_t index, T newValue, bool publishable = true);
     void fill(T value, bool publishable = true);
-    void valueToString(String &sValue);
+    String valueToString() override;
 
 protected:
     virtual Array<T, LENGTH> sample() override;
@@ -136,10 +136,10 @@ inline void ArrayInterface<T, LENGTH>::fill(T value, bool publishable)
 }
 
 template <typename T, uint16_t LENGTH>
-inline void ArrayInterface<T, LENGTH>::valueToString(String &sValue)
+inline String ArrayInterface<T, LENGTH>::valueToString()
 {
     Array<T, LENGTH> arr = this->read();
-    sValue = array_toString<T, LENGTH>(arr); //TODO KONVERTALAS
+    return array_toString<T, LENGTH>(arr); //TODO KONVERTALAS
 }
 
 #endif //ARRAYINTERFACE_H

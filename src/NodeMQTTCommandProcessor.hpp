@@ -2,6 +2,7 @@
 #define NODECOMMANDPROCESSOR
 
 #include "commands/_AbstractCommand.hpp"
+
 #include <LinkedList.h>
 
 class NodeMQTTCommandProcessorClass {
@@ -9,7 +10,7 @@ class NodeMQTTCommandProcessorClass {
         void init(ApplicationContext* context);
         void execute(const char * command);
         void registerCommand(AbstractCommand* command);
-        void printHelp();
+        LinkedList<AbstractCommand*> * getCommands();
     protected:
         void loadDefaultCommands();
         LinkedList<AbstractCommand*> commands;

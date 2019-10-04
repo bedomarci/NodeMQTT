@@ -22,11 +22,13 @@ uint32_t UUID = ESP.getChipId();
 uint32_t UUID = (uint32_t)ESP.getEfuseMac();
 #endif
 const char terminalHR[] PROGMEM = "==============================================";
+const char terminalPrompt[] PROGMEM = "> ";
+
 const char terminalHeader[] PROGMEM = "\
-  _  _         _     __  __  ___ _____ _____ \n\
- | \\| |___  __| |___|  \\/  |/ _ \\_   _|_   _|\n\
- | .` / _ \\/ _` / -_) |\\/| | (_) || |   | |  \n\
- |_|\\_\\___/\\__,_\\___|_|  |_|\\__\\_\\|_|   |_|  \n";
+  _  _         _     __  __  ___ _____ _____ \n\r\
+ | \\| |___  __| |___|  \\/  |/ _ \\_   _|_   _|\n\r\
+ | .` / _ \\/ _` / -_) |\\/| | (_) || |   | |  \n\r\
+ |_|\\_\\___/\\__,_\\___|_|  |_|\\__\\_\\|_|   |_|  \n\r";
 
 //TOPICS
 const char offlineMessage[] PROGMEM = "OFFLINE";
@@ -51,6 +53,8 @@ const char dataInterfaceName[] PROGMEM = "data";
 const char arrayInterfaceName[] PROGMEM = "array";
 const char languageInterfaceName[] PROGMEM = "lang";
 const char commandInterfaceName[] PROGMEM = "cmd";
+const char fsmInterfaceName[] PROGMEM = "FSM";
+const char PCF8574InterfaceName[] PROGMEM = "PCF8574";
 const char interfaceName[] PROGMEM = "INTERFACE";
 
 //CONFIGURATION
@@ -73,6 +77,7 @@ const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
 const char configAttribute_isLogging[] PROGMEM = "logging";
 
 //MESSAGES
+const char message_Introduction[] PROGMEM = "Hello! I am %s. (build time: %s, unix: %d)";
 const char message_ValueChanged[] PROGMEM = "Value changed on %s (%s, pub:%d) - %s";
 const char message_Publishing[] PROGMEM = "Publishing: %s";
 const char message_FailedToParse[] PROGMEM = "Failed to parse JSON data @ %s";
@@ -81,3 +86,13 @@ const char message_MQTTBrokerConnectionAttempt[] PROGMEM = "%s is attempting to 
 const char message_MQTTBrokerDisconnected[] PROGMEM = "Connection to the server has been lost. Trying to reconnect! RC=[%d]";
 const char message_MQTTBrokerCouldNotConnect[] PROGMEM = "Failed to connect broker. RC=[%d]";
 const char message_ContextIsMissing[] PROGMEM = "Context is missing. Did you register %s interface? (@%s)";
+const char message_ConnetctToWifi[] PROGMEM = "Connecting to %s. #%d";
+const char message_ConnetctToWifiWithBSSID[] PROGMEM = "Connecting to %s with BSSID. #%d";
+
+//FIRMWARE
+const long FIRMWARE_BUILD_TIME PROGMEM = UNIX_TIMESTAMP;
+const char LOG_FORMAT_MILLIS[] PROGMEM = "[%c|%12lu] %s";
+const char LOG_FORMAT_NTP[]    PROGMEM = "[%c|%s] %s";
+
+
+// const char logPrefixNTP[] PROGMEM     = "[%c|%12lu] %" TOSTRING(LOG_MAX_PRINT_LENGTH)  "s";

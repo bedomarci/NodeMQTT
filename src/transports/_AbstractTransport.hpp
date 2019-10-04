@@ -1,11 +1,12 @@
 #ifndef ABSTRACTTRANSPORT_H
 #define ABSTRACTTRANSPORT_H
-#include "../NodeMQTTConfigManager.hpp"
-#include "../misc/helpers.hpp"
-#include "../misc/typedef.hpp"
-#include "TaskScheduler.h"
-#include "../NodeMQTT.hpp"
-
+// #include "../NodeMQTTConfigManager.hpp"
+// #include "../misc/helpers.hpp"
+// // #include "../misc/typedef.hpp"
+// #include "TaskScheduler.h"
+// #include "../NodeMQTT.hpp"
+#include "../constants.hpp"
+#include "../misc/typedefDeclaration.hpp"
 #include "Client.h"
 
 class AbstractTransport
@@ -16,10 +17,11 @@ class AbstractTransport
     virtual void connectNetwork() = 0;
     virtual bool isNetworkConnected() = 0;
     virtual String getNetworkAddressString() = 0;
-
     virtual void publish(const char *topic, const char *msg) = 0;
     virtual void subscribe(const char *topic) = 0;
 
+    virtual String getState();
+    
     void setContext(ApplicationContext *context);
 
     void setMessageCallback(NodeMQTTMessageCallback);
@@ -31,7 +33,6 @@ class AbstractTransport
     void setBrokerConnectingCallback(NodeMQTTCallback);
     void setBrokerConnectedCallback(NodeMQTTCallback);
     void setBrokerDisconnectedCallback(NodeMQTTCallback);
-
     void onMessage(char *, uint8_t *, unsigned int);
     void onNetworkConnecting();
     void onNetworkConnected();
@@ -40,12 +41,11 @@ class AbstractTransport
     void onBrokerConnected();
     void onBrokerDisconnected();
 
+
     Scheduler *getScheduler();
     NodeMQTTConfig *getConfiguration();
-
   protected:
-    // Scheduler *_scheduler;
-    // NodeMQTTConfig *_config;
+    // AbstractTransport();
 
   private:
     ApplicationContext *_context;
@@ -58,6 +58,7 @@ class AbstractTransport
     NodeMQTTCallback brokerDisconnectedCallback;
 };
 
+/*
 inline void AbstractTransport::setContext(ApplicationContext *context) {
     _context = context;
 }
@@ -133,4 +134,8 @@ inline void AbstractTransport::onMessage(char *topic, uint8_t *payload, unsigned
         messageCallback(topic, payload, length);
 }
 
+inline String AbstractTransport::getState() {
+    return "TRANSPORT STATE N/A";
+}
+*/
 #endif //ABSTRACTTRANSPORT_H

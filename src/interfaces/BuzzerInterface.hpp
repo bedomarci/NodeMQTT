@@ -14,7 +14,7 @@ class BuzzerInterface : public DataInterface<int>
   public:
     BuzzerInterface(String topic, uint8_t buzzerPin);
     void init();
-    void valueToString(String &sValue);
+    
 
   protected:
     uint8_t _noteCounter = 0;
@@ -120,11 +120,6 @@ inline bool BuzzerInterface::fetchTone(int toneId)
 inline int BuzzerInterface::cmp(int oldValue, int newValue)
 {
     return -1;
-}
-
-inline void BuzzerInterface::valueToString(String &sValue)
-{
-    sValue = String(this->read());
 }
 
 #endif //BUZZERINTERFACE_H

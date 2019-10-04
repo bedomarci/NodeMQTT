@@ -3,6 +3,7 @@
 #define HELPERS_H
 #include <Arduino.h>
 #include <Wire.h>
+#include "TimeLib.h"
 #include "NodeMQTTLogger.hpp"
 #include "../constants.hpp"
 
@@ -155,7 +156,7 @@ inline T array_max(Array<T, LENGTH> &array)
         if (max < array[i])
             max = array[i];
     }
-    return min;
+    return max;
 }
 
 template <typename T, uint16_t LENGTH>
@@ -201,7 +202,7 @@ inline bool hasBSSID(uint8_t bssid[6])
     {
         hasBSSID += bssid[i];
     }
-    return !!hasBSSID;
+    return hasBSSID != 0;
 }
 
 inline void restartNode()
@@ -215,5 +216,32 @@ inline void restartNode()
     ESP.restart();
 #endif
 }
+
+inline void ioprintln (const char *) {
+    
+}
+
+inline void printHeader(Print &p) {
+    p.print("\033[2J");
+    p.print("\n\n\n");
+    p.println(FPSTR(TERMINAL_HR));
+    p.print(FPSTR(NODEMQTT_TERMINAL_HEADER));
+    p.print("\n");
+    p.println(FPSTR(TERMINAL_HR));
+}
+
+inline String toTimeString(time_t t) {
+    char buffer[13];
+    sprintf(buffer, "%2d:%2d:%2d.%3d", hour(t), minute(t), second(t), (int)(millis()%1000));
+    return String(buffer);
+}
+
+inline String toDateTimeString(time_t t) {
+    char buffer[20];
+    sprintf(buffer, "%4d/%2d/%2d %2d:%2d:%2d", year(t), month(t), day(t), hour(t), minute(t), second(t));
+    return String(buffer);
+}
+
+
 
 #endif

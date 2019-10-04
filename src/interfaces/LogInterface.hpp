@@ -7,7 +7,7 @@ class LogInterface : public StringInterface
   public:
     LogInterface();
     void init();
-    void valueToString(String &sValue);
+    String valueToString() override;
 
   protected:
     String logMsg = "";
@@ -47,8 +47,9 @@ inline int LogInterface::cmp(String oldValue, String newValue)
     return value;
 }
 
-inline void LogInterface::valueToString(String &sValue)
+inline String LogInterface::valueToString()
 {
+    return "";
 }
 
 #endif //LOGINTERFACE_H

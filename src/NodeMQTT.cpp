@@ -4,32 +4,43 @@
 #include "NodeMQTTCommandProcessor.hpp"
 #include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
-#include "NodeMQTTTScheduler.hpp"
+#include "NodeMQTTScheduler.hpp"
+#include "NodeMQTTIOContainer.hpp"
+// #include "NodeMQTTTelnet.hpp"
 
 NodeMQTT::NodeMQTT()
 {
-    Serial.begin(NODEMQTT_SERIAL_SPEED);
-    printHeader();
+    _config = new NodeMQTTConfig();
     interfaceList = LinkedList<NodeInterfaceBase *>();
     _scheduler.init();
-    Logger.setFatalCallback([=]() { onFatalError(); });
     _context.scheduler = &_scheduler;
     _context.transport = &_transport;
     _context.parser = &_parser;
-    _context.configuration = &_config;
+    _context.configuration = _config;
     _context.interfaces = &interfaceList;
+    
+    NodeMQTTIO.init(&_context);
+    NodeMQTTCommandProcessor.init(&_context);
+    NodeMQTTScheduler.init(&_context);
+    Logger.init(&_context);
+
+    printHeader(NodeMQTTIO);
+    Logger.setFatalCallback([=]() { onFatalError(); });
 }
 void NodeMQTT::begin()
 {
-    NodeMQTTConfig loadedConfig;
-    NodeMQTTConfigManager.loadInto(loadedConfig);
-    begin(loadedConfig);
-}
-void NodeMQTT::begin(NodeMQTTConfig &configuration)
-{
-    d(F("Initializing MQTT NODE"));
+    // NodeMQTTConfig * loadedConfig; = new NodeMQTTConfig();
 
+    // NodeMQTTConfigManager.loadInto(loadedConfig);
+    NodeMQTTConfigManager.loadInto(_config);
+    begin(_config);
+}
+void NodeMQTT::begin(NodeMQTTConfig *configuration)
+{
     _config = configuration;
+
+    Logger.logf(INFO, MSG_INTRODUCTION, getContext()->configuration->baseTopic, toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
+    d(F("Initializing NodeMQTT"));
 
     _transport.setContext(&_context);
     _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char *)p, l); });
@@ -39,26 +50,25 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
     _transport.setNetworkConnectedCallback([=]() { onNetworkConnected(); });
     _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
     _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
-    if (_config.isOnline)
+    if (_config->isOnline) {
         _transport.init();
+    }
 
     _parser.setContext(&_context);
     _parser.setInterfaces(&interfaceList);
 
-    Logger.setLogging(_config.isLogging);
+    Logger.setLogging(_config->isLogging);
 #ifdef NODEMQTT_SERVICE_MODE
-    _config.isServiceMode = true;
+    _config->isServiceMode = true;
 #endif
 
-    NodeMQTTCommandProcessor.init(&_context);
-    NodeMQTTScheduler.init(&_context);
-
-    if (_config.isServiceMode)
+    if (_config->isServiceMode)
         NodeMQTTConfigManager.print(_config);
 
     this->addDefaultInterfaces();
-    this->setBaseTopic(String(_config.baseTopic));
+    this->setBaseTopic(String(_config->baseTopic));
     this->initializeInterfaces();
+
 
     if (_context.configuration->isOnline)
         _transport.connectNetwork();
@@ -68,17 +78,16 @@ void NodeMQTT::begin(NodeMQTTConfig &configuration)
 
 void NodeMQTT::handle()
 {
-    if (_config.isOnline)
+    if (_config->isOnline)
     {
         _transport.loop();
 #ifdef WIFI_TRANSPORT
-        if (_config.isServiceMode && _transport.isNetworkConnected())
+        if (_config->isServiceMode && _transport.isNetworkConnected())
         {
             NodeMQTTUpdateManager.checkForUpload();
         }
 #endif
     }
-    readSerial();         //SERIAL PULL
     _scheduler.execute(); //TASK EXECUTION
     ESP.wdtFeed();
 }
@@ -86,9 +95,10 @@ void NodeMQTT::handle()
 void NodeMQTT::addInterface(NodeInterfaceBase *interface)
 {
     interfaceList.add(interface);
-    // interface->setTransport(&_transport);
     interface->setContext(&_context);
 }
+
+
 
 void NodeMQTT::subscribeTopics()
 {
@@ -114,17 +124,7 @@ void NodeMQTT::initializeInterfaces()
         interfaceList.get(i)->init();
 }
 
-void NodeMQTT::readSerial()
-{
-    if (Serial.available())
-    {
-        _serialBuffer = new char[SERIAL_BUFFER_SIZE];
-        size_t length = Serial.readBytesUntil('\r', _serialBuffer, SERIAL_BUFFER_SIZE);
-        _serialBuffer[length] = '\0';
-        NodeMQTTCommandProcessor.execute(_serialBuffer);
-        free(_serialBuffer);
-    }
-}
+
 
 void NodeMQTT::parse(char *topic, char *payload, unsigned int length)
 {
@@ -159,6 +159,7 @@ void NodeMQTT::addDefaultInterfaces()
     nodeConfigInterface = new NodeConfigInterface();
     logInterface = new LogInterface();
     commandInterface = new CommandInterface();
+    logInterface->disable();
     addInterface(nodeConfigInterface);
     addInterface(heartbeatInterface);
     addInterface(logInterface);
@@ -192,7 +193,11 @@ void NodeMQTT::onNetworkConnecting()
 }
 void NodeMQTT::onNetworkConnected()
 {
-    NodeMQTTUpdateManager.begin(&_config);
+    
+    #ifdef WIFI_TRANSPORT
+    NodeMQTTUpdateManager.init(getContext());
+    ntpTime.init(getContext());
+    #endif
     if (networkConnectedCallback != nullptr)
         networkConnectedCallback();
 }
@@ -217,11 +222,13 @@ void NodeMQTT::onBrokerConnected()
 
     this->subscribeTopics();
     heartbeatInterface->setEnabled(true);
-    nodeConfigInterface->publishCurrentConfig(_config);
+    nodeConfigInterface->publishCurrentConfig(*_config);
+    logInterface->enable();
     buzz(TONE_SYSTEM_ONLINE);
 }
 void NodeMQTT::onBrokerDisconnected()
 {
+    logInterface->disable();
     if (brokerDisconnectedCallback != nullptr)
         brokerDisconnectedCallback();
 
@@ -254,14 +261,6 @@ void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
     brokerDisconnectedCallback = cb;
 }
 
-void NodeMQTT::printHeader()
-{
-    Serial.print("\n\n\n");
-    Serial.println(FPSTR(TERMINAL_HR));
-    Serial.print(FPSTR(NODEMQTT_TERMINAL_HEADER));
-    Serial.print("\n");
-    Serial.println(FPSTR(TERMINAL_HR));
-}
 void NodeMQTT::onFatalError()
 {
     buzz(TONE_FAIL);
@@ -271,3 +270,4 @@ ApplicationContext *NodeMQTT::getContext()
 {
     return &_context;
 }
+

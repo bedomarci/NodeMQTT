@@ -6,6 +6,7 @@
 #include <LinkedList.h>
 #include <stdio.h>
 #include "misc/config.hpp"
+#include "misc/typedefDeclaration.hpp"
 #include "constants.hpp"
 
 enum LOG_LEVEL
@@ -33,6 +34,7 @@ public:
   void setLogging(bool isLogging);
   int queueSize();
   String pop();
+  void init(ApplicationContext * context);
 
 protected:
   void logf(LOG_LEVEL level, const char *message, va_list arg);
@@ -42,6 +44,7 @@ protected:
   uint8_t _queueLength = LOG_MAX_QUEUE_LENGTH;
   NodeMQTTCallback fatalCallback;
   bool _isLogging = true;
+  ApplicationContext * _context;
 };
 
 extern NodeMQTTLoggerClass Logger;

@@ -17,15 +17,21 @@
         "espressif8266",
         "atmelavr"
     ],
+    "build": {
+        "flags": ""
+    },
+    
     "dependencies": [
         {
+            "SPI": "*",
             "TaskScheduler": "*",
             "LinkedList": "*",
             "PubSubClient": "*",
             "ArduinoJson": "*",
-            "Button": "*",
-            "DFRobotDFPlayerMini": "*",
-            "arduino-fsm": "*"
+            "JC_Button": "*",
+            "Time": "*",
+            "NTPClient": "*",
+            "DFRobotDFPlayerMini": "*"
         },
         {
             "name": "RF24",

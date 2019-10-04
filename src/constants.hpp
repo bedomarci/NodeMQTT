@@ -2,16 +2,22 @@
 #define CONSTANTS_H
 #include <Arduino.h>
 #include "misc/pitches.hpp"
+#include "misc/compile_time.hpp"
+
 
 #if defined(ESP8266) || defined(ESP32)
 #include <functional>
 typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
 typedef std::function<void()> NodeMQTTCallback;
+typedef std::function<void(const char *)> NodeMQTTStringCallback;
 #define NodeMQTTChangeCallback std::function<void(T, T)>
 #else
 typedef void (*NodeMQTTMessageCallback)(char *, uint8_t *, unsigned int);
 typedef void (*NodeMQTTCallback)();
+typedef void (*NodeMQTTStringCallback)(const char *);
 #define NodeMQTTChangeCallback void (*)(T, T)
+#define FPSTR(x) x
+#define F(x) x
 #endif
 
 
@@ -88,34 +94,55 @@ extern const char terminalTab[] PROGMEM;
 extern uint32_t UUID;
 extern const char terminalHR[] PROGMEM;
 #define TERMINAL_HR FPSTR(terminalHR)
+// #define TERMINAL_HR terminalHR
+extern const char terminalPrompt[] PROGMEM;
+#define TERMINAL_PROMPT FPSTR(terminalPrompt)
 extern const char terminalHeader[] PROGMEM;
 #define NODEMQTT_TERMINAL_HEADER FPSTR(terminalHeader)
 
 // INTERFACE NAMES
 extern const char analogName[] PROGMEM;
-extern const char buttonName[] PROGMEM;
-extern const char buttonArrayName[] PROGMEM;
-extern const char relayName[] PROGMEM;
-extern const char stringName[] PROGMEM;
-extern const char buzzerName[] PROGMEM;
-extern const char dfplayerName[] PROGMEM;
-extern const char pwmName[] PROGMEM;
-extern const char arrayInterfaceName[] PROGMEM;
-extern const char dataInterfaceName[] PROGMEM;
-extern const char languageInterfaceName[] PROGMEM;
-extern const char interfaceName[] PROGMEM;
 #define ANALOG_NAME FPSTR(analogName)
+
+extern const char buttonName[] PROGMEM;
 #define BUTTON_NAME FPSTR(buttonName)
+
+extern const char buttonArrayName[] PROGMEM;
 #define BUTTON_ARRAY_NAME FPSTR(buttonArrayName)
+
+extern const char relayName[] PROGMEM;
 #define RELAY_NAME FPSTR(relayName)
+
+extern const char stringName[] PROGMEM;
 #define STRING_NAME FPSTR(stringName)
+
+extern const char buzzerName[] PROGMEM;
 #define BUZZER_NAME FPSTR(buzzerName)
+
+extern const char dfplayerName[] PROGMEM;
 #define DFPLAYER_NAME FPSTR(dfplayerName)
+
+extern const char pwmName[] PROGMEM;
 #define PWM_NAME FPSTR(pwmName)
-#define DATA_NAME FPSTR(dataInterfaceName)
+
+extern const char arrayInterfaceName[] PROGMEM;
 #define ARRAY_NAME FPSTR(arrayInterfaceName)
+
+extern const char dataInterfaceName[] PROGMEM;
+#define DATA_NAME FPSTR(dataInterfaceName)
+
+extern const char languageInterfaceName[] PROGMEM;
 #define LANGUAGE_NAME FPSTR(languageInterfaceName)
+
+extern const char fsmInterfaceName[] PROGMEM;
+#define FSM_NAME FPSTR(fsmInterfaceName)
+
+extern const char PCF8574InterfaceName[] PROGMEM;
+#define PCF8574_NAME FPSTR(PCF8574InterfaceName)
+
+extern const char commandInterfaceName[] PROGMEM;
 #define COMMAND_NAME FPSTR(commandInterfaceName)
+extern const char interfaceName[] PROGMEM;
 #define INTERFACE_NAME FPSTR(interfaceName)
 
 extern const char configAttribute_baseTopic[] PROGMEM;
@@ -154,6 +181,8 @@ extern const char configAttribute_mqttPort[] PROGMEM;
 #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
 
 //MESSAGES
+extern const char message_Introduction[] PROGMEM;
+#define MSG_INTRODUCTION FPSTR(message_Introduction)
 extern const char message_ValueChanged[] PROGMEM;
 #define MSG_VALUE_CHANGED FPSTR(message_ValueChanged)
 extern const char message_Publishing[] PROGMEM;
@@ -163,7 +192,6 @@ extern const char message_FailedToParse[] PROGMEM;
 extern const char message_UnknownState[] PROGMEM;
 #define MSG_UNKNOWN_STATE FPSTR(message_UnknownState)
 extern const char message_MQTTBrokerConnectionAttempt[] PROGMEM;
-;
 #define MSG_BROKER_CONNECTION_ATTEMPT FPSTR(message_MQTTBrokerConnectionAttempt)
 extern const char message_MQTTBrokerCouldNotConnect[] PROGMEM;
 #define MSG_BROKER_COULD_NOT_CONNECT FPSTR(message_MQTTBrokerCouldNotConnect)
@@ -171,5 +199,18 @@ extern const char message_MQTTBrokerDisconnected[] PROGMEM;
 #define MSG_BROKER_DISCONNECTED FPSTR(message_MQTTBrokerDisconnected)
 extern const char message_ContextIsMissing[] PROGMEM;
 #define MSG_CONTEXT_IS_MISSING FPSTR(message_ContextIsMissing)
+extern const char message_ConnetctToWifi[] PROGMEM;
+#define MSG_CONNECT_TO_WIFI FPSTR(message_ConnetctToWifi)
+extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
+#define MSG_CONNECT_TO_WIFI_BSSID FPSTR(message_ConnetctToWifiWithBSSID)
+
+
+
+
+extern const long FIRMWARE_BUILD_TIME PROGMEM;
+extern const char LOG_FORMAT_NTP[] PROGMEM;
+extern const char LOG_FORMAT_MILLIS[] PROGMEM;
+
+
 
 #endif //CONSTANTS_H

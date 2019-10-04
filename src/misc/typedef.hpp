@@ -5,10 +5,8 @@
 #include "../constants.hpp"
 #include <LinkedList.h>
 
-// class TRANSPORT_CLASS;
-// class PARSER_CLASS;
-class AbstractTransport;
-class AbstractParser;
+// class AbstractTransport;
+// class AbstractParser;
 class Scheduler;
 struct ApplicationContext;
 
@@ -44,6 +42,11 @@ struct NodeMQTTProperty
         name(propertyName),
         value(propertyValue),
         isStored(isStored){};
+  NodeMQTTProperty()
+      : id(0),
+        name(0),
+        value(0),
+        isStored(0){};
 };
 
 class NodeInterfaceBase
@@ -57,7 +60,7 @@ class NodeInterfaceBase
     virtual void init() = 0;
     virtual void setEnabled(bool enabled) = 0;
     virtual bool isEnabled() = 0;
-    virtual void valueToString(String &sValue) = 0;
+    virtual String valueToString() = 0;
 
     virtual bool hasMQTTPublish() = 0;
     virtual bool hasMQTTSubscribe() = 0;
@@ -72,14 +75,18 @@ class NodeInterfaceBase
     virtual void republish() = 0;
 };
 
+#include "../transports/_AbstractTransport.hpp"
+#include "../parsers/_AbstractParser.hpp"
+
 struct ApplicationContext
 {
     Scheduler *scheduler;
     NodeMQTTConfig *configuration;
+    LinkedList<NodeInterfaceBase *> *interfaces;
+    time_t currentTime = 0;
+
     AbstractTransport *transport;
     AbstractParser *parser;
-    LinkedList<NodeInterfaceBase *> *interfaces;
-
 };
 
 

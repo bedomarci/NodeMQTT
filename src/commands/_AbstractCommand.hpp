@@ -5,6 +5,7 @@
 #include "../misc/typedef.hpp"
 #include "parsers/_AbstractParser.hpp"
 
+struct ApplicationContext;
 class AbstractCommand
 {
 public:
@@ -13,7 +14,7 @@ public:
   virtual const char * getHelpText() = 0;
   void setCommandParameter(const char* parameter);
   const char * getCommandWord();
-   const char * getCommandParameter();
+  const char * getCommandParameter();
 
 protected:
   void setCommandWord(const char * commandWord);

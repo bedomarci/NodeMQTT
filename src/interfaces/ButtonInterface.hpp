@@ -6,7 +6,7 @@
 class ButtonInterface : public DataInterface<int>
 {
   public:
-    ButtonInterface(String topic, uint8_t buttonPin, bool invert = false, unsigned long debounceDelay = DEFAULT_BUTTON_DEBOUNCE);
+    ButtonInterface(String topic, uint8_t buttonPin, unsigned long debounceDelay = DEFAULT_BUTTON_DEBOUNCE, bool pullUp = true, bool invert = false);
     void init();
     void press();
     void release();
@@ -17,10 +17,11 @@ class ButtonInterface : public DataInterface<int>
     Button *button;
 };
 
-inline ButtonInterface::ButtonInterface(String topic, uint8_t buttonPin, bool invert, unsigned long debounceDelay)
+
+inline ButtonInterface::ButtonInterface(String topic, uint8_t buttonPin, unsigned long debounceDelay, bool pullUp, bool invert)
     : DataInterface<int>(topic)
 {
-    button = new Button(buttonPin, true, invert, debounceDelay);
+    button = new Button(buttonPin, debounceDelay, pullUp, invert);
     this->setInterfaceName(BUTTON_NAME);
     this->setSamplingEnabled(true);
 }

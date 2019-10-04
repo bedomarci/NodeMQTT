@@ -1,6 +1,4 @@
-
-#define WIFI_TRANSPORT
-#if !defined(WIFITRANSPORT_H) && defined(WIFI_TRANSPORT)
+#if !defined(WIFITRANSPORT_H) && (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
 #define WIFITRANSPORT_H
 
 #include "_AbstractTransport.hpp"
@@ -26,6 +24,7 @@ class WifiTransport : public AbstractTransport
     void connectNetwork();
     bool isNetworkConnected();
     String getNetworkAddressString();
+    String getState();
     bool wasConnectedToNetwork = false;
     bool wasConnectedToServer = false;
 
@@ -36,6 +35,7 @@ class WifiTransport : public AbstractTransport
     void reconnectBroker();
     void reconnectWifi();
     int32_t getRSSI();
+    int32_t RSSIToPercentage(int32_t rssi);
     void logWifiInfo();
     bool isIPvalid(uint8_t ip[4]);
 
@@ -56,9 +56,14 @@ inline WifiTransport::WifiTransport() : AbstractTransport()
     WiFi.mode(WIFI_STA);
     WiFi.softAPdisconnect(true);
     WiFi.enableAP(false);
+    WiFi.setOutputPower(WIFI_TRANSMISSION_POWER);
+    WiFi.persistent(false);
+    // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+
 
     client = PubSubClient(espClient);
-    client.setCallback([this](char *t, byte *p, unsigned int l) { onMessage(t, p, l); });
+    client.setCallback([this](char *t, byte *p, unsigned int l) { this->onMessage(t, p, l); });
 }
 inline void WifiTransport::init()
 {
@@ -85,7 +90,7 @@ inline void WifiTransport::reconnectBroker()
     String sUUID;
     formatUUID(sUUID);
     Logger.logf(INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
-    onBrokerConnecting();
+    this->onBrokerConnecting();
     bool brokerConnected = false;
     if (strlen(this->getConfiguration()->mqttUser))
         brokerConnected = client.connect(sUUID.c_str(), (const char *)this->getConfiguration()->mqttUser, (const char *)this->getConfiguration()->mqttPassword, (const char *)this->getConfiguration()->baseTopic, 1, false, String(OFFLINE_MESSAGE).c_str());
@@ -94,14 +99,14 @@ inline void WifiTransport::reconnectBroker()
     if (brokerConnected)
     {
         i(F("We are all set. Let's go!"));
-        onBrokerConnected();
+        this->onBrokerConnected();
         _tBrokerConnect.disable();
         wasConnectedToServer = true;
         brokerConnectionAttampt = 1;
     }
     else
     {
-        onBrokerDisconnected();
+        this->onBrokerDisconnected();
         Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client.state());
         brokerConnectionAttampt = 1;
     }
@@ -110,28 +115,29 @@ inline void WifiTransport::reconnectBroker()
 
 inline void WifiTransport::reconnectWifi()
 {
-    onNetworkConnecting();
+    this->onNetworkConnecting();
     WiFi.disconnect();
-    bool useStaticIp = isIPvalid(getConfiguration()->ipAddress);
-    IPAddress staticIP(getConfiguration()->ipAddress[0], getConfiguration()->ipAddress[1], getConfiguration()->ipAddress[2], getConfiguration()->ipAddress[3]);   //ESP static ip
-    IPAddress gateway(getConfiguration()->gateway[0], getConfiguration()->gateway[1], getConfiguration()->gateway[2], getConfiguration()->gateway[3]);            //IP Address of your WiFi Router (Gateway)
-    IPAddress subnet(getConfiguration()->subnetMask[0], getConfiguration()->subnetMask[1], getConfiguration()->subnetMask[2], getConfiguration()->subnetMask[3]); //Subnet mask
-    IPAddress dns(getConfiguration()->dns[0], getConfiguration()->dns[1], getConfiguration()->dns[2], getConfiguration()->dns[3]);
+    NodeMQTTConfig * c = this->getConfiguration();
+    bool useStaticIp = isIPvalid(c->ipAddress);
+    IPAddress staticIP(c->ipAddress[0], c->ipAddress[1], c->ipAddress[2], c->ipAddress[3]);   //ESP static ip
+    IPAddress gateway(c->gateway[0], c->gateway[1], c->gateway[2], c->gateway[3]);            //IP Address of your WiFi Router (Gateway)
+    IPAddress subnet(c->subnetMask[0], c->subnetMask[1], c->subnetMask[2], c->subnetMask[3]); //Subnet mask
+    IPAddress dns(c->dns[0], c->dns[1], c->dns[2], c->dns[3]);
 
     //SET STATIC CONFIGURATION IF AVAILABLE
     if (useStaticIp)
         WiFi.config(staticIP, gateway, subnet, dns);
     
 
-    if (hasBSSID(this->getConfiguration()->wifiBssid))
+    if (hasBSSID(c->wifiBssid))
     {
-        d("Connecting to " + String(this->getConfiguration()->wifiSsid) + " with BSSID. #" + String(wifiConnectionAttampt));
-        WiFi.begin(this->getConfiguration()->wifiSsid, this->getConfiguration()->wifiPassword, this->getConfiguration()->wifiChannel, this->getConfiguration()->wifiBssid);
+        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, c->wifiSsid, wifiConnectionAttampt);
+        WiFi.begin(c->wifiSsid, c->wifiPassword, c->wifiChannel, c->wifiBssid);
     }
     else
     {
-        d("Connecting to " + String(this->getConfiguration()->wifiSsid) + ". #" + String(wifiConnectionAttampt));
-        WiFi.begin(this->getConfiguration()->wifiSsid, this->getConfiguration()->wifiPassword);
+        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI, c->wifiSsid, wifiConnectionAttampt);
+        WiFi.begin(c->wifiSsid, c->wifiPassword);
     }
 
     if (useStaticIp)
@@ -150,7 +156,7 @@ inline void WifiTransport::loop()
             if (_tWifiConnect.isEnabled())
             {
                 _tWifiConnect.disable();
-                onNetworkConnected();
+                this->onNetworkConnected();
                 wifiConnectionAttampt = 1;
                 delay(500);
                 this->logWifiInfo();
@@ -162,7 +168,7 @@ inline void WifiTransport::loop()
                     if (wasConnectedToServer)
                     {
                         Logger.logf(ERROR, MSG_BROKER_DISCONNECTED, client.state());
-                        onBrokerDisconnected();
+                        this->onBrokerDisconnected();
                         brokerConnectionAttampt = 1;
                     }
                     wasConnectedToServer = false;
@@ -174,7 +180,7 @@ inline void WifiTransport::loop()
         else
         {
             if (wasConnectedToNetwork)
-                onNetworkDisconnected();
+                this->onNetworkDisconnected();
             wasConnectedToNetwork = false;
             _tWifiConnect.enableIfNot();
         }
@@ -186,11 +192,11 @@ inline void WifiTransport::loop()
 
 inline void WifiTransport::logWifiInfo()
 {
-    Logger.logf(INFO, ("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
+    Logger.logf(INFO, F("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
     if (this->getConfiguration()->isServiceMode)
     {
         int32_t signalStrength = this->getRSSI();
-        Logger.logf(INFO, F("Signal strength: %d dBm"), signalStrength);
+        Logger.logf(DEBUG, F("Signal strength: %d dBm, TX power: %.2f dBm"), signalStrength, WIFI_TRANSMISSION_POWER);
         if (signalStrength <= -80)
             fatal(F("Wifi signal is too weak!"));
     }
@@ -198,15 +204,20 @@ inline void WifiTransport::logWifiInfo()
 
 inline int32_t WifiTransport::getRSSI()
 {
-    byte available_networks = WiFi.scanNetworks();
-    for (int network = 0; network < available_networks; network++)
-    {
-        if (strcmp(WiFi.SSID(network).c_str(), this->getConfiguration()->wifiSsid) == 0)
-        {
-            return WiFi.RSSI(network);
-        }
-    }
-    return 0;
+    // byte available_networks = WiFi.scanNetworks();
+    // for (int network = 0; network < available_networks; network++)
+    // {
+    //     if (strcmp(WiFi.SSID(network).c_str(), this->getConfiguration()->wifiSsid) == 0)
+    //     {
+    //         return WiFi.RSSI(network);
+    //     }
+    // }
+    // return 0;
+    return WiFi.RSSI();
+}
+inline int32_t WifiTransport::RSSIToPercentage(int32_t rssi)
+{
+    return 2 * (rssi + 100);
 }
 
 inline void WifiTransport::connectNetwork()
@@ -239,6 +250,13 @@ inline bool WifiTransport::isIPvalid(uint8_t ip[4])
         sum += ip[i];
     }
     return sum;
+}
+
+inline String WifiTransport::getState() {
+    char s[64];
+    uint32_t rssi = getRSSI();
+    sprintf(s, PSTR("IP: %s; RX pwr: %d dBm (%d%%); TX pwr: %.2f dBm"), this->getNetworkAddressString().c_str(), rssi, RSSIToPercentage(rssi), WIFI_TRANSMISSION_POWER);
+    return String(s);
 }
 
 #endif //WIFITRANSPORT_H

@@ -1,9 +1,16 @@
 #include "NodeMQTTLogger.hpp"
+#include "NodeMQTTIOContainer.hpp"
+#include "misc/typedef.hpp"
 #include <stdio.h>
 
 NodeMQTTLoggerClass::NodeMQTTLoggerClass()
 {
     logQueue = LinkedList<String>();
+}
+
+
+void NodeMQTTLoggerClass::init(ApplicationContext * context) {
+    _context = context;
 }
 
 void NodeMQTTLoggerClass::setLogging(bool isLogging)
@@ -92,12 +99,21 @@ void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, va_list arg
 void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
 {
     char buffer[LOG_MAX_MESSAGE_LENGTH];
+
     if (level == FATAL)
         onFatal();
-    sprintf(buffer, "[%c|%10lu] %s", level, millis(), message);
+    if (_context && !_context->currentTime) {
+        sprintf(buffer, LOG_FORMAT_MILLIS, level, millis(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str());
+    } else {
+        sprintf(buffer, LOG_FORMAT_NTP, level, toTimeString(_context->currentTime).c_str(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str()); //-3 will make room for dots
+    }
     String formattedMessage = String(buffer);
-    if ((level != DEBUG && !_isLogging) || _isLogging)
-        Serial.println(formattedMessage);
+    if ((level != DEBUG && !_isLogging) || _isLogging) {
+    if (formattedMessage.length() == LOG_MAX_MESSAGE_LENGTH-1) {
+        formattedMessage = formattedMessage.substring(0, LOG_MAX_MESSAGE_LENGTH-4) + "...";
+    } 
+    NodeMQTTIO.println(formattedMessage);
+    }
     if (level != DEBUG && _isLogging)
         push(formattedMessage); 
 }

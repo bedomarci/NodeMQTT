@@ -3,7 +3,6 @@
 
 #include "_NodeInterface.hpp"
 #include "NodeMQTTConfigManager.hpp"
-#include <ESP.h>
 #include "NodeMQTT.hpp"
 #include "constants.hpp"
 #include <string.h>
@@ -14,7 +13,7 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
     NodeConfigInterface();
     void init();
     void publishCurrentConfig(NodeMQTTConfig config);
-    void valueToString(String &sValue);
+    String valueToString() override;
 
   protected:
     virtual NodeMQTTConfig sample() override;
@@ -24,7 +23,6 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
     virtual void updatePhisicalInterface(NodeMQTTConfig newValue) override;
     void parseIpAddress(char *strIp, uint8_t ip[4]);
     void parseMacAddress(char *strMac, uint8_t mac[6]);
-    // virtual void valueToString(NodeMQTTConfig value, String &sValue) override;
 };
 
 inline NodeConfigInterface::NodeConfigInterface()
@@ -44,8 +42,8 @@ inline NodeMQTTConfig NodeConfigInterface::sample()
 inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
 {
     NodeMQTTConfig nodeConfig = NodeMQTTConfig();
-    NodeMQTTConfigManager.loadInto(nodeConfig);
-        char ipaddress[16];
+    NodeMQTTConfigManager.loadInto(&nodeConfig);
+    char ipaddress[16];
     if (rootObject.containsKey(ATTR_BASETOPIC))
         strcpy(nodeConfig.baseTopic, rootObject[ATTR_BASETOPIC].as<const char *>());
     if (rootObject.containsKey(ATTR_MQTTPASS))
@@ -97,6 +95,14 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
         nodeConfig.isServiceMode = rootObject[ATTR_SERVICEMODE].as<bool>();
     if (rootObject.containsKey(ATTR_MQTTPORT))
         nodeConfig.mqttPort = rootObject[ATTR_MQTTPORT].as<unsigned short>();
+
+    LinkedList<NodeMQTTProperty *> properties = NodeMQTTConfigManager.getProperties();
+    for (int i = 0; i < properties.size(); i++)
+    {
+        NodeMQTTProperty *property = properties.get(i);
+        if (rootObject.containsKey(property->name))
+            NodeMQTTConfigManager.setProperty(property->id, rootObject[property->name].as<uint32_t>());
+    }
     return nodeConfig;
 }
 
@@ -132,7 +138,7 @@ inline int NodeConfigInterface::cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newV
 
 inline void NodeConfigInterface::updatePhisicalInterface(NodeMQTTConfig newValue)
 {
-    NodeMQTTConfigManager.save(newValue);
+    NodeMQTTConfigManager.save(&newValue);
 }
 
 inline void NodeConfigInterface::init()
@@ -144,9 +150,9 @@ inline void NodeConfigInterface::publishCurrentConfig(NodeMQTTConfig config)
     publish(config);
 }
 
-inline void NodeConfigInterface::valueToString(String &sValue)
+inline String NodeConfigInterface::valueToString()
 {
-    sValue = "";
+    return "";
 }
 
 inline void NodeConfigInterface::parseIpAddress(char *strIp, uint8_t ip[4])

@@ -1,5 +1,6 @@
 #include "NodeMQTTUpdateManager.hpp"
 #include "misc/helpers.hpp"
+#include "misc/typedef.hpp"
 
 #if defined(ESP8266) || defined(ESP32)
 
@@ -9,6 +10,14 @@ NodeMQTTUpdateManagerClass::NodeMQTTUpdateManagerClass()
     ArduinoOTA.onEnd([=]() { onOTAEnd(); });
     ArduinoOTA.onError([=](ota_error_t error) { onOTAError(error); });
     ArduinoOTA.onProgress([=](unsigned int progress, unsigned int total) { onOTAProgress(progress, total); });
+}
+
+void NodeMQTTUpdateManagerClass::init(ApplicationContext *context)
+{
+    _context = context;
+    ArduinoOTA.setPassword(_context->configuration->mqttPassword);
+    ArduinoOTA.setHostname(String(String(UUID) + "-" + String(_context->configuration->baseTopic)).c_str());
+    ArduinoOTA.begin();
 }
 
 void NodeMQTTUpdateManagerClass::onOTAStart()
@@ -44,13 +53,6 @@ void NodeMQTTUpdateManagerClass::onOTAProgress(unsigned int progress, unsigned i
     Logger.logf(INFO, "Progress: %u%%\r", percentage);
 }
 
-void NodeMQTTUpdateManagerClass::begin(NodeMQTTConfig *config)
-{
-    ArduinoOTA.setPassword(config->mqttPassword);
-    ArduinoOTA.setHostname(String(String(UUID) + "-" + String(config->baseTopic)).c_str());
-    ArduinoOTA.begin();
-}
-
 void NodeMQTTUpdateManagerClass::checkForUpload()
 {
     ArduinoOTA.handle();
@@ -59,28 +61,32 @@ void NodeMQTTUpdateManagerClass::checkForUpload()
 void NodeMQTTUpdateManagerClass::checkForUpdates()
 {
     String fwURL = String(fwUrlBase);
-    fwURL.concat(String(WiFi.macAddress()));
+    fwURL.concat(String(_context->configuration->baseTopic));
     String fwVersionURL = fwURL;
-    fwVersionURL.concat(".version");
+    fwVersionURL.concat(F(".ver"));
+    Logger.logf(INFO,F("Checking for new update at %s."), fwVersionURL.c_str());
 
     HTTPClient httpClient;
-    httpClient.begin(fwVersionURL);
+    httpClient.begin(client, fwVersionURL);
     int httpCode = httpClient.GET();
     if (httpCode == 200)
     {
         String newFWVersion = httpClient.getString();
         int newVersion = newFWVersion.toInt();
 
-        if (newVersion > FW_VERSION)
+        if (newVersion > FIRMWARE_BUILD_TIME)
         {
-
             String fwImageURL = fwURL;
-            fwImageURL.concat(".bin");
+            Logger.logf(INFO,F("Newer version available: %s."), newFWVersion.c_str());
+            fwImageURL.concat(F(".bin"));
+            Logger.logf(INFO,F("Downloading firmware from %s."), fwImageURL.c_str());
+
 #if defined(ESP8266)
-            t_httpUpdate_return ret = UPDATE.update(fwImageURL);
+            WiFiClient updateClient;
+            t_httpUpdate_return ret = UPDATE.update(updateClient, fwImageURL);
 #elif defined(ESP32)
-            WiFiClient client;
-            t_httpUpdate_return ret = UPDATE.update(client, fwImageURL);
+            WiFiClient updateClient;
+            t_httpUpdate_return ret = UPDATE.update(updateClient, fwImageURL);
             UPDATE.setLedPin(LED_BUILTIN, LOW);
 #endif
 
@@ -102,12 +108,12 @@ void NodeMQTTUpdateManagerClass::checkForUpdates()
         }
         else
         {
-            i(F("Already on latest version"));
+            i(F("Already on latest version."));
         }
     }
     else
     {
-        e("Firmware version check failed, got HTTP response code " + httpCode);
+        Logger.logf(ERROR, F("Firmware version check failed, got HTTP response code %d.") , httpCode);
     }
     httpClient.end();
 }

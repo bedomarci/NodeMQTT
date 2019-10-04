@@ -8,14 +8,18 @@
 #error Must include NodeMQTT.hpp before TaskScheduler.h!
 #include <stophere>
 #endif
-#define _TASK_STD_FUNCTION
+#if defined(ESP32) || defined(ESP8266)
+    #define _TASK_STD_FUNCTION
+#endif
 // #define _TASK_MICRO_RES
 // #include <TaskScheduler.h>
 
 #define NODEMQTT_SERIAL_SPEED 115200
 #define NODEMQTT_MAX_PACKET_SIZE 1024 //140
 #define MQTT_MAX_PACKET_SIZE NODEMQTT_MAX_PACKET_SIZE
-#define SERIAL_BUFFER_SIZE 1024
+#define SERIAL_BUFFER_SIZE 512
+#define TELNET_BUFFER_SIZE 256
+
 #define JSON_DOCUMENT_SIZE 2048
 #define PWM_FREQ 5000
 #define PWM_RESOLUTION 10
@@ -25,13 +29,20 @@
 #define SERIAL_READ_INTERVAL 2 * TASK_SECOND
 
 #define LOG_MAX_MESSAGE_LENGTH 128
+#define LOG_PREFIX_LENGTH 18
+#define LOG_MAX_PRINT_LENGTH (LOG_MAX_MESSAGE_LENGTH - LOG_PREFIX_LENGTH)
+
 #define LOG_MAX_QUEUE_LENGTH 30
 
 // if connection is established, and then lost for some reason,
 // ESP will automatically reconnect to last used access point
 // once it is again back on-line. This will be done automatically
 // by Wi-Fi library, without any user intervention. Reconnection triggered after 60s of being offline.
-#define WIFI_CONNECT_ATTEMPT_WAITING 5 * TASK_SECOND //60000L
+#define WIFI_CONNECT_ATTEMPT_WAITING 10 * TASK_SECOND //60000L
+#define WIFI_TRANSMISSION_POWER 20.5f //min: 0 dB, max: 20.5 dB
+#define WIFI_PYH_MODE WIFI_PHY_MODE_11N 
+#define TELNET_SERVER_PORT 23
+#define EEPROM_SIZE 512 
 #define DEFAULT_SAMPLE_RATE (TASK_SECOND / 10)
 #define DEFAULT_FADE_INTERVAL (TASK_SECOND / 25)
 #define DEFAULT_BUTTON_DEBOUNCE 50
@@ -39,23 +50,32 @@
 #define DEFAULT_HEARTBEAT_RATE 10 * TASK_SECOND
 #define LOG_SAMPLE_RATE TASK_SECOND / 5
 
-#if !defined(WIFI_TRANSPORT) //&& !defined(WIFI_TRANSPORT)
-#define WIFI_TRANSPORT
+#define NULL_TRANSPORT 0
+#define WIFI_TRANSPORT 1
+#define RF24_TRANSPORT 2
+
+
+#if !defined(NODEMQTT_TRANSPORT) //&& !defined(WIFI_TRANSPORT)
+#define NODEMQTT_TRANSPORT WIFI_TRANSPORT
 #endif
 
-#ifdef RF_TRANSPORT
-#define TRANSPORT_CLASS RF24Transport
-#endif
-#ifdef WIFI_TRANSPORT
-#define TRANSPORT_CLASS WifiTransport
-#endif
-
-#if !defined(PUBSUB_PARSER)
-#define PUBSUB_PARSER
+#if (NODEMQTT_TRANSPORT == RF_TRANSPORT)
+    #define TRANSPORT_CLASS RF24Transport
+    #define TELNET_SERVER_CLASS 0
+    #define TELNET_CLIENT_CLASS 0
 #endif
 
-#ifdef PUBSUB_PARSER
-#define PARSER_CLASS PubSubParser
+#if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
+    #include <ESP8266WiFi.h>
+    #define TRANSPORT_CLASS WifiTransport
+    #define TELNET_SERVER_CLASS WiFiServer
+    #define TELNET_CLIENT_CLASS WiFiClient
+#endif
+
+#if (NODEMQTT_TRANSPORT == NULL_TRANSPORT)
+    #define TRANSPORT_CLASS NullTransport
+    #define TELNET_SERVER_CLASS 0
+    #define TELNET_CLIENT_CLASS 0
 #endif
 
 //RF24 CONFIGURATION
@@ -67,6 +87,39 @@
 #endif
 #define RF24_MAX_MESSAGE_SIZE 512
 #define RF24_MESSAGE_DELIMITER "|||"
+
+//IO CONFIGURATION
+
+#ifndef IO_SERIAL
+#define IO_SERIAL true
+#endif
+
+#if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT) && !defined(IO_TELNET)
+    #define IO_TELNET true
+#endif
+
+#if defined(ESP32) && !defined(IO_BLUETOOTH)
+    #define IO_BLUETOOTH true
+#endif
+
+#if !defined(PUBSUB_PARSER)
+#define PUBSUB_PARSER
+#endif
+
+//PARSER CONFIGURATION
+
+#ifdef PUBSUB_PARSER
+#define PARSER_CLASS PubSubParser
+#endif
+
+//NTP TIME SERVER 
+//time-1.timefreq.bldrdoc.gov
+#define NTP_TIME_SERVER_ADDRESS "europe.pool.ntp.org"
+#define NTP_TIME_SERVER_PORT 8888 // local port to listen for UDP packets
+#define NTP_UPDATE_INTERVAL (TASK_MINUTE * 30)
+
+
+
 
 //I2C CONFIGURATION
 #define I2C_CLOCK_SPEED 100000L
@@ -149,9 +202,10 @@
 
 //FIRMWARE OTA UPDATE
 
-#define FIRMWARE_URL_BASE "http://192.168.0.1/fota/"
-#ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION -1
-#endif
+// #define FIRMWARE_URL_BASE "http://192.168.0.1/fota/"
+#define FIRMWARE_URL_BASE "http://192.168.15.121:3000/fota/"
+
+
+
 
 #endif //define CONFIG_H

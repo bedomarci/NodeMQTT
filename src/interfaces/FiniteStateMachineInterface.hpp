@@ -31,7 +31,7 @@ class FiniteStateMachineInterface : public NodeInterface<int>
     void writeByName(const char *nextStateName);
     void trigger(int event);
     void init() override;
-    void valueToString(String &sValue);
+    String valueToString() override;
 
   protected:
     State parsedValue;
@@ -63,8 +63,9 @@ FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, St
     states = LinkedList<State *>();
     transitions = LinkedList<Transition *>();
     this->setSamplingEnabled(false);
-    this->setMQTTPublish(true);
+    this->setMQTTPublish(false);
     this->setMQTTSubscribe(true);
+    this->setInterfaceName(FSM_NAME);
 }
 FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)
     : FiniteStateMachineInterface(topic, topic)
@@ -88,9 +89,9 @@ inline void FiniteStateMachineInterface::init()
     initialized = true;
 }
 
-inline void FiniteStateMachineInterface::valueToString(String &sValue)
+inline String FiniteStateMachineInterface::valueToString()
 {
-    sValue = String(this->getStateById(currentStateId)->stateName);
+    return String(this->getStateById(currentStateId)->stateName);
 }
 inline void FiniteStateMachineInterface::updatePhisicalInterface(int newValue)
 {
@@ -155,7 +156,6 @@ inline void FiniteStateMachineInterface::addState(State *state, bool initState)
 {
     if (initState)
         currentStateId = state->stateId;
-    // defaultStateId = state->stateId;
 
     states.add(state);
 }
@@ -166,7 +166,7 @@ inline void FiniteStateMachineInterface::addTransition(int event, int stateFromI
     if (stateFrom == nullptr || stateTo == nullptr)
     {
         return;
-        e(F("States cannot be NULL! Transition has been discarded."));
+        //e(F("States cannot be NULL! Transition has been discarded."));
     }
     transitions.add(new Transition(event, stateFromId, stateToId, onTransition));
 }

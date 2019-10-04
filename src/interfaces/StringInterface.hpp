@@ -8,7 +8,7 @@ class StringInterface : public NodeInterface<String>
     StringInterface(String topic);
     StringInterface(String publishTopic, String subscribeTopic);
     void init();
-    void valueToString(String &sValue);
+    String valueToString() override;
 
   protected:
     String parsedValue;
@@ -29,7 +29,11 @@ inline StringInterface::StringInterface(String topic) : NodeInterface<String>(to
 
 inline String StringInterface::fromJSON(JsonObject &rootObject)
 {
-    parsedValue = rootObject["data"] | currentValue.c_str();
+    if (rootObject.containsKey("data")) {
+        parsedValue = rootObject["data"].as<String>();
+    } else {
+        parsedValue = currentValue.c_str();
+    }
     return parsedValue;
 }
 
@@ -49,9 +53,9 @@ inline void StringInterface::init()
     setInterfaceName(STRING_NAME);
 }
 
-inline void StringInterface::valueToString(String &sValue)
+inline String StringInterface::valueToString()
 {
-    sValue = currentValue;
+    return this->read();
 }
 
 #endif //StringInterface_H

@@ -2,7 +2,7 @@
 #define NODECONFIGURATION_H
 
 #include "misc/config.hpp"
-#include "misc/typedef.hpp"
+#include "misc/typedefDeclaration.hpp"
 #include "constants.hpp"
 #include "misc/helpers.hpp"
 #include "LinkedList.h"
@@ -14,35 +14,35 @@
 class NodeMQTTConfigManagerClass
 {
 private:
-  uint32_t calculateChkSum(NodeMQTTConfig &config);
+  uint32_t calculateChkSum(NodeMQTTConfig *configuration);
   void EEPROMWriteChkSum(uint32_t chksum);
   void setStaticFlagDefaultValues();
   uint32_t EEPROMReadChkSum();
   void printIp(uint8_t ip[4]);
   void printAttributeWithTab(String s);
   bool isValid();
+  void commit();
 
   const int EEPROM_CONFIGURATION_CHCKSUM_ADDRESS = 32;
-  const int EEPROM_CONFIGURATION_ADDRESS = EEPROM_CONFIGURATION_CHCKSUM_ADDRESS + sizeof(uint32_t);
-  const int EEPROM_PROPERTIES_ADDRESS = EEPROM_CONFIGURATION_ADDRESS + sizeof(NodeMQTTConfig);
-  NodeMQTTConfig defaultConfig;
+  int EEPROM_CONFIGURATION_ADDRESS;
+  int EEPROM_PROPERTIES_ADDRESS;
+  bool isPropertyDirty = false;
+  NodeMQTTConfig * defaultConfig;
   LinkedList<NodeMQTTProperty *> properties;
 
 public:
   NodeMQTTConfigManagerClass();
-  void save(NodeMQTTConfig &configuration);
-  void setDefault(NodeMQTTConfig &configuration);
-  void loadInto(NodeMQTTConfig &configuration);
-  void loadDefaultsInto(NodeMQTTConfig &configuration);
-  void print(NodeMQTTConfig &configuration);
+  void save(NodeMQTTConfig *configuration);
+  void loadInto(NodeMQTTConfig *configuration);
+  void loadDefaultsInto(NodeMQTTConfig *configuration);
+  void print(NodeMQTTConfig *configuration);
   void addProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyDefaultValue);
   uint32_t getProperty(uint8_t propertyId);
+  LinkedList<NodeMQTTProperty *> getProperties();
   void setProperty(uint8_t propertyId, uint32_t propertyValue);
   void storePropertiesInEEPROM();
   void loadPropertiesFromEEPROM();
   void factoryReset();
-  // static volatile bool I2CInitialized;
-  // static volatile bool EEPROMInitialized;
 };
 
 extern NodeMQTTConfigManagerClass NodeMQTTConfigManager;

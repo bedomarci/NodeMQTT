@@ -9,7 +9,7 @@ public:
   DataInterface(String publishTopic, String subscribeTopic);
   DataInterface(String topic);
   void init();
-  void valueToString(String &sValue);
+  String valueToString() override;
 
 protected:
   T fromJSON(JsonObject &rootObject) override;
@@ -66,9 +66,9 @@ inline int DataInterface<T>::cmp(T oldValue, T newValue)
 }
 
 template <typename T>
-inline void DataInterface<T>::valueToString(String &sValue)
+inline String DataInterface<T>::valueToString()
 {
-  sValue = String(this->read());
+  return String(this->read());
 }
 
 #endif //DATAINTERFACE_H

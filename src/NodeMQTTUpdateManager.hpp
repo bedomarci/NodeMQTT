@@ -3,16 +3,21 @@
 
 #include <Arduino.h>
 #include "NodeMQTTConfigManager.hpp"
-#include <ArduinoOTA.h>
 #include "misc/config.hpp"
 #include "constants.hpp"
 #include "misc/helpers.hpp"
+
+
+#if defined(ESP8266) || defined(ESP32)
+  #include <ArduinoOTA.h>
+#endif
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266HTTPUpdate.h>
 #define UPDATE ESPhttpUpdate
+#define CLIENT WiFiClient
 #endif
 
 #ifdef ESP32
@@ -20,6 +25,7 @@
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #define UPDATE httpUpdate
+#define CLIENT WiFiClient
 #endif
 
 class NodeMQTTUpdateManagerClass
@@ -27,16 +33,17 @@ class NodeMQTTUpdateManagerClass
 #if defined(ESP8266) || defined(ESP32)
 protected:
   const char *fwUrlBase = FIRMWARE_URL_BASE;
-  const int FW_VERSION = FIRMWARE_VERSION;
   HTTPClient httpClient;
+  CLIENT client;
   void onOTAStart();
   void onOTAEnd();
   void onOTAError(ota_error_t error);
   void onOTAProgress(unsigned int progress, unsigned int total);
+  ApplicationContext *_context;
 
 public:
   NodeMQTTUpdateManagerClass();
-  void begin(NodeMQTTConfig *config);
+  void init(ApplicationContext *context);
   void checkForUpdates();
   void checkForUpload();
 #endif

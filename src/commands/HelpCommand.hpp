@@ -4,6 +4,7 @@
 #include "_AbstractCommand.hpp"
 #include "misc/helpers.hpp"
 #include "../NodeMQTTCommandProcessor.hpp"
+#include "../NodeMQTTIOContainer.hpp"
 
 class HelpCommand : public AbstractCommand
 {
@@ -21,7 +22,21 @@ inline HelpCommand::HelpCommand(ApplicationContext *context) :  AbstractCommand(
 
 inline void HelpCommand::handle()
 {
-    NodeMQTTCommandProcessor.printHelp();
+    LinkedList<AbstractCommand*> * commands = NodeMQTTCommandProcessor.getCommands();
+
+    NodeMQTTIO.println(TERMINAL_HR);
+    for (int i = 0; i < commands->size(); i++)
+    {
+        AbstractCommand *cmd = commands->get(i);
+        String commandWord = FPSTR(cmd->getCommandWord()); 
+        NodeMQTTIO.print(commandWord);
+        if (commandWord.length()<8)
+            Serial.print(TERMINAL_TAB);
+        NodeMQTTIO.print(TERMINAL_TAB);
+        NodeMQTTIO.println(FPSTR(cmd->getHelpText()));
+    }
+    NodeMQTTIO.println(TERMINAL_HR);
+
 }
 
 inline const char * HelpCommand::getHelpText()
