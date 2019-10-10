@@ -13,6 +13,7 @@ struct NodeStatus
     uint32_t freeHeap = 0;
     char nodeID[9] = "";
     char networkAddress[16];
+
 };
 
 class HeartbeatInterface : public NodeInterface<NodeStatus>
@@ -51,13 +52,6 @@ inline void HeartbeatInterface::init()
     char sUUID[9];
     formatUUID(sUUID);
     strncpy(status.nodeID, sUUID, sizeof(status.nodeID));
-
-    // #ifdef ESP8266
-    //     status.nodeID = ESP.getChipId();
-    // #endif
-    // #ifdef ESP32
-    //     status.nodeID = (uint32_t)ESP.getEfuseMac();
-    // #endif
 }
 
 inline NodeStatus HeartbeatInterface::sample()
@@ -81,6 +75,7 @@ inline JsonObject &HeartbeatInterface::toJSON(NodeStatus status, JsonObject &roo
     root[freeHeapKey] = status.freeHeap;
     root[nodeIdKey] = status.nodeID;
     root[networkAddressKey] = status.networkAddress;
+    root["RSSI"] = WiFi.RSSI();
     return root;
 }
 
