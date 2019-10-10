@@ -59,8 +59,7 @@ inline void TelnetIO::init(ApplicationContext *context)
 inline void TelnetIO::checkConnectionTimeout()
 {
   if(millis() - timeOfLastActivity > allowedConnectTime) {
-    w("TIMEOUTTT");
-    this->println("Timeout disconnect.");
+    this->println(PSTR("Timeout disconnect."));
     telnetClient.stop();
     connectFlag = 0;
   }
@@ -103,18 +102,13 @@ inline void TelnetIO::getReceivedText()
 
   // copy waiting characters into _telnetBuffer until _telnetBuffer full, LF received, or no more characters
   charsWaiting = telnetClient.available();
-  // Serial.println(charsWaiting);
   do {
     c = telnetClient.read();
-    // Serial.print(c);
-    // Serial.print('\t');
-    // Serial.println((int)c);
     _telnetBuffer[charsReceived] = c;
     charsReceived++;
     charsWaiting--;
   }
   while(charsReceived <= TELNET_BUFFER_SIZE && c != '\n' && charsWaiting > 0);
-  // Serial.println(_telnetBuffer);
 
 
   //if LF found go look at received text and execute command
@@ -141,8 +135,8 @@ inline void TelnetIO::loop() {
     timeOfLastActivity = millis();
     telnetClient.flush();
     charsReceived = 0;
-    _telnetBuffer = new char[SERIAL_BUFFER_SIZE];
-    for(int i = 0; i < SERIAL_BUFFER_SIZE; i++) _telnetBuffer[i] = '\0';
+    _telnetBuffer = new char[TELNET_BUFFER_SIZE];
+    for (int i = 0; i < TELNET_BUFFER_SIZE; i++) _telnetBuffer[i] = '\0';
 }
 
 inline void TelnetIO::printErrorMessage()
