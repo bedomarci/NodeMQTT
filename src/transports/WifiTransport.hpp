@@ -204,15 +204,6 @@ inline void WifiTransport::logWifiInfo()
 
 inline int32_t WifiTransport::getRSSI()
 {
-    // byte available_networks = WiFi.scanNetworks();
-    // for (int network = 0; network < available_networks; network++)
-    // {
-    //     if (strcmp(WiFi.SSID(network).c_str(), this->getConfiguration()->wifiSsid) == 0)
-    //     {
-    //         return WiFi.RSSI(network);
-    //     }
-    // }
-    // return 0;
     return WiFi.RSSI();
 }
 inline int32_t WifiTransport::RSSIToPercentage(int32_t rssi)
