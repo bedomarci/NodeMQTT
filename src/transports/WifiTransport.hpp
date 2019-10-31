@@ -204,7 +204,7 @@ inline void WifiTransport::logWifiInfo() {
     }
 }
 
-inline static int32_t WifiTransport::getRSSI() {
+inline int32_t WifiTransport::getRSSI() {
     return WiFi.RSSI();
 }
 
