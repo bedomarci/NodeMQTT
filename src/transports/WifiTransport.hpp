@@ -30,11 +30,11 @@ class WifiTransport : public AbstractTransport
 
     void publish(const char *topic, const char *msg);
     void subscribe(const char *topic);
+    static int32_t getRSSI();
 
   protected:
     void reconnectBroker();
     void reconnectWifi();
-    int32_t getRSSI();
     int32_t RSSIToPercentage(int32_t rssi);
     void logWifiInfo();
     bool isIPvalid(uint8_t ip[4]);
@@ -195,14 +195,14 @@ inline void WifiTransport::logWifiInfo()
     Logger.logf(INFO, F("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
     if (this->getConfiguration()->isServiceMode)
     {
-        int32_t signalStrength = this->getRSSI();
+        int32_t signalStrength = WifiTransport::getRSSI();
         Logger.logf(DEBUG, F("Signal strength: %d dBm, TX power: %.2f dBm"), signalStrength, WIFI_TRANSMISSION_POWER);
         if (signalStrength <= -80)
             fatal(F("Wifi signal is too weak!"));
     }
 }
 
-inline int32_t WifiTransport::getRSSI()
+inline static int32_t WifiTransport::getRSSI()
 {
     return WiFi.RSSI();
 }
@@ -245,7 +245,7 @@ inline bool WifiTransport::isIPvalid(uint8_t ip[4])
 
 inline String WifiTransport::getState() {
     char s[64];
-    uint32_t rssi = getRSSI();
+    uint32_t rssi = WifiTransport::getRSSI();
     sprintf(s, PSTR("IP: %s; RX pwr: %d dBm (%d%%); TX pwr: %.2f dBm"), this->getNetworkAddressString().c_str(), rssi, RSSIToPercentage(rssi), WIFI_TRANSMISSION_POWER);
     return String(s);
 }

@@ -6,6 +6,7 @@
 #endif
 #include "misc/helpers.hpp"
 #include "_NodeInterface.hpp"
+#include "../transports/WifiTransport.hpp"
 
 struct NodeStatus
 {
