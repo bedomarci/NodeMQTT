@@ -4,6 +4,8 @@
 
 #if defined(ESP8266)
     #include <ESP8266WiFi.h>
+    #define TELNET_SERVER_CLASS WiFiServer
+    #define TELNET_CLIENT_CLASS WiFiClient
 #elseif defined(ESP32)
     #include <WiFi.h>
 #endif
@@ -15,7 +17,7 @@
 #include <stophere>
 #endif
 #if defined(ESP32) || defined(ESP8266)
-    #define _TASK_STD_FUNCTION
+#define _TASK_STD_FUNCTION
 #endif
 // #define _TASK_MICRO_RES
 // #include <TaskScheduler.h>
@@ -46,9 +48,9 @@
 // by Wi-Fi library, without any user intervention. Reconnection triggered after 60s of being offline.
 #define WIFI_CONNECT_ATTEMPT_WAITING 10 * TASK_SECOND //60000L
 #define WIFI_TRANSMISSION_POWER 20.5f //min: 0 dB, max: 20.5 dB
-#define WIFI_PYH_MODE WIFI_PHY_MODE_11N 
+#define WIFI_PYH_MODE WIFI_PHY_MODE_11N
 #define TELNET_SERVER_PORT 23
-#define EEPROM_SIZE 512 
+#define EEPROM_SIZE 512
 #define DEFAULT_SAMPLE_RATE (TASK_SECOND / 10)
 #define DEFAULT_FADE_INTERVAL (TASK_SECOND / 25)
 #define DEFAULT_BUTTON_DEBOUNCE 50
@@ -67,20 +69,14 @@
 
 #if (NODEMQTT_TRANSPORT == RF_TRANSPORT)
     #define TRANSPORT_CLASS RF24Transport
-    #define TELNET_SERVER_CLASS 0
-    #define TELNET_CLIENT_CLASS 0
 #endif
 
 #if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
     #define TRANSPORT_CLASS WifiTransport
-    #define TELNET_SERVER_CLASS WiFiServer
-    #define TELNET_CLIENT_CLASS WiFiClient
 #endif
 
 #if (NODEMQTT_TRANSPORT == NULL_TRANSPORT)
     #define TRANSPORT_CLASS NullTransport
-    #define TELNET_SERVER_CLASS 0
-    #define TELNET_CLIENT_CLASS 0
 #endif
 
 //RF24 CONFIGURATION
@@ -100,11 +96,11 @@
 #endif
 
 #if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT) && !defined(IO_TELNET)
-    #define IO_TELNET true
+#define IO_TELNET true
 #endif
 
 #if defined(ESP32) && !defined(IO_BLUETOOTH)
-    #define IO_BLUETOOTH true
+#define IO_BLUETOOTH true
 #endif
 
 #if !defined(PUBSUB_PARSER)
@@ -209,8 +205,6 @@
 
 // #define FIRMWARE_URL_BASE "http://192.168.0.1/fota/"
 #define FIRMWARE_URL_BASE "http://192.168.15.121:3000/fota/"
-
-
 
 
 #endif //define CONFIG_H
