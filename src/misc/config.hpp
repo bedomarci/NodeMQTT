@@ -9,6 +9,7 @@
 #endif
 #if defined(ESP32)
     #include <WiFi.h>
+    #include <esp_wifi.h>
     #define TELNET_SERVER_CLASS WiFiServer
     #define TELNET_CLIENT_CLASS WiFiClient
 #endif

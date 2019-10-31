@@ -60,7 +60,7 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     this->setOutputPower(WIFI_TRANSMISSION_POWER);
     WiFi.persistent(false);
     // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
-    this->setSleepMode(WIFI_NONE_SLEEP);
+    this->setSleepMode();
 
 
     client = PubSubClient(espClient);
