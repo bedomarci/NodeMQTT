@@ -2,6 +2,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#if defined(ESP8266)
+    #include <ESP8266WiFi.h>
+#elseif defined(ESP32)
+    #include <WiFi.h>
+#endif
+
 //TASK SCHEDULER CONFIGURATION
 
 #ifdef _TASKSCHEDULER_H_
@@ -66,7 +72,6 @@
 #endif
 
 #if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
-    #include <ESP8266WiFi.h>
     #define TRANSPORT_CLASS WifiTransport
     #define TELNET_SERVER_CLASS WiFiServer
     #define TELNET_CLIENT_CLASS WiFiClient

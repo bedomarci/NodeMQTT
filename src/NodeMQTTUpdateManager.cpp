@@ -81,6 +81,7 @@ void NodeMQTTUpdateManagerClass::checkForUpdates()
             fwImageURL.concat(F(".bin"));
             Logger.logf(INFO,F("Downloading firmware from %s."), fwImageURL.c_str());
 
+            yield();
 #if defined(ESP8266)
             WiFiClient updateClient;
             t_httpUpdate_return ret = UPDATE.update(updateClient, fwImageURL);
