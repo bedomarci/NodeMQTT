@@ -219,6 +219,7 @@ inline bool WifiTransport::isNetworkConnected() {
     return WiFi.status() == WL_CONNECTED && client.connected();
 }
 
+
 inline String WifiTransport::getNetworkAddressString() {
     if (WiFi.status() == WL_CONNECTED) {
         return WiFi.localIP().toString();
