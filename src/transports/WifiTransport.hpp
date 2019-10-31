@@ -56,15 +56,33 @@ inline WifiTransport::WifiTransport() : AbstractTransport()
     WiFi.mode(WIFI_STA);
     WiFi.softAPdisconnect(true);
     WiFi.enableAP(false);
-    WiFi.setOutputPower(WIFI_TRANSMISSION_POWER);
+    this->setOutputPower(WIFI_TRANSMISSION_POWER);
     WiFi.persistent(false);
     // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
-    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+    this->setSleepMode(WIFI_NONE_SLEEP);
 
 
     client = PubSubClient(espClient);
     client.setCallback([this](char *t, byte *p, unsigned int l) { this->onMessage(t, p, l); });
 }
+
+inline void WifiTransport::setOutputPower(int power) {
+#ifdef ESP8266
+    WiFi.setOutputPower(power);
+#endif
+#ifdef ESP32
+    esp_wifi_set_max_tx_power(power);
+#endif
+}
+inline void WifiTransport::setSleepMode() {
+#ifdef ESP8266
+    WiFi.setSleepMode(WIFI_NONE_SLEEP);
+#endif
+#ifdef ESP32
+    //TODO setSleepMode ESP32 szamara
+#endif
+}
+
 inline void WifiTransport::init()
 {
     this->getScheduler()->addTask(_tWifiConnect);

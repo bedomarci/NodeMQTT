@@ -4,8 +4,12 @@
 
 #if defined(ESP8266)
     #include <ESP8266WiFi.h>
+    #define TELNET_SERVER_CLASS WiFiServer
+    #define TELNET_CLIENT_CLASS WiFiClient
 #elseif defined(ESP32)
     #include <WiFi.h>
+    #define TELNET_SERVER_CLASS WiFiServer
+    #define TELNET_CLIENT_CLASS WiFiClient
 #endif
 
 //TASK SCHEDULER CONFIGURATION
@@ -67,20 +71,14 @@
 
 #if (NODEMQTT_TRANSPORT == RF_TRANSPORT)
     #define TRANSPORT_CLASS RF24Transport
-    #define TELNET_SERVER_CLASS 0
-    #define TELNET_CLIENT_CLASS 0
 #endif
 
 #if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
     #define TRANSPORT_CLASS WifiTransport
-    #define TELNET_SERVER_CLASS WiFiServer
-    #define TELNET_CLIENT_CLASS WiFiClient
 #endif
 
 #if (NODEMQTT_TRANSPORT == NULL_TRANSPORT)
     #define TRANSPORT_CLASS NullTransport
-    #define TELNET_SERVER_CLASS 0
-    #define TELNET_CLIENT_CLASS 0
 #endif
 
 //RF24 CONFIGURATION
