@@ -89,7 +89,8 @@ void NodeMQTT::handle()
 #endif
     }
     _scheduler.execute(); //TASK EXECUTION
-    ESP.wdtFeed();
+//    ESP.wdtFeed();
+    yield();
 }
 
 void NodeMQTT::addInterface(NodeInterfaceBase *interface)

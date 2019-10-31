@@ -71,11 +71,6 @@
             "name": "ESP8266httpUpdate",
             "version": "*",
             "platforms": "espressif8266"
-        },
-        {
-            "name": "EspSoftwareSerial",
-            "version": "5.2.6",
-            "platforms": "espressif8266"
         }
     ]
 }
