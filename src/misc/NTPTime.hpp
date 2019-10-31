@@ -6,11 +6,8 @@
 #include "config.hpp"
 #include "helpers.hpp"
 
-#ifdef ESP8266
-#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #define UDP WiFiUDP
-#endif
 #define NTP_PACKET_SIZE 48
 
 class NTPTime {
