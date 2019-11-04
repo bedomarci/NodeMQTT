@@ -6,8 +6,7 @@
 #include "config.hpp"
 #include "helpers.hpp"
 
-#include <WiFiUdp.h>
-#define UDP WiFiUDP
+
 #define NTP_PACKET_SIZE 48
 
 class NTPTime {

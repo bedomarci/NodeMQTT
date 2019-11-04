@@ -6,7 +6,6 @@
 #include "NodeMQTTUpdateManager.hpp"
 #include "NodeMQTTScheduler.hpp"
 #include "NodeMQTTIOContainer.hpp"
-// #include "NodeMQTTTelnet.hpp"
 
 NodeMQTT::NodeMQTT()
 {

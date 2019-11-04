@@ -139,7 +139,7 @@ template <typename T, uint16_t LENGTH>
 inline String ArrayInterface<T, LENGTH>::valueToString()
 {
     Array<T, LENGTH> arr = this->read();
-    return array_toString<T, LENGTH>(arr); //TODO KONVERTALAS
+    return array_toString<T, LENGTH>(arr);
 }
 
 #endif //ARRAYINTERFACE_H

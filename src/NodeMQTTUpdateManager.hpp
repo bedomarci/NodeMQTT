@@ -16,16 +16,12 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266HTTPUpdate.h>
-#define UPDATE ESPhttpUpdate
-#define CLIENT WiFiClient
 #endif
 
 #ifdef ESP32
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
-#define UPDATE httpUpdate
-#define CLIENT WiFiClient
 #endif
 
 class NodeMQTTUpdateManagerClass
@@ -34,7 +30,7 @@ class NodeMQTTUpdateManagerClass
 protected:
   const char *fwUrlBase = FIRMWARE_URL_BASE;
   HTTPClient httpClient;
-  CLIENT client;
+  CLIENT_CLASS client;
   void onOTAStart();
   void onOTAEnd();
   void onOTAError(ota_error_t error);

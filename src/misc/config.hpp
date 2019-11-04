@@ -2,17 +2,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#if defined(ESP8266)
-    #include <ESP8266WiFi.h>
-    #define TELNET_SERVER_CLASS WiFiServer
-    #define TELNET_CLIENT_CLASS WiFiClient
-#endif
-#if defined(ESP32)
-    #include <WiFi.h>
-    #include <esp_wifi.h>
-    #define TELNET_SERVER_CLASS WiFiServer
-    #define TELNET_CLIENT_CLASS WiFiClient
-#endif
+
 
 //TASK SCHEDULER CONFIGURATION
 
@@ -20,11 +10,7 @@
 #error Must include NodeMQTT.hpp before TaskScheduler.h!
 #include <stophere>
 #endif
-#if defined(ESP32) || defined(ESP8266)
-    #define _TASK_STD_FUNCTION
-#endif
-// #define _TASK_MICRO_RES
-// #include <TaskScheduler.h>
+
 
 #define NODEMQTT_SERIAL_SPEED 115200
 #define NODEMQTT_MAX_PACKET_SIZE 1024 //140
@@ -64,7 +50,7 @@
 
 #define NULL_TRANSPORT 0
 #define WIFI_TRANSPORT 1
-#define RF24_TRANSPORT 2
+#define RF_TRANSPORT 2
 
 
 #if !defined(NODEMQTT_TRANSPORT) //&& !defined(WIFI_TRANSPORT)

@@ -6,15 +6,6 @@
 #include "PubSubCLient.h"
 #include "../misc/helpers.hpp"
 
-#define MQTT_MAX_PACKET_SIZE NODEMQTT_MAX_PACKET_SIZE
-
-#ifdef ESP8266
-#include <ESP8266WiFi.h>
-#endif
-#ifdef ESP32
-#include <WiFi.h>
-#endif
-
 class WifiTransport : public AbstractTransport {
 public:
     WifiTransport();
@@ -89,7 +80,7 @@ inline void WifiTransport::init() {
     this->getScheduler()->addTask(_tWifiConnect);
     this->getScheduler()->addTask(_tBrokerConnect);
     if (this->getConfiguration() == nullptr) {
-        e(("No configuration set for Wifi transport layer!"));
+        e(F("No configuration set for Wifi transport layer!"));
         return;
     }
     client.setServer(this->getConfiguration()->mqttServer, this->getConfiguration()->mqttPort);
@@ -168,7 +159,7 @@ inline void WifiTransport::loop() {
                 _tWifiConnect.disable();
                 this->onNetworkConnected();
                 wifiConnectionAttampt = 1;
-                delay(500);
+//                delay(500);
                 this->logWifiInfo();
             } else {
                 if (!client.connected()) {

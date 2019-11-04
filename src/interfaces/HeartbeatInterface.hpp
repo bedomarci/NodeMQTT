@@ -1,9 +1,6 @@
 #ifndef HEARTBEATINTERFACE_H
 #define HEARTBEATINTERFACE_H
 
-#if defined(ESP32) || defined(ESP8266)
-    #include <ESP.h>
-#endif
 #include "misc/helpers.hpp"
 #include "_NodeInterface.hpp"
 #include "../transports/WifiTransport.hpp"
