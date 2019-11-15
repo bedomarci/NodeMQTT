@@ -69,7 +69,6 @@ void NodeMQTT::begin(NodeMQTTConfig *configuration)
     this->setBaseTopic(String(_config->baseTopic));
     this->initializeInterfaces();
 
-
     if (_context.configuration->isOnline)
         _transport.connectNetwork();
 
