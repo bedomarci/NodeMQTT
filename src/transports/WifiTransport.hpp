@@ -38,6 +38,7 @@ protected:
     void logWifiInfo();
     bool isIPvalid(uint8_t ip[4]);
     void setOutputPower(int power);
+    void setSleepMode();
 
     WiFiClient   espClient;
     PubSubClient client;
