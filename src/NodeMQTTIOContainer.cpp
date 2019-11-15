@@ -36,7 +36,7 @@ size_t NodeMQTTIOContainerClass::write(uint8_t c) {
         size_t s = ioList.get(i)->write(c);
         sTotal = (s > sTotal) ? s : sTotal;
     }
-        yield();
+//        yield();
     return sTotal;
 }
 
