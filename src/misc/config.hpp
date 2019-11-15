@@ -6,7 +6,8 @@
     #include <ESP8266WiFi.h>
     #define TELNET_SERVER_CLASS WiFiServer
     #define TELNET_CLIENT_CLASS WiFiClient
-#elseif defined(ESP32)
+#endif
+#if defined(ESP32)
     #include <WiFi.h>
 #endif
 
