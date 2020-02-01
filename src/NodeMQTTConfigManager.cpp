@@ -21,7 +21,8 @@ NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
     //     ESP.restart();
     // }
 
-    properties = LinkedList<NodeMQTTProperty *>();
+    properties = LinkedList<NodeMQTTProperty>();
+//    properties = LinkedList<NodeMQTTProperty *>();
 }
 
 void NodeMQTTConfigManagerClass::setStaticFlagDefaultValues()
@@ -35,7 +36,6 @@ uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig *config)
     int i;
     int len = sizeof(NodeMQTTConfig);
     uint32_t checksum;
-    // char *data = (char *)&config;
     char *data = (char *)config;
     for (i = 0, checksum = 0; i < len; i++)
         checksum += data[i];
@@ -81,18 +81,17 @@ void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig *configuration)
     save(configuration);
 }
 
-void NodeMQTTConfigManagerClass::addProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyDefaultValue)
+void NodeMQTTConfigManagerClass::registerProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyDefaultValue)
 {
-    NodeMQTTProperty *property = new NodeMQTTProperty(propertyId, propertyName, propertyDefaultValue, false);
-    properties.add(property);
+    properties.add(NodeMQTTProperty(propertyId, propertyName, propertyDefaultValue, false));
 }
 uint32_t NodeMQTTConfigManagerClass::getProperty(uint8_t propertyId)
 {
     for (int i = 0; i < properties.size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
-        if (property->id == propertyId)
-            return property->value;
+        NodeMQTTProperty property = properties.get(i);
+        if (property.id == propertyId)
+            return property.value;
     }
     return 0;
 }
@@ -100,10 +99,11 @@ void NodeMQTTConfigManagerClass::setProperty(uint8_t propertyId, uint32_t proper
 {
     for (int i = 0; i < properties.size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
-        if (property->id == propertyId) {
-            property->value = propertyValue;
+        NodeMQTTProperty property = properties.get(i);
+        if (property.id == propertyId) {
+            property.value = propertyValue;
             isPropertyDirty = true;
+            properties.set(i, property);
         }
     }
 }
@@ -112,12 +112,9 @@ void NodeMQTTConfigManagerClass::storePropertiesInEEPROM()
     uint16_t propertyAddress = EEPROM_PROPERTIES_ADDRESS;
     for (int i = 0; i < properties.size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
-        Serial.println(114);
-        Serial.println(property->value);
-        Serial.println(115);
-        property->isStored = true;
-        EEPROM.put(propertyAddress, *property);
+        NodeMQTTProperty property = properties.get(i);
+        property.isStored = true;
+        EEPROM.put(propertyAddress, property);
         propertyAddress += sizeof(NodeMQTTProperty);
     }
 }
@@ -126,11 +123,12 @@ void NodeMQTTConfigManagerClass::loadPropertiesFromEEPROM()
     uint16_t propertyAddress = EEPROM_PROPERTIES_ADDRESS;
     for (int i = 0; i < properties.size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
         NodeMQTTProperty eepromProperty;
         EEPROM.get(propertyAddress, eepromProperty);
         if (eepromProperty.isStored){
-            property->value = eepromProperty.value;
+            NodeMQTTProperty property = properties.get(i);
+            property.value = eepromProperty.value;
+            properties.set(i, property);
         }
         propertyAddress += sizeof(NodeMQTTProperty);
     }
@@ -227,17 +225,18 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig *configuration)
     NodeMQTTIO.println(TERMINAL_HR);
     for (int i = 0; i < properties.size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
-        String sPropertyName = String(property->name);
+//        NodeMQTTProperty *property = properties.get(i);
+        NodeMQTTProperty property = properties.get(i);
+        String sPropertyName = String(property.name);
         printAttributeWithTab(sPropertyName);
-        NodeMQTTIO.println(property->value);
+        NodeMQTTIO.println(property.value);
     }
     if (properties.size() > 0)
         NodeMQTTIO.println(TERMINAL_HR);
 }
 
-LinkedList<NodeMQTTProperty *> NodeMQTTConfigManagerClass::getProperties(){
-    return properties;
+LinkedList<NodeMQTTProperty>* NodeMQTTConfigManagerClass::getProperties(){
+    return &properties;
 }
 
 void NodeMQTTConfigManagerClass::commit () {

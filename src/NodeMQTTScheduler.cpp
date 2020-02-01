@@ -2,8 +2,8 @@
 #include "misc/typedef.hpp"
 
 NodeMQTTSchedulerClass::NodeMQTTSchedulerClass() {
-    
-    tasksToDelete = LinkedList<Task *>();
+
+    tasks = LinkedList<Task *>();
 }
 
 void NodeMQTTSchedulerClass::init(ApplicationContext *context)
@@ -13,13 +13,12 @@ void NodeMQTTSchedulerClass::init(ApplicationContext *context)
     // this->_context->scheduler->addTask(tCleanUp);
 }
 
-void NodeMQTTSchedulerClass::runDelayed(NodeMQTTCallback callback, uint16_t delay)
+void NodeMQTTSchedulerClass::runDelayed(NodeMQTTCallback callback, uint32_t delay)
 {
     Task *thisTask = new Task(TASK_IMMEDIATE, TASK_ONCE);
-    thisTask->setCallback([=](){
+//    this->tasks.add(thisTask);
+    thisTask->setCallback([=, this](){
         callback();
-        // this->tasksToDelete.add(thisTask);
-        // this->tCleanUp.restart();
         this->_context->scheduler->deleteTask(*thisTask);
         free(thisTask);
     });

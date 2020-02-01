@@ -38,6 +38,7 @@ void NodeMQTT::begin()
 void NodeMQTT::begin(NodeMQTTConfig *configuration)
 {
     _config = configuration;
+    NodeMQTTConfigManager.loadPropertiesFromEEPROM();
 
     Logger.logf(INFO, MSG_INTRODUCTION, getContext()->configuration->baseTopic, toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
     d(F("Initializing NodeMQTT"));

@@ -12,10 +12,10 @@ class NodeMQTTSchedulerClass
 public:
     NodeMQTTSchedulerClass();
     void init(ApplicationContext *context);
-    void runDelayed(NodeMQTTCallback callback, uint16_t delay);
+    void runDelayed(NodeMQTTCallback callback, uint32_t delay);
 
 protected:
-    LinkedList<Task *> tasksToDelete;
+    LinkedList<Task *> tasks;
     ApplicationContext *_context;
     // void cleanUp();
     // Task tCleanUp;

@@ -96,12 +96,13 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
     if (rootObject.containsKey(ATTR_MQTTPORT))
         nodeConfig.mqttPort = rootObject[ATTR_MQTTPORT].as<unsigned short>();
 
-    LinkedList<NodeMQTTProperty *> properties = NodeMQTTConfigManager.getProperties();
-    for (int i = 0; i < properties.size(); i++)
+    LinkedList<NodeMQTTProperty>* properties = NodeMQTTConfigManager.getProperties();
+    for (int i = 0; i < properties->size(); i++)
     {
-        NodeMQTTProperty *property = properties.get(i);
-        if (rootObject.containsKey(property->name))
-            NodeMQTTConfigManager.setProperty(property->id, rootObject[property->name].as<uint32_t>());
+        NodeMQTTProperty property = properties->get(i);
+        if (rootObject.containsKey(property.name)){
+            NodeMQTTConfigManager.setProperty(property.id, rootObject[property.name].as<uint32_t>());
+        }
     }
     return nodeConfig;
 }
@@ -128,6 +129,12 @@ inline JsonObject &NodeConfigInterface::toJSON(NodeMQTTConfig status, JsonObject
     }
     root[ATTR_MQTTUSER] = status.mqttUser;
     root[ATTR_WIFIPASS] = status.wifiPassword;
+    LinkedList<NodeMQTTProperty>* properties = NodeMQTTConfigManager.getProperties();
+    for (int i = 0; i < properties->size(); i++)
+    {
+        NodeMQTTProperty property = properties->get(i);
+        root[property.name] = property.value;
+    }
     return root;
 }
 
