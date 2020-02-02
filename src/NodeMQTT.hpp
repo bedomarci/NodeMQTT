@@ -8,10 +8,6 @@
 #include "interfaces/CommandInterface.hpp"
 #include "interfaces/BuzzerInterface.hpp"
 #include "interfaces/LogInterface.hpp"
-// #define TRANSPORT_PATH "transports/" #TRANSPORT_CLASS 
-// #include TRANSPORT_PATH
-// #define PARSER_PATH "parsers/" #PARSER_CLASS ".hpp"
-// #include PARSER_PATH
 #include "transports/WifiTransport.hpp"
 #include "parsers/PubSubParser.hpp"
 #include "io/_AbstractIO.hpp"

@@ -61,7 +61,7 @@
 
 #define NULL_TRANSPORT 0
 #define WIFI_TRANSPORT 1
-#define RF24_TRANSPORT 2
+#define RF_TRANSPORT 2
 
 
 #if !defined(NODEMQTT_TRANSPORT) //&& !defined(WIFI_TRANSPORT)

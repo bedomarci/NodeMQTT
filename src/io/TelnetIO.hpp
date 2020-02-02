@@ -21,8 +21,8 @@ class TelnetIO : public AbstractIO
     int charsReceived = 0;
     char *_telnetBuffer;
 
-    TELNET_SERVER_CLASS * telnetServer;
-    TELNET_CLIENT_CLASS telnetClient;
+    SERVER_CLASS * telnetServer;
+    CLIENT_CLASS telnetClient;
     boolean connectFlag = 0; //we'll use a flag separate from client.connected, so we can recognize when a new connection has been created
     unsigned long timeOfLastActivity; //time in milliseconds of last activity
     unsigned long allowedConnectTime = 300000; //five minutes
@@ -32,7 +32,7 @@ class TelnetIO : public AbstractIO
     void loop();
 };
 inline TelnetIO::TelnetIO() {
-    telnetServer = new TELNET_SERVER_CLASS(TELNET_SERVER_PORT);
+    telnetServer = new SERVER_CLASS(TELNET_SERVER_PORT);
 }
 
 inline void TelnetIO::printHeader(){

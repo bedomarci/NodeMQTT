@@ -4,9 +4,28 @@
 #include "misc/pitches.hpp"
 #include "misc/time/compile_time.hpp"
 
+//PLATFORM SPECIFIC INCLUDES
+
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>
+#define SERVER_CLASS WiFiServer
+#define CLIENT_CLASS WiFiClient
+#define UPDATE ESPhttpUpdate
+#endif
+#if defined(ESP32)
+#include <WiFi.h>
+#include <esp_wifi.h>
+#define SERVER_CLASS WiFiServer
+#define CLIENT_CLASS WiFiClient
+#define UPDATE httpUpdate
+#endif
 
 #if defined(ESP8266) || defined(ESP32)
+#define _TASK_STD_FUNCTION
 #include <functional>
+#include <ESP.h>
+#include <WiFiUdp.h>
+#define UDP WiFiUDP
 typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
 typedef std::function<void()> NodeMQTTCallback;
 typedef std::function<void(const char *)> NodeMQTTStringCallback;

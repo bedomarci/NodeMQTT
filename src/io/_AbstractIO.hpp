@@ -12,7 +12,6 @@ class AbstractIO : public Print
 public:
     void onReceive(NodeMQTTStringCallback cb);
     virtual size_t write(uint8_t c) = 0;
-
     virtual void init(ApplicationContext * context);
 protected:
     virtual void handle() = 0;

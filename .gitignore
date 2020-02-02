@@ -10,3 +10,5 @@ platformio.ini
 .vscode/launch.json
 .vscode/*.db
 .vscode/.browse.c_cpp.db*
+CMakeLists.txt
+CMakeListsPrivate.txt

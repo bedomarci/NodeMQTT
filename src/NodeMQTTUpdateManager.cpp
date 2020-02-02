@@ -88,7 +88,9 @@ void NodeMQTTUpdateManagerClass::checkForUpdates()
 #elif defined(ESP32)
             WiFiClient updateClient;
             t_httpUpdate_return ret = UPDATE.update(updateClient, fwImageURL);
+#ifdef LED_BUILTIN
             UPDATE.setLedPin(LED_BUILTIN, LOW);
+#endif
 #endif
 
             switch (ret)

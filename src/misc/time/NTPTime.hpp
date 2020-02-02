@@ -7,8 +7,6 @@
 #include "../helpers.hpp"
 #include "time_macros.hpp"
 
-#include <WiFiUdp.h>
-#define UDP WiFiUDP
 
 #define NTP_PACKET_SIZE 48
 

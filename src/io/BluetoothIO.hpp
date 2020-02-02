@@ -16,4 +16,9 @@ class BluetoothIO : public AbstractIO {
     private:
 };
 
+inline BluetoothIO::BluetoothIO() {}
+inline size_t BluetoothIO::write(uint8_t c) { return 0; }
+inline void BluetoothIO::handle() {}
+inline void BluetoothIO::printHeader() {}
+
 #endif //BLUETOOTHIO_H
