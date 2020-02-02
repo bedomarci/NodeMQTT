@@ -91,7 +91,7 @@ const char message_ConnetctToWifiWithBSSID[] PROGMEM = "Connecting to %s with BS
 
 //FIRMWARE
 const long FIRMWARE_BUILD_TIME PROGMEM = UNIX_TIMESTAMP;
-const char LOG_FORMAT_MILLIS[] PROGMEM = "[%c|%12lu] %s";
+const char LOG_FORMAT_MILLIS[] PROGMEM = "[%c|%012lu] %s";
 const char LOG_FORMAT_NTP[]    PROGMEM = "[%c|%s] %s";
 
 

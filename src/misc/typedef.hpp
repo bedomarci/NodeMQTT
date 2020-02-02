@@ -5,6 +5,10 @@
 #include "../constants.hpp"
 #include <LinkedList.h>
 
+extern "C" {
+#include <ccronexpr.h>
+}
+
 // class AbstractTransport;
 // class AbstractParser;
 class Scheduler;
@@ -31,12 +35,20 @@ struct NodeMQTTConfig
   uint16_t mqttPort = DEFAULT_MQTT_PORT;
 };
 
+struct NodeMQTTCronJob {
+    const char *cronString;
+    NodeMQTTCallback cb;
+    cron_expr cronExpression;
+    bool enabled;
+    time_t nextExecution;
+};
+
 struct NodeMQTTProperty
 {
-  uint8_t id = 0;
-  const char *name;
-  uint32_t value;
-  bool isStored;
+    uint8_t id = 0;
+    const char *name;
+    int value;
+    uint8_t isStored;
   NodeMQTTProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyValue, bool isStored)
       : id(propertyId),
         name(propertyName),
@@ -47,6 +59,16 @@ struct NodeMQTTProperty
         name(0),
         value(0),
         isStored(0){};
+};
+
+struct NodeMQTTTime {
+    uint8_t Second;
+    uint8_t Minute;
+    uint8_t Hour;
+    uint8_t Wday;   // day of week, sunday is day 1
+    uint8_t Day;
+    uint8_t Month;
+    uint8_t Year;   // offset from 1970;
 };
 
 class NodeInterfaceBase

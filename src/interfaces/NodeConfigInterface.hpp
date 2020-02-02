@@ -101,7 +101,7 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject)
     {
         NodeMQTTProperty property = properties->get(i);
         if (rootObject.containsKey(property.name)){
-            NodeMQTTConfigManager.setProperty(property.id, rootObject[property.name].as<uint32_t>());
+            NodeMQTTConfigManager.setProperty(property.id, rootObject[property.name].as<int32>());
         }
     }
     return nodeConfig;

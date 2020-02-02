@@ -3,7 +3,7 @@
 #define HELPERS_H
 #include <Arduino.h>
 #include <Wire.h>
-#include "TimeLib.h"
+#include <time.h>
 #include "NodeMQTTLogger.hpp"
 #include "../constants.hpp"
 
@@ -232,16 +232,20 @@ inline void printHeader(Print &p) {
 
 inline String toTimeString(time_t t) {
     char buffer[13];
-    sprintf(buffer, "%2d:%2d:%2d.%3d", hour(t), minute(t), second(t), (int)(millis()%1000));
+    tm* calendar = gmtime(&t);
+    sprintf(buffer, "%02d:%02d:%02d.%03d", calendar->tm_hour, calendar->tm_min, calendar->tm_sec, (int)(millis()%1000));
+//    sprintf(buffer, "%02d:%02d:%02d.%03d", hour(t), minute(t), second(t), (int)(millis()%1000));
     return String(buffer);
 }
 
 inline String toDateTimeString(time_t t) {
     char buffer[20];
-    sprintf(buffer, "%4d/%2d/%2d %2d:%2d:%2d", year(t), month(t), day(t), hour(t), minute(t), second(t));
+    tm* calendar = gmtime(&t);
+    sprintf(buffer, "%04d/%02d/%02d %02d:%02d:%02d", calendar->tm_year, calendar->tm_mon, calendar->tm_mday,
+            calendar->tm_hour, calendar->tm_min, calendar->tm_sec);
+//    sprintf(buffer, "%04d/%02d/%02d %02d:%02d:%02d", year(t), month(t), day(t), hour(t), minute(t), second(t));
     return String(buffer);
 }
-
 
 
 #endif

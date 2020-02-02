@@ -5,6 +5,7 @@
 #include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
 #include "NodeMQTTScheduler.hpp"
+#include "NodeMQTTCron.hpp"
 #include "NodeMQTTIOContainer.hpp"
 // #include "NodeMQTTTelnet.hpp"
 
@@ -22,6 +23,7 @@ NodeMQTT::NodeMQTT()
     NodeMQTTIO.init(&_context);
     NodeMQTTCommandProcessor.init(&_context);
     NodeMQTTScheduler.init(&_context);
+    NodeMQTTCron.init(&_context);
     Logger.init(&_context);
 
     printHeader(NodeMQTTIO);
@@ -51,6 +53,7 @@ void NodeMQTT::begin(NodeMQTTConfig *configuration)
     _transport.setNetworkConnectedCallback([=]() { onNetworkConnected(); });
     _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
     _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
+
     if (_config->isOnline) {
         _transport.init();
     }
@@ -260,6 +263,13 @@ void NodeMQTT::setBrokerConnectedCallback(NodeMQTTCallback cb)
 void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
 {
     brokerDisconnectedCallback = cb;
+}
+
+void NodeMQTT::setTimeSyncedCallback(NodeMQTTCallback cb) {
+    ntpTime.setTimeSyncedCallback(cb);
+}
+void NodeMQTT::setTimeReceivedCallback(NodeMQTTCallback cb) {
+    ntpTime.setTimeReceivedCallback(cb);
 }
 
 void NodeMQTT::onFatalError()

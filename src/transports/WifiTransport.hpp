@@ -37,7 +37,7 @@ protected:
     int32_t RSSIToPercentage(int32_t rssi);
     void logWifiInfo();
     bool isIPvalid(uint8_t ip[4]);
-    void setOutputPower(int power);
+    void setOutputPower(float power);
     void setSleepMode();
 
     WiFiClient   espClient;
@@ -59,15 +59,15 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     WiFi.enableAP(false);
     this->setOutputPower(WIFI_TRANSMISSION_POWER);
     WiFi.persistent(false);
-    // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
     this->setSleepMode();
 
+    // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
 
     client = PubSubClient(espClient);
     client.setCallback([this](char *t, byte *p, unsigned int l) { this->onMessage(t, p, l); });
 }
 
-inline void WifiTransport::setOutputPower(int power) {
+inline void WifiTransport::setOutputPower(float power) {
 #if (ESP8266)
     WiFi.setOutputPower(power);
 #endif
@@ -135,16 +135,18 @@ inline void WifiTransport::reconnectWifi() {
     WiFi.disconnect();
     NodeMQTTConfig *c = this->getConfiguration();
     bool      useStaticIp = isIPvalid(c->ipAddress);
-    IPAddress staticIP(c->ipAddress[0], c->ipAddress[1], c->ipAddress[2], c->ipAddress[3]);   //ESP static ip
+    IPAddress localIp(c->ipAddress[0], c->ipAddress[1], c->ipAddress[2], c->ipAddress[3]);   //ESP static ip
     IPAddress gateway(c->gateway[0], c->gateway[1], c->gateway[2],
                       c->gateway[3]);            //IP Address of your WiFi Router (Gateway)
     IPAddress subnet(c->subnetMask[0], c->subnetMask[1], c->subnetMask[2], c->subnetMask[3]); //Subnet mask
     IPAddress dns(c->dns[0], c->dns[1], c->dns[2], c->dns[3]);
 
-    //SET STATIC CONFIGURATION IF AVAILABLE
+    //    SET STATIC CONFIGURATION IF AVAILABLE
     if (useStaticIp)
-        WiFi.config(staticIP, gateway, subnet, dns);
-
+        WiFi.config(localIp, gateway, subnet, dns);
+    else {
+        WiFi.config(localIp, localIp, localIp, localIp); //resets for dhcp in case of 0.0.0.0
+    }
 
     if (hasBSSID(c->wifiBssid)) {
         Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, c->wifiSsid, wifiConnectionAttampt);
@@ -154,8 +156,8 @@ inline void WifiTransport::reconnectWifi() {
         WiFi.begin(c->wifiSsid, c->wifiPassword);
     }
 
-    if (useStaticIp)
-        WiFi.config(staticIP, gateway, subnet, dns);
+//    if (useStaticIp)
+//        WiFi.config(staticIP, gateway, subnet, dns);
 
     wifiConnectionAttampt++;
 

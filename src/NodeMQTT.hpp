@@ -15,7 +15,7 @@
 #include "transports/WifiTransport.hpp"
 #include "parsers/PubSubParser.hpp"
 #include "io/_AbstractIO.hpp"
-#include "misc/NTPTime.hpp"
+#include "misc/time/NTPTime.hpp"
 #include "io/TelnetIO.hpp"
 #include "NodeMQTTScheduler.hpp"
 
@@ -35,6 +35,8 @@ public:
   void setBrokerConnectingCallback(NodeMQTTCallback);
   void setBrokerConnectedCallback(NodeMQTTCallback);
   void setBrokerDisconnectedCallback(NodeMQTTCallback);
+  void setTimeSyncedCallback(NodeMQTTCallback);
+  void setTimeReceivedCallback(NodeMQTTCallback);
 
   void setBaseTopic(String baseTopic);
   String getBaseTopic();

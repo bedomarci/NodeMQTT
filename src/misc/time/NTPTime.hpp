@@ -2,9 +2,10 @@
 #define NTPTIME_H
 
 #include "TaskSchedulerDeclarations.h"
-#include "typedef.hpp"
-#include "config.hpp"
-#include "helpers.hpp"
+#include "../typedef.hpp"
+#include "../config.hpp"
+#include "../helpers.hpp"
+#include "time_macros.hpp"
 
 #include <WiFiUdp.h>
 #define UDP WiFiUDP
@@ -15,6 +16,8 @@ class NTPTime {
     public:
         NTPTime();
         void init(ApplicationContext * context);
+        void setTimeSyncedCallback(NodeMQTTCallback);
+        void setTimeReceivedCallback(NodeMQTTCallback);
 
     protected:
         byte packetBuffer[NTP_PACKET_SIZE];
@@ -27,6 +30,11 @@ class NTPTime {
         ApplicationContext * _context;
         void getNtpTime();
         void sendNTPpacket();
+        void onTimeSynced();
+        void onTimeReceived();
+
+    NodeMQTTCallback timeSyncedCallback;
+    NodeMQTTCallback timeReceivedCallback;
     private:
         uint32_t beginWait;
 };
@@ -55,6 +63,7 @@ inline void NTPTime::getNtpTime()
     // while (millis() - beginWait < 1500) {
     int size = Udp.parsePacket();
     if (size >= NTP_PACKET_SIZE) {
+        bool isFirstTime = !_context->currentTime;
         // Serial.println("Receive NTP Response");
         Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
         unsigned long secsSince1900;
@@ -66,6 +75,12 @@ inline void NTPTime::getNtpTime()
         time_t time  = secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
         _context->currentTime = time;
         Logger.logf(INFO, F("Time server synced. Current time is %s."), toTimeString(time).c_str());
+
+        //EVENTS
+        onTimeSynced();
+        if (isFirstTime) //If time was 0, we have NTP for first time.
+            onTimeReceived();
+
         _tTick.enable();
         _tGetNtpTime.disable();
         _tGetNtpTime.restartDelayed(NTP_UPDATE_INTERVAL);
@@ -107,6 +122,20 @@ inline void NTPTime::tick() {
     _context->currentTime++;
 }
 
+inline void NTPTime::setTimeSyncedCallback(NodeMQTTCallback cb){
+    timeSyncedCallback = cb;
+}
+inline void NTPTime::setTimeReceivedCallback(NodeMQTTCallback cb){
+    timeReceivedCallback = cb;
+}
+inline void NTPTime::onTimeSynced(){
+    if (timeSyncedCallback != nullptr)
+        timeSyncedCallback();
+}
+inline void NTPTime::onTimeReceived(){
+    if (timeReceivedCallback != nullptr)
+        timeReceivedCallback();
+}
 
 
 #endif //NTPTIME_H

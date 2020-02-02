@@ -20,7 +20,10 @@ class SerialIO : public AbstractIO
 };
 inline SerialIO::SerialIO() {
     Serial.begin(NODEMQTT_SERIAL_SPEED);
-    Serial.flush();
+    //flushing input buffer
+    if (Serial.available() > 0) {
+        Serial.read();
+    }
 }
 
 inline void SerialIO::handle(){
