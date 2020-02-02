@@ -140,7 +140,7 @@ inline void WifiTransport::reconnectWifi() {
                       c->gateway[3]);            //IP Address of your WiFi Router (Gateway)
     IPAddress subnet(c->subnetMask[0], c->subnetMask[1], c->subnetMask[2], c->subnetMask[3]); //Subnet mask
     IPAddress dns(c->dns[0], c->dns[1], c->dns[2], c->dns[3]);
-
+    
     //    SET STATIC CONFIGURATION IF AVAILABLE
     if (useStaticIp)
         WiFi.config(localIp, gateway, subnet, dns);

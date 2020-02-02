@@ -33,3 +33,4 @@ protected:
 extern NodeMQTTCronClass NodeMQTTCron;
 
 #endif //NODEMQTT_NODEMQTTCRON_HPP
+

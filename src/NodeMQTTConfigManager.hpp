@@ -36,10 +36,10 @@ public:
   void loadInto(NodeMQTTConfig *configuration);
   void loadDefaultsInto(NodeMQTTConfig *configuration);
   void print(NodeMQTTConfig *configuration);
-  void registerProperty(uint8_t propertyId, const char *propertyName, int32 propertyDefaultValue);
-    int32 getProperty(uint8_t propertyId);
+  void registerProperty(uint8_t propertyId, const char *propertyName, int propertyDefaultValue);
+    int getProperty(uint8_t propertyId);
   LinkedList<NodeMQTTProperty> * getProperties();
-  void setProperty(uint8_t propertyId, int32 propertyValue);
+  void setProperty(uint8_t propertyId, int propertyValue);
   void storePropertiesInEEPROM();
   void loadPropertiesFromEEPROM();
   void factoryReset();

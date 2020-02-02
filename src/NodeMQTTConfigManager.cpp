@@ -82,12 +82,12 @@ void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig *configuration)
     save(configuration);
 }
 
-void NodeMQTTConfigManagerClass::registerProperty(uint8_t propertyId, const char *propertyName, int32 propertyDefaultValue)
+void NodeMQTTConfigManagerClass::registerProperty(uint8_t propertyId, const char *propertyName, int propertyDefaultValue)
 {
     this->properties->add(NodeMQTTProperty(propertyId, propertyName, propertyDefaultValue, 0));
 }
 
-int32 NodeMQTTConfigManagerClass::getProperty(uint8_t propertyId)
+int NodeMQTTConfigManagerClass::getProperty(uint8_t propertyId)
 {
     for (int i = 0; i < this->properties->size(); i++)
     {
@@ -97,7 +97,7 @@ int32 NodeMQTTConfigManagerClass::getProperty(uint8_t propertyId)
     }
     return 0;
 }
-void NodeMQTTConfigManagerClass::setProperty(uint8_t propertyId, int32 propertyValue)
+void NodeMQTTConfigManagerClass::setProperty(uint8_t propertyId, int propertyValue)
 {
     for (int i = 0; i < this->properties->size(); i++)
     {
