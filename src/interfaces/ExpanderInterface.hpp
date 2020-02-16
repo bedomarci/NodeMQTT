@@ -1,14 +1,11 @@
 #ifndef EXPANDERINTERFACE_H
 #define EXPANDERINTERFACE_H
 
-#include "ArrayInterface.hpp"
+#include "_I2CInterface.hpp"
 #include <FunctionalInterrupt.h>
 #include "../misc/helpers.hpp"
 #include "../NodeMQTTConfigManager.hpp"
-#include <Wire.h>
 
-#define I2CWRITE(x) Wire.write(x)
-#define I2CREAD() Wire.read()
 
 #define TRANSACTION_IMMEDIATE 0x00
 #define TRANSACTION_SUSPENDED 0x01
@@ -23,14 +20,14 @@
 #define ExpanderChangeCallbackSignature std::function<void(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue)>
 
 template <uint8_t LENGTH>
-class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
+class ExpanderInterface : public I2CInterface<uint8_t, LENGTH>
 {
   public:
     ExpanderInterface(String topic, uint8_t sdaPin, uint8_t sclPin, uint8_t address, int8_t interruptPin = NO_INTERRUPT_PIN, uint16_t debounceDelay = DEFAULT_EXPANDER_DEBOUNCE, bool interruptPu = true);
     ExpanderInterface(String publishTopic, String subscribeTopic, uint8_t sdaPin, uint8_t sclPin, uint8_t address, int8_t interruptPin = NO_INTERRUPT_PIN, uint16_t debounceDelay = DEFAULT_EXPANDER_DEBOUNCE, bool interruptPu = true);
     void init();
 
-    void begin(uint8_t address = 0x20);
+//    void begin(uint8_t address = 0x20);
     void pinMode(uint8_t pin, uint8_t mode, bool invert = false);
     void digitalWrite(uint8_t pin, uint8_t value, bool publishable = true);
     uint8_t digitalRead(uint8_t pin);
@@ -86,7 +83,7 @@ class ExpanderInterface : public ArrayInterface<uint8_t, LENGTH>
     Array<uint8_t, LENGTH> binToArray(uint16_t value);
     void expanderInterruptCallback();
 
-    uint8_t _address;
+
     uint8_t _sdaPin;
     uint8_t _sclPin;
     int8_t _interruptPin;
@@ -111,7 +108,7 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String topic, uint8_t sdaPin
 
 template <uint8_t LENGTH>
 inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String subscribeTopic, uint8_t sdaPin, uint8_t sclPin, uint8_t address, int8_t interruptPin, uint16_t debounceDelay, bool interruptPu)
-    : ArrayInterface<uint8_t, LENGTH>(publishTopic, subscribeTopic)
+    : I2CInterface<uint8_t, LENGTH>(publishTopic, subscribeTopic)
 {
     _sdaPin = sdaPin;
     _sclPin = sclPin;
@@ -121,27 +118,28 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String 
     _hasInterrupt = (_interruptPin != NO_INTERRUPT_PIN);
     _taskPoll.set(_debounceDelay, TASK_FOREVER, [this]() { poll(); });
     _interruptPullup = interruptPu;
-    ArrayInterface<uint8_t, LENGTH>::onChange([this](Array<uint8_t, LENGTH> oV, Array<uint8_t, LENGTH> nV) { internalCallback(oV, nV); });
+    I2CInterface<uint8_t, LENGTH>::onChange([this](Array<uint8_t, LENGTH> oV, Array<uint8_t, LENGTH> nV) { internalCallback(oV, nV); });
     this->setMQTTPublish(true);
     this->setMQTTSubscribe(true);
 }
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::init()
 {
-    // if (!NodeMQTTConfigManagerClass::I2CInitialized)
-    {
-        Wire.begin(_sdaPin, _sclPin);
-        Wire.setClock(I2C_CLOCK_SPEED);
-        // NodeMQTTConfigManagerClass::I2CInitialized = true;
-    }
-    if (!isI2CDeviceWorking(_address))
-    {
-        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. Expander interface shuts down!"), _address);
-        String devices = find_i2c_devices();
-        Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
-        this->setEnabled(false);
-        return;
-    }
+//    // if (!NodeMQTTConfigManagerClass::I2CInitialized)
+//    {
+//        Wire.begin(_sdaPin, _sclPin);
+//        Wire.setClock(I2C_CLOCK_SPEED);
+//        // NodeMQTTConfigManagerClass::I2CInitialized = true;
+//    }
+//    if (!isI2CDeviceWorking(_address))
+//    {
+//        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. Expander interface shuts down!"), _address);
+//        String devices = find_i2c_devices();
+//        Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
+//        this->setEnabled(false);
+//        return;
+//    }
+    I2CInterface::init();
 
     readGPIO();
 
@@ -244,7 +242,7 @@ inline uint8_t ExpanderInterface<LENGTH>::digitalRead(uint8_t pin)
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::write(Array<uint8_t, LENGTH> newValue, bool publishable)
 {
-    ArrayInterface<uint8_t, LENGTH>::write(newValue, publishable && (transactionState == TRANSACTION_IMMEDIATE));
+    I2CInterface<uint8_t, LENGTH>::write(newValue, publishable && (transactionState == TRANSACTION_IMMEDIATE));
 }
 
 template <uint8_t LENGTH>
