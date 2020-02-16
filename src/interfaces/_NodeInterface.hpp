@@ -3,9 +3,9 @@
 
 #define _TASK_INLINE
 
-#include "misc/config.hpp"
-#include "misc/helpers.hpp"
-#include "constants.hpp"
+#include "../misc/config.hpp"
+#include "../misc/helpers.hpp"
+#include "../constants.hpp"
 #include <Arduino.h>
 #include <PubSubClient.h>
 #include <LinkedList.h>
