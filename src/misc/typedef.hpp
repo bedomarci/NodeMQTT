@@ -45,15 +45,16 @@ struct NodeMQTTCronJob {
 
 struct NodeMQTTProperty
 {
-    uint8_t id = 0;
+    uint16_t id = 0;
     const char *name;
-    int value;
+    uint8_t [EEPROM_MAX_WORD_LENGTH] value;
+    uint8_t length;
     uint8_t isStored;
-  NodeMQTTProperty(uint8_t propertyId, const char *propertyName, uint32_t propertyValue, bool isStored)
+  NodeMQTTProperty(uint8_t propertyId, const char *propertyName)
       : id(propertyId),
         name(propertyName),
-        value(propertyValue),
-        isStored(isStored){};
+//        value(propertyValue),
+        isStored(0){};
   NodeMQTTProperty()
       : id(0),
         name(0),
