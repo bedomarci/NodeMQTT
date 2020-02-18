@@ -4,14 +4,14 @@
 
 #define STORED 85
 
-NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
-{
-    EEPROM_CONFIGURATION_ADDRESS = EEPROM_CONFIGURATION_CHCKSUM_ADDRESS + sizeof(uint32_t);
+NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass() {
+    EEPROM_PROPERTY_CHCKSUM_ADDRESS = EEPROM_CONFIGURATION_CHCKSUM_ADDRESS + sizeof(uint32_t);
+    EEPROM_CONFIGURATION_ADDRESS = EEPROM_PROPERTY_CHCKSUM_ADDRESS + sizeof(uint32_t);
     EEPROM_PROPERTIES_ADDRESS = EEPROM_CONFIGURATION_ADDRESS + sizeof(NodeMQTTConfig);
     setStaticFlagDefaultValues();
     // if (!NodeMQTTConfigManagerClass::EEPROMInitialized)
     {
-    EEPROM.begin(EEPROM_SIZE);
+        EEPROM.begin(EEPROM_SIZE);
         // NodeMQTTConfigManagerClass::EEPROMInitialized = true;
     }
     // NodeMQTTIO.println(EEPROM.length());
@@ -27,25 +27,57 @@ NodeMQTTConfigManagerClass::NodeMQTTConfigManagerClass()
 
 }
 
-void NodeMQTTConfigManagerClass::setStaticFlagDefaultValues()
-{
+void NodeMQTTConfigManagerClass::setStaticFlagDefaultValues() {
     // NodeMQTTConfigManagerClass::I2CInitialized = false;
     // NodeMQTTConfigManagerClass::EEPROMInitialized = false;
 }
 
-uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig *config)
-{
+uint32_t NodeMQTTConfigManagerClass::calculateChkSum(NodeMQTTConfig *config) {
     int i;
     int len = sizeof(NodeMQTTConfig);
     uint32_t checksum;
-    char *data = (char *)config;
+    char *data = (char *) config;
     for (i = 0, checksum = 0; i < len; i++)
         checksum += data[i];
     return checksum;
 }
 
-void NodeMQTTConfigManagerClass::save(NodeMQTTConfig *configuration)
-{
+uint8_t NodeMQTTConfigManagerClass::isEEPROMValid() {
+    Serial.println("CHKSUM");
+    uint32_t calculatedChkSum = this->calculateEEPROMPropertyChkSum();
+    uint32_t storedChkSum;
+    EEPROM.get(EEPROM_PROPERTY_CHCKSUM_ADDRESS, storedChkSum);
+    Serial.println(calculatedChkSum);
+    Serial.println(storedChkSum);
+    return calculatedChkSum == storedChkSum;
+}
+
+uint32_t NodeMQTTConfigManagerClass::calculateRAMPropertyChkSum() {
+    uint32_t sum = 0;
+    for (int i = 0; i < this->properties->size(); i++) {
+        NodeMQTTProperty property = this->properties->get(i);
+        for (int j = 0; j < property.length; j++)
+            sum += property.value[j];
+    }
+    return sum;
+}
+
+uint32_t NodeMQTTConfigManagerClass::calculateEEPROMPropertyChkSum() {
+    uint32_t sum = 0;
+    uint16_t address;
+    uint8_t length;
+    address = EEPROM_PROPERTIES_ADDRESS;
+    for (int i = 0; i < this->properties->size(); i++) {
+        address += sizeof(uint16_t); //skipping property id
+        EEPROM.get(address, length);
+        address += sizeof(uint8_t);
+        for (int i = 0; i < length; i++)
+            sum += EEPROM.read(address++);
+    }
+    return sum;
+}
+
+void NodeMQTTConfigManagerClass::save(NodeMQTTConfig *configuration) {
     i(F("Storing configuration in EEPROM."));
     configuration->configVersion = DEFAULT_CONFIGURATION_VERSION;
     uint32_t chksum = calculateChkSum(configuration);
@@ -62,82 +94,91 @@ void NodeMQTTConfigManagerClass::save(NodeMQTTConfig *configuration)
     restartNode();
 }
 
-void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig *configuration)
-{
+void NodeMQTTConfigManagerClass::loadInto(NodeMQTTConfig *configuration) {
     i(F("Loading configuration from EEPROM."));
     uint32_t storedChkSum;
     EEPROM.get(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum);
     EEPROM.get(EEPROM_CONFIGURATION_ADDRESS, *configuration);
     uint32_t calculatedChkSum = calculateChkSum(configuration);
-    if (calculatedChkSum != storedChkSum || configuration->configVersion != DEFAULT_CONFIGURATION_VERSION)
-    {
+    if (calculatedChkSum != storedChkSum || configuration->configVersion != DEFAULT_CONFIGURATION_VERSION) {
         i(F("Configuration is invalid in EEPROM."));
         loadDefaultsInto(configuration);
     }
 }
+
 //
-void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig *configuration)
-{
+void NodeMQTTConfigManagerClass::loadDefaultsInto(NodeMQTTConfig *configuration) {
     i(F("Loading default configuration."));
     configuration = new NodeMQTTConfig();
     save(configuration);
 }
 
 void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const char *propertyName,
-                                                  uint8_t *propertyDefaultValue, uint8_t length) {
+                                                  uint8_t *propertyDefaultValue, uint8_t length,
+                                                  NodeMQTTPropertyType type) {
     NodeMQTTProperty property = NodeMQTTProperty(propertyId, propertyName);
     property.length = length;
+    property.type = type;
     memcpy(property.value, propertyDefaultValue, length);
     this->properties->add(property);
 }
 
+void NodeMQTTConfigManagerClass::registerIntProperty(uint16_t propertyId, const char *propertyName,
+                                                     int propertyDefaultValue) {
+    this->registerProperty(propertyId, propertyName, (uint8_t *) &propertyDefaultValue, sizeof(int), INT_PROPERTY);
+}
 
-void NodeMQTTConfigManagerClass::storePropertiesInEEPROM()
-{
-    properties->sort([](NodeMQTTProperty &a, NodeMQTTProperty &b) -> int { return this->compareProperty(a, b); });
+void NodeMQTTConfigManagerClass::registerStringProperty(uint16_t propertyId, const char *propertyName,
+                                                        const char *propertyDefaultValue) {
+    this->registerProperty(propertyId, propertyName, (uint8_t *) propertyDefaultValue, strlen(propertyDefaultValue) + 1,
+                           STRING_PROPERTY);
+}
+
+void NodeMQTTConfigManagerClass::registerBoolProperty(uint16_t propertyId, const char *propertyName,
+                                                      uint8_t propertyDefaultValue) {
+    this->registerProperty(propertyId, propertyName, &propertyDefaultValue, sizeof(uint8_t), BOOL_PROPERTY);
+}
+
+void NodeMQTTConfigManagerClass::storePropertiesInEEPROM() {
+    properties->sort([](NodeMQTTProperty &a, NodeMQTTProperty &b) -> int { return (int) a.id - (int) b.id; });
     uint16_t propertyAddress = EEPROM_PROPERTIES_ADDRESS;
-    for (int i = 0; i < this->properties->size(); i++)
-    {
+    for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty property = this->properties->get(i);
         property.isStored = STORED;
         EEPROM.put(propertyAddress, property.id);
-        propertyAddress += 2;
+        propertyAddress += sizeof(uint16_t);
         EEPROM.put(propertyAddress, property.length);
-        propertyAddress += 1;
-        for (int i = 0; i < property.length && i < EEPROM_MAX_WORD_LENGTH; i++)
-            EEPROM.update(propertyAddress++, property.value[i]);
-//        propertyAddress += property.length;
+        propertyAddress += sizeof(uint8_t);
+        memcpy(EEPROM.getDataPtr() + propertyAddress, property.value, property.length);
+        propertyAddress += property.length;
     }
+    uint32_t chkSum = this->calculateEEPROMPropertyChkSum();
+    Serial.println(chkSum);
+    EEPROM.put(EEPROM_PROPERTY_CHCKSUM_ADDRESS, chkSum);
 }
-void NodeMQTTConfigManagerClass::loadPropertiesFromEEPROM()
-{
+
+void NodeMQTTConfigManagerClass::loadPropertiesFromEEPROM() {
     uint16_t propertyEEPROMAddress = EEPROM_PROPERTIES_ADDRESS;
     uint8_t propertyEEPROMLength;
-//    uint8_t wordBuffer[EEPROM_MAX_WORD_LENGTH];
-    for (int i = 0; i < this->properties->size(); i++)
-    {
-//        NodeMQTTProperty eepromProperty;
+    for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty ramProperty = this->properties->get(i);
-
-        this->getEEPROMLocationById(ramProperty.id, &propertyEEPROMAddress, &propertyEEPROMLength);
+        this->getEEPROMLocationById(ramProperty.id, propertyEEPROMAddress, propertyEEPROMLength);
         if (propertyEEPROMAddress != 0) {
             memcpy(ramProperty.value, EEPROM.getConstDataPtr() + propertyEEPROMAddress, propertyEEPROMLength);
             ramProperty.isStored = true;
+        } else {
+            Logger.logf(ERROR, F("Unable to locate %s in EEPROM. Please alter configuration to overwrite EEPROM."), ramProperty.name);
         }
+        Serial.println();
         this->properties->set(i, ramProperty);
-//        for (int i = 0; i < propertyEEPROMLength; i++)
-//            wordBuffer[i] = EEPROM.read(propertyEEPROMAddress + i);
-
-//        if (eepromProperty.isStored == STORED){
-//            ramProperty.value = eepromProperty.value;
-//        }
-//        propertyEEPROMAddress += sizeof(NodeMQTTProperty);
     }
+    Serial.println("CHKSUM");
+    Serial.println(isEEPROMValid());
+
 }
-void NodeMQTTConfigManagerClass::printIp(uint8_t ip[4])
-{
-    for (int i = 0; i < 4; i++)
-    {
+
+void NodeMQTTConfigManagerClass::printIp(uint8_t ip[4]) {
+    for (int i = 0; i < 4; i++) {
         NodeMQTTIO.print(ip[i]);
         if (i < 3)
             NodeMQTTIO.print('.');
@@ -154,8 +195,7 @@ void NodeMQTTConfigManagerClass::printAttributeWithTab(String s) {
     }
 }
 
-void NodeMQTTConfigManagerClass::factoryReset()
-{
+void NodeMQTTConfigManagerClass::factoryReset() {
     uint32_t storedChkSum;
     EEPROM.get(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum);
     EEPROM.put(EEPROM_CONFIGURATION_CHCKSUM_ADDRESS, storedChkSum + 1);
@@ -165,8 +205,7 @@ void NodeMQTTConfigManagerClass::factoryReset()
     restartNode();
 }
 
-void NodeMQTTConfigManagerClass::print(NodeMQTTConfig *configuration)
-{
+void NodeMQTTConfigManagerClass::print(NodeMQTTConfig *configuration) {
     NodeMQTTIO.println(TERMINAL_HR);
     printAttributeWithTab(ATTR_CONFVER);
     NodeMQTTIO.println(configuration->configVersion);
@@ -178,8 +217,7 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig *configuration)
     NodeMQTTIO.println(configuration->wifiPassword);
 
     printAttributeWithTab(ATTR_WIFIBSSID);
-    for (int i = 0; i < 6; i++)
-    {
+    for (int i = 0; i < 6; i++) {
         NodeMQTTIO.print(configuration->wifiBssid[i], HEX);
         if (i < 5)
             NodeMQTTIO.print(':');
@@ -226,33 +264,54 @@ void NodeMQTTConfigManagerClass::print(NodeMQTTConfig *configuration)
     NodeMQTTIO.println(configuration->isLogging);
 
     NodeMQTTIO.println(TERMINAL_HR);
-    for (int i = 0; i < this->properties->size(); i++)
-    {
+    for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty property = this->properties->get(i);
         printAttributeWithTab(String(property.name));
-        NodeMQTTIO.println(property.value);
+        switch (property.type) {
+            case INT_PROPERTY: {
+                int *intValuePtr = (int *) property.value;
+                NodeMQTTIO.println(*intValuePtr);
+                break;
+            }
+            case STRING_PROPERTY:
+                NodeMQTTIO.println((char *) property.value);
+                break;
+            case BOOL_PROPERTY:
+                NodeMQTTIO.println(*property.value);
+                break;
+            case BYTE_PROPERTY:
+            default:
+                for (int i = 0; i < property.length; i++) {
+                    NodeMQTTIO.print(property.value[i]);
+                    NodeMQTTIO.print('\t');
+                }
+                NodeMQTTIO.println();
+                break;
+        }
     }
     if (this->properties->size() > 0)
         NodeMQTTIO.println(TERMINAL_HR);
 }
 
-LinkedList<NodeMQTTProperty>* NodeMQTTConfigManagerClass::getProperties(){
+LinkedList<NodeMQTTProperty> *NodeMQTTConfigManagerClass::getProperties() {
     return this->properties;
 }
 
-void NodeMQTTConfigManagerClass::commit () {
+void NodeMQTTConfigManagerClass::commit() {
 #if defined(ESP8266) || defined(ESP32)
-  EEPROM.commit();
-    properties->sort();
+    EEPROM.commit();
 #endif
 }
 
 void NodeMQTTConfigManagerClass::getEEPROMLocationById(uint16_t propertyId, uint16_t &propertyAddress,
                                                        uint8_t &propertyLength) {
     uint16_t propertyIdBuffer;
+    propertyAddress = EEPROM_PROPERTIES_ADDRESS;
     for (int i = 0; i < this->properties->size(); i++) {
-        EEPROM.get(propertyAddress += 2, propertyIdBuffer);
-        EEPROM.get(propertyAddress += 1, propertyLength);
+        EEPROM.get(propertyAddress, propertyIdBuffer);
+        propertyAddress += sizeof(uint16_t);
+        EEPROM.get(propertyAddress, propertyLength);
+        propertyAddress += sizeof(uint8_t);
         if (propertyIdBuffer == propertyId) return;
         propertyAddress += propertyLength;
     }
@@ -260,52 +319,52 @@ void NodeMQTTConfigManagerClass::getEEPROMLocationById(uint16_t propertyId, uint
     return;
 }
 
-
-int NodeMQTTConfigManagerClass::compareProperty(NodeMQTTProperty &a, NodeMQTTProperty &b) {
-    return a.id - b.id;
+NodeMQTTProperty NodeMQTTConfigManagerClass::getRAMPropertyById(uint16_t propertyId) {
+    for (int i = 0; i < this->properties->size(); i++) {
+        NodeMQTTProperty property = this->properties->get(i);
+        if (property.id == propertyId) return property;
+    }
+    return NodeMQTTProperty();
 }
-
 
 void NodeMQTTConfigManagerClass::setIntProperty(uint16_t propertyId, int propertyValue) {
-    this->setProperty(propertyId, *propertyValue, sizeof(int));
+    int *valuePtr = &propertyValue;
+    this->setProperty(propertyId, (uint8_t *) valuePtr, sizeof(int));
 }
 
-void NodeMQTTConfigManagerClass::setStringProperty(uint16_t propertyId, const char * propertyValue) {
-    this->setProperty(propertyId, propertyValue, strlen(propertyValue)+1);
-
+void NodeMQTTConfigManagerClass::setStringProperty(uint16_t propertyId, const char *propertyValue) {
+    this->setProperty(propertyId, (uint8_t *) propertyValue, strlen(propertyValue) + 1);
 }
 
 void NodeMQTTConfigManagerClass::setBoolProperty(uint16_t propertyId, uint8_t propertyValue) {
-    this->setProperty(propertyId, *propertyValue, 1);
+    this->setProperty(propertyId, &propertyValue, 1);
 }
 
-int NodeMQTTConfigManagerClass::getIntProperty(uint16_t propertyId){
-    uint8_t* ptr = this->getProperty(propertyId);
-
+int NodeMQTTConfigManagerClass::getIntProperty(uint16_t propertyId) {
+    uint8_t *ptr = this->getProperty(propertyId);
+    int value = 0;
+    memcpy(&value, ptr, sizeof(int));
+    return value;
 }
 
-String NodeMQTTConfigManagerClass::getStringProperty(uint16_t propertyId){
-    uint8_t* ptr = this->getProperty(propertyId);
+String NodeMQTTConfigManagerClass::getStringProperty(uint16_t propertyId) {
+    NodeMQTTProperty property = this->getRAMPropertyById(propertyId);
+    return String((char *) property.value);
 }
 
-uint8_t NodeMQTTConfigManagerClass::getBoolProperty(uint16_t propertyId){
-    uint8_t* ptr = this->getProperty(propertyId);
+uint8_t NodeMQTTConfigManagerClass::getBoolProperty(uint16_t propertyId) {
+    uint8_t *ptr = this->getProperty(propertyId);
+    uint8_t value = 0;
+    memcpy(&value, ptr, sizeof(int));
+    return value;
 }
 
-uint8_t *NodeMQTTConfigManagerClass::getProperty(uint16_t propertyId)
-{
-    for (int i = 0; i < this->properties->size(); i++)
-    {
-        NodeMQTTProperty property = this->properties->get(i);
-        if (property.id == propertyId)
-            return property.value;
-    }
-    return 0;
+uint8_t *NodeMQTTConfigManagerClass::getProperty(uint16_t propertyId) {
+    return this->getRAMPropertyById(propertyId).value;
 }
-void NodeMQTTConfigManagerClass::setProperty(uint16_t propertyId, uint8_t *propertyValue, uint8_t length)
-{
-    for (int i = 0; i < this->properties->size(); i++)
-    {
+
+void NodeMQTTConfigManagerClass::setProperty(uint16_t propertyId, uint8_t *propertyValue, uint8_t length) {
+    for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty property = this->properties->get(i);
         if (property.id == propertyId) {
             memcpy(property.value, propertyValue, length);
@@ -314,5 +373,7 @@ void NodeMQTTConfigManagerClass::setProperty(uint16_t propertyId, uint8_t *prope
         }
     }
 }
+
+//TODO duplikalt ID ellenorzes es hibauzenet
 
 NodeMQTTConfigManagerClass NodeMQTTConfigManager;

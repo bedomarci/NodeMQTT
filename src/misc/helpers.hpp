@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <time.h>
-#include "NodeMQTTLogger.hpp"
+#include "../NodeMQTTLogger.hpp"
 #include "../constants.hpp"
 
 #define d(x) Logger.log(DEBUG, x)

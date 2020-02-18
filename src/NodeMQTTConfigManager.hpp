@@ -9,10 +9,33 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
+enum NodeMQTTPropertyType {
+    BYTE_PROPERTY,
+    INT_PROPERTY,
+    STRING_PROPERTY,
+    BOOL_PROPERTY,
+};
 
+struct NodeMQTTProperty {
+    uint16_t id = 0;
+    const char *name;
+    uint8_t value[EEPROM_MAX_WORD_LENGTH];
+    uint8_t length;
+    uint8_t isStored;
+    NodeMQTTPropertyType type = BYTE_PROPERTY;
 
-class NodeMQTTConfigManagerClass
-{
+    NodeMQTTProperty(uint8_t propertyId, const char *propertyName)
+            : id(propertyId),
+              name(propertyName),
+              isStored(0) {};
+
+    NodeMQTTProperty()
+            : id(0),
+              name(0),
+              isStored(0) {};
+};
+
+class NodeMQTTConfigManagerClass {
 private:
     uint32_t calculateChkSum(NodeMQTTConfig *configuration);
 
@@ -30,11 +53,17 @@ private:
 
     void commit();
 
-    int compareProperty(NodeMQTTProperty &a, NodeMQTTProperty &b);
+    uint32_t calculateEEPROMPropertyChkSum();
+    uint32_t calculateRAMPropertyChkSum();
 
-    void getEEPROMLocationById(uint16_t propertyId, uint16_t &propertyAddress , uint8_t &propertyLength);
+    uint8_t isEEPROMValid();
+
+    void getEEPROMLocationById(uint16_t propertyId, uint16_t &propertyAddress, uint8_t &propertyLength);
+
+    NodeMQTTProperty getRAMPropertyById(uint16_t propertyId);
 
     const int EEPROM_CONFIGURATION_CHCKSUM_ADDRESS = 32;
+    int EEPROM_PROPERTY_CHCKSUM_ADDRESS;
     int EEPROM_CONFIGURATION_ADDRESS;
     int EEPROM_PROPERTIES_ADDRESS;
     bool isPropertyDirty = false;
@@ -53,18 +82,33 @@ public:
     void print(NodeMQTTConfig *configuration);
 
     void registerProperty(uint16_t propertyId, const char *propertyName,
-                          uint8_t *propertyDefaultValue, uint8_t length);
+                          uint8_t *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type = BYTE_PROPERTY);
+
+    void registerIntProperty(uint16_t propertyId, const char *propertyName,
+                             int propertyDefaultValue);
+
+    void registerStringProperty(uint16_t propertyId, const char *propertyName,
+                                const char *propertyDefaultValue);
+
+    void registerBoolProperty(uint16_t propertyId, const char *propertyName,
+                              uint8_t propertyDefaultValue);
 
     uint8_t *getProperty(uint16_t propertyId);
+
     int getIntProperty(uint16_t propertyId);
+
     String getStringProperty(uint16_t propertyId);
+
     uint8_t getBoolProperty(uint16_t propertyId);
 
     LinkedList<NodeMQTTProperty> *getProperties();
 
     void setProperty(uint16_t propertyId, uint8_t *propertyValue, uint8_t length);
+
     void setIntProperty(uint16_t propertyId, int propertyValue);
-    void setStringProperty(uint16_t propertyId, char * propertyValue);
+
+    void setStringProperty(uint16_t propertyId, const char *propertyValue);
+
     void setBoolProperty(uint16_t propertyId, uint8_t propertyValue);
 
     void storePropertiesInEEPROM();
