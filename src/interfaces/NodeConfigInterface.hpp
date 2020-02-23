@@ -26,9 +26,9 @@ class NodeConfigInterface : public NodeInterface<NodeMQTTConfig>
 };
 
 inline NodeConfigInterface::NodeConfigInterface()
-    : NodeInterface<NodeMQTTConfig>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC)
+    : NodeInterface<NodeMQTTConfig>(CONFIG_PUB_TOPIC, CONFIG_SUB_TOPIC)
 {
-    _interfaceName = CONFIG_TOPIC;
+    _interfaceName = CONFIG_SUB_TOPIC;
     setSamplingEnabled(false);
     setMQTTSubscribe(true);
     setMQTTPublish(true);

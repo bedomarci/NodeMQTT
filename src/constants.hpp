@@ -94,10 +94,10 @@ extern const Note systemOnline[] PROGMEM;
 //NODES
 extern const char offlineMessage[] PROGMEM;
 #define OFFLINE_MESSAGE FPSTR(offlineMessage)
-extern const char configTopic[] PROGMEM;
-#define CONFIG_TOPIC FPSTR(configTopic)
-extern const char configEchoTopic[] PROGMEM;
-#define CONFIG_TOPIC_ECHO FPSTR(configEchoTopic)
+extern const char configPubTopic[] PROGMEM;
+#define CONFIG_PUB_TOPIC FPSTR(configPubTopic)
+extern const char configSubTopic[] PROGMEM;
+#define CONFIG_SUB_TOPIC FPSTR(configSubTopic)
 extern const char logTopic[] PROGMEM;
 #define LOG_TOPIC FPSTR(logTopic)
 extern const char heartbeatTopic[] PROGMEM;
@@ -106,6 +106,10 @@ extern const char languageTopic[] PROGMEM;
 #define LANGUAGE_TOPIC FPSTR(languageTopic)
 extern const char commandTopic[] PROGMEM;
 #define COMMAND_TOPIC FPSTR(commandTopic)
+extern const char fsmPubTopic[] PROGMEM;
+#define FSM_PUB_TOPIC FPSTR(fsmPubTopic)
+extern const char fsmSubTopic[] PROGMEM;
+#define FSM_SUB_TOPIC FPSTR(fsmSubTopic)
 extern const char terminalTab[] PROGMEM;
 #define TERMINAL_TAB FPSTR(terminalTab)
 

@@ -32,12 +32,14 @@ const char terminalHeader[] PROGMEM = "\
 
 //TOPICS
 const char offlineMessage[] PROGMEM = "OFFLINE";
-const char configTopic[] PROGMEM = "cfg";
-const char configEchoTopic[] PROGMEM = "cfgecho";
+const char configSubTopic[] PROGMEM = "cfg";
+const char configPubTopic[] PROGMEM = "cfgecho";
 const char logTopic[] PROGMEM = "log";
 const char heartbeatTopic[] PROGMEM = "hrtbt";
 const char languageTopic[] PROGMEM = "lang";
 const char commandTopic[] PROGMEM = "cmd";
+const char fsmSubTopic[] PROGMEM = "control";
+const char fsmPubTopic[] PROGMEM = "controlecho";
 const char terminalTab[] PROGMEM = "\t";
 
 //INTERFACE NAMES

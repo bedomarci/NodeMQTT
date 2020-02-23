@@ -23,6 +23,7 @@ struct State
 class FiniteStateMachineInterface : public NodeInterface<int>
 {
   public:
+    FiniteStateMachineInterface();
     FiniteStateMachineInterface(String topic);
     FiniteStateMachineInterface(String publishTopic, String subscribeTopic);
     void addState(uint8_t stateId, const char *stateName, void (*onState)() = nullptr, void (*onEnter)() = nullptr, void (*onExit)() = nullptr, bool initState = false);
@@ -63,12 +64,16 @@ FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, St
     states = LinkedList<State *>();
     transitions = LinkedList<Transition *>();
     this->setSamplingEnabled(false);
-    this->setMQTTPublish(false);
+    this->setMQTTPublish(!subscribeTopic.equals(publishTopic));
     this->setMQTTSubscribe(true);
     this->setInterfaceName(FSM_NAME);
 }
 FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)
     : FiniteStateMachineInterface(topic, topic)
+{
+}
+FiniteStateMachineInterface::FiniteStateMachineInterface()
+    : FiniteStateMachineInterface(FSM_PUB_TOPIC, FSM_SUB_TOPIC)
 {
 }
 inline void FiniteStateMachineInterface::init()
