@@ -58,7 +58,7 @@ class FiniteStateMachineInterface : public NodeInterface<int>
     void makeTransition(int nextStateId);
 };
 
-FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, String subscribeTopic)
+inline FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, String subscribeTopic)
     : NodeInterface<int>(publishTopic, subscribeTopic)
 {
     states = LinkedList<State *>();
@@ -68,11 +68,11 @@ FiniteStateMachineInterface::FiniteStateMachineInterface(String publishTopic, St
     this->setMQTTSubscribe(true);
     this->setInterfaceName(FSM_NAME);
 }
-FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)
+inline FiniteStateMachineInterface::FiniteStateMachineInterface(String topic)
     : FiniteStateMachineInterface(topic, topic)
 {
 }
-FiniteStateMachineInterface::FiniteStateMachineInterface()
+inline FiniteStateMachineInterface::FiniteStateMachineInterface()
     : FiniteStateMachineInterface(FSM_PUB_TOPIC, FSM_SUB_TOPIC)
 {
 }
