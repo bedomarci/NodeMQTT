@@ -23,14 +23,28 @@
     
     "dependencies": [
         {
-            "SPI": "*",
-            "TaskScheduler": "*",
-            "LinkedList": "*",
-            "PubSubClient": "*",
-            "ArduinoJson": "*",
-            "JC_Button": "*",
-            "NTPClient": "*",
-            "DFRobotDFPlayerMini": "*"
+            "name": "SPI"
+        },
+        {
+            "name": "TaskScheduler"
+        },
+        {
+            "name": "LinkedList"
+        },
+        {
+            "name": "PubSubClient"
+        },
+        {
+            "name": "ArduinoJson"
+        },
+        {
+            "name": "JC_Button"
+        },
+        {
+            "name": "NTPClient"
+        },
+        {
+            "name": "DFRobotDFPlayerMini"
         },
         {
             "name": "ccronexpr",
