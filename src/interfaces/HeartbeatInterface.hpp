@@ -17,7 +17,7 @@ struct NodeStatus
 class HeartbeatInterface : public NodeInterface<NodeStatus>
 {
   public:
-    HeartbeatInterface(int beatIntervalSecond);
+    HeartbeatInterface(int beatIntervalSecond = DEFAULT_HEARTBEAT_RATE);
     void init();
     String valueToString() override;
 
@@ -35,7 +35,7 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
     const char *networkAddressKey = "netadd";
 };
 
-inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis = DEFAULT_HEARTBEAT_RATE)
+inline HeartbeatInterface::HeartbeatInterface(int beatIntervalMillis)
     : NodeInterface<NodeStatus>(HEARTBEAT_TOPIC, HEARTBEAT_TOPIC)
 {
     this->setEnabled(false);

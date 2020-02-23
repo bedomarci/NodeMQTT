@@ -21,7 +21,7 @@ inline ConfigCommand::ConfigCommand(ApplicationContext *context) :  AbstractComm
 inline void ConfigCommand::handle()
 {
     String baseTopic = String(getContext()->configuration->baseTopic);
-    String topic = baseTopic + "/" + CONFIG_TOPIC;
+    String topic = baseTopic + "/" + CONFIG_SUB_TOPIC;
     getContext()->parser->parse(&topic[0], getCommandParameter());
 }
 
