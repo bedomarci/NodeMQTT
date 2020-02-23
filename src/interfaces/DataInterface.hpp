@@ -44,7 +44,7 @@ inline void DataInterface<T>::init()
 template <typename T>
 inline T DataInterface<T>::fromJSON(JsonObject &rootObject)
 {
-  T value = 0;
+  T value = (T)0;
   if (rootObject["data"].is<T>())
   {
     value = rootObject["data"].as<T>();
