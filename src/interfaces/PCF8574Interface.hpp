@@ -26,7 +26,7 @@ inline PCF8574Interface::PCF8574Interface(String publishTopic, String subscribeT
     this->setInterfaceName(PCF8574_NAME);
 }
 
-void PCF8574Interface::readGPIO()
+inline void PCF8574Interface::readGPIO()
 {
     /* Store old _PIN value */
     this->_oldPIN = this->_PIN;
@@ -37,7 +37,7 @@ void PCF8574Interface::readGPIO()
     _PIN = I2CREAD();
 }
 
-void PCF8574Interface::updateGPIO()
+inline void PCF8574Interface::updateGPIO()
 {
     /* Compute new GPIO states */
     uint16_t value = (this->_PIN & ~this->_DDR) | this->_PORT;
