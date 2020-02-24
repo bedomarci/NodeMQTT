@@ -17,7 +17,7 @@ void NodeMQTTSchedulerClass::runDelayed(NodeMQTTCallback callback, uint32_t dela
 {
     Task *thisTask = new Task(TASK_IMMEDIATE, TASK_ONCE);
 //    this->tasks.add(thisTask);
-    thisTask->setCallback([=, this](){
+    thisTask->setCallback([=](){
         callback();
         this->_context->scheduler->deleteTask(*thisTask);
         free(thisTask);
