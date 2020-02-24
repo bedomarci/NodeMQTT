@@ -26,7 +26,13 @@
             "name": "SPI"
         },
         {
+            "name": "SoftwareSerial"
+        },
+        {
             "name": "TaskScheduler"
+        },
+        {
+            "name": "DFRobotDFPlayerMini"
         },
         {
             "name": "LinkedList"

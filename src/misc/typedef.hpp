@@ -43,6 +43,11 @@ struct NodeMQTTCronJob {
     time_t nextExecution;
 };
 
+struct NodeMQTTScheduledTask {
+    NodeMQTTCallback cb;
+    time_t nextExecution;
+};
+
 struct NodeMQTTProperty
 {
     uint8_t id = 0;
