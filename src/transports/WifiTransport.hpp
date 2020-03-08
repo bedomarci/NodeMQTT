@@ -31,6 +31,7 @@ public:
     void subscribe(const char *topic);
 
 protected:
+    void loadConfiguration();
     void reconnectBroker();
     void reconnectWifi();
     static int32_t getRSSI();
@@ -48,9 +49,17 @@ protected:
 
     uint8_t wifiConnectionAttampt   = 1;
     uint8_t brokerConnectionAttampt = 1;
+
+    String wifiSsid;
+    uint8_t wifiBssid[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    String wifiPassword;
+    int wifiChannel;
+    uint8_t ipAddress[4] = {1, 2, 3, 4};
 };
 
 inline WifiTransport::WifiTransport() : AbstractTransport() {
+
+
     _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
     _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
 
@@ -86,6 +95,7 @@ inline void WifiTransport::setSleepMode() {
 }
 
 inline void WifiTransport::init() {
+    loadConfiguration();
     this->getScheduler()->addTask(_tWifiConnect);
     this->getScheduler()->addTask(_tBrokerConnect);
     if (this->getConfiguration() == nullptr) {
@@ -93,6 +103,24 @@ inline void WifiTransport::init() {
         return;
     }
     client.setServer(this->getConfiguration()->mqttServer, this->getConfiguration()->mqttPort);
+}
+
+inline void WifiTransport::loadConfiguration() {
+
+    NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_SSID, (const char *) ATTR_WIFISSID, DEFAULT_WIFI_SSID);
+    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, this->wifiBssid);
+    NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_PASSWORD, (const char *) ATTR_WIFIPASS,
+                                                 DEFAULT_WIFI_PASSWORD);
+    NodeMQTTConfigManager.registerIntProperty(PROP_WIFI_CHANNEL, (const char *) ATTR_WIFICHANNEL, DEFAULT_WIFI_CHANNEL);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, this->ipAddress);
+    this->wifiSsid = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_SSID);
+    this->wifiPassword = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_PASSWORD);
+    this->wifiChannel = NodeMQTTConfigManager.getIntProperty(PROP_WIFI_CHANNEL);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_IPADDRESS, this->ipAddress);
+    NodeMQTTConfigManager.getMACProperty(PROP_WIFI_BSSID, this->wifiBssid);
+
+    //TODO nodemqtt begin utan kell hivni a gettert, kulonben nem lesz elerheto az adat
+
 }
 
 inline void WifiTransport::publish(const char *topic, const char *msg) {

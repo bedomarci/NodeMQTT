@@ -20,8 +20,8 @@ protected:
     virtual JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root) override;
     virtual int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue) override;
     virtual void updatePhisicalInterface(NodeMQTTConfig newValue) override;
-    void parseIpAddress(char *strIp, uint8_t ip[4]);
-    void parseMacAddress(char *strMac, uint8_t mac[6]);
+//    void parseIpAddress(char *strIp, uint8_t ip[4]);
+//    void parseMacAddress(char *strMac, uint8_t mac[6]);
 };
 
 inline NodeConfigInterface::NodeConfigInterface()
@@ -56,25 +56,25 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject) {
         char bssidHex[18];
         strcpy(bssidHex, rootObject[ATTR_WIFIBSSID].as<const char *>());
         uint8_t mac[6];
-        this->parseMacAddress(bssidHex, mac);
+        parseMacAddress(bssidHex, mac);
         memcpy(nodeConfig.wifiBssid, mac, sizeof(mac));
 
     }
     if (rootObject.containsKey(ATTR_IPADDRESS)) {
         strcpy(ipaddress, rootObject[ATTR_IPADDRESS].as<const char *>());
-        this->parseIpAddress(ipaddress, nodeConfig.ipAddress);
+        parseIpAddress(ipaddress, nodeConfig.ipAddress);
     }
     if (rootObject.containsKey(ATTR_GATEWAY)) {
         strcpy(ipaddress, rootObject[ATTR_GATEWAY].as<const char *>());
-        this->parseIpAddress(ipaddress, nodeConfig.gateway);
+        parseIpAddress(ipaddress, nodeConfig.gateway);
     }
     if (rootObject.containsKey(ATTR_SUBNET)) {
         strcpy(ipaddress, rootObject[ATTR_SUBNET].as<const char *>());
-        this->parseIpAddress(ipaddress, nodeConfig.subnetMask);
+        parseIpAddress(ipaddress, nodeConfig.subnetMask);
     }
     if (rootObject.containsKey(ATTR_DNS)) {
         strcpy(ipaddress, rootObject[ATTR_DNS].as<const char *>());
-        this->parseIpAddress(ipaddress, nodeConfig.dns);
+        parseIpAddress(ipaddress, nodeConfig.dns);
     }
     if (rootObject.containsKey(ATTR_WIFICHANNEL))
         nodeConfig.wifiChannel   = rootObject[ATTR_WIFICHANNEL].as<unsigned char>();
@@ -89,17 +89,34 @@ inline NodeMQTTConfig NodeConfigInterface::fromJSON(JsonObject &rootObject) {
 
     LinkedList<NodeMQTTProperty> *properties = NodeMQTTConfigManager.getProperties();
     for (int                     i           = 0; i < properties->size(); i++) {
+        Serial.print(22);
         NodeMQTTProperty property = properties->get(i);
-        if (rootObject.containsKey(property.name)) {
+        Serial.print(23);
+        Serial.println(FPSTR(property.name));
+        //Wrap key in a string to avoid exception because of keys stored in PROGMEM
+        if (rootObject.containsKey(FPSTR(property.name))) {
+            Serial.println(16);
             switch (property.type) {
                 case INT_PROPERTY:
-                    NodeMQTTConfigManager.setIntProperty(property.id, rootObject[property.name].as<int>());
+                    NodeMQTTConfigManager.setIntProperty(property.id, rootObject[String(property.name)].as<int>());
                     break;
                 case STRING_PROPERTY:
-                    NodeMQTTConfigManager.setStringProperty(property.id, rootObject[property.name].as<const char *>());
+                    NodeMQTTConfigManager.setStringProperty(property.id,
+                                                            rootObject[String(property.name)].as<const char *>());
                     break;
                 case BOOL_PROPERTY:
-                    NodeMQTTConfigManager.setBoolProperty(property.id, rootObject[property.name].as<uint8_t>());
+                    NodeMQTTConfigManager.setBoolProperty(property.id, rootObject[String(property.name)].as<uint8_t>());
+                    break;
+                case MAC_PROPERTY:
+                    char bssidHex[18];
+                    strcpy(bssidHex, rootObject[String(property.name)].as<const char *>());
+                    uint8_t mac[6];
+                    parseMacAddress(bssidHex, mac);
+                    NodeMQTTConfigManager.setMACProperty(property.id, mac);
+                    break;
+                case IP_PROPERTY:
+                    strcpy(ipaddress, rootObject[String(property.name)].as<const char *>());
+                    parseIpAddress(ipaddress, nodeConfig.ipAddress);
                     break;
                 case BYTE_PROPERTY:
                 default:
@@ -155,24 +172,24 @@ inline String NodeConfigInterface::valueToString() {
     return "";
 }
 
-inline void NodeConfigInterface::parseIpAddress(char *strIp, uint8_t ip[4]) {
-    char *token;
-    int  i         = 0;
-    char *strSplit = strIp;
-    while ((token = strtok_r(strSplit, ".", &strSplit))) {
-        uint8_t octet = atoi(token);
-        ip[i++] = octet;
-    }
-}
-
-inline void NodeConfigInterface::parseMacAddress(char *strMac, uint8_t mac[6]) {
-    char *token;
-    int  i         = 0;
-    char *strSplit = strMac;
-    while ((token = strtok_r(strSplit, ":", &strSplit))) {
-        uint8_t octet = (int) strtol(&(token[0]), NULL, 16);
-        mac[i++] = octet;
-    }
-}
+//inline void NodeConfigInterface::parseIpAddress(char *strIp, uint8_t ip[4]) {
+//    char *token;
+//    int  i         = 0;
+//    char *strSplit = strIp;
+//    while ((token = strtok_r(strSplit, ".", &strSplit))) {
+//        uint8_t octet = atoi(token);
+//        ip[i++] = octet;
+//    }
+//}
+//
+//inline void NodeConfigInterface::parseMacAddress(char *strMac, uint8_t mac[6]) {
+//    char *token;
+//    int  i         = 0;
+//    char *strSplit = strMac;
+//    while ((token = strtok_r(strSplit, ":", &strSplit))) {
+//        uint8_t octet = (int) strtol(&(token[0]), NULL, 16);
+//        mac[i++] = octet;
+//    }
+//}
 
 #endif //NODECONFIGINTERFACE_H

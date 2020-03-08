@@ -80,6 +80,7 @@ struct Note
 #define TONE_SYSTEM_BOOT 8
 #define TONE_SYSTEM_ONLINE 9
 
+
 extern const Note infoTone[1] PROGMEM;
 extern const Note successTone[4] PROGMEM;
 extern const Note warningTone[2] PROGMEM;
@@ -224,6 +225,12 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define MSG_CONNECT_TO_WIFI_BSSID FPSTR(message_ConnetctToWifiWithBSSID)
 
 
+//CONFIGURATION IDS
+#define PROP_WIFI_SSID 1000
+#define PROP_WIFI_BSSID 1001
+#define PROP_WIFI_PASSWORD 1002
+#define PROP_WIFI_CHANNEL 1003
+#define PROP_WIFI_IPADDRESS 1004
 
 
 extern const long FIRMWARE_BUILD_TIME PROGMEM;

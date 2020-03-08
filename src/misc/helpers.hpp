@@ -245,5 +245,25 @@ inline String toDateTimeString(time_t t) {
     return String(buffer);
 }
 
+inline void parseIpAddress(char *strIp, uint8_t ip[4]) {
+    char *token;
+    int  i         = 0;
+    char *strSplit = strIp;
+    while ((token = strtok_r(strSplit, ".", &strSplit))) {
+        uint8_t octet = atoi(token);
+        ip[i++] = octet;
+    }
+}
+
+inline void parseMacAddress(char *strMac, uint8_t mac[6]) {
+    char *token;
+    int  i         = 0;
+    char *strSplit = strMac;
+    while ((token = strtok_r(strSplit, ":", &strSplit))) {
+        uint8_t octet = (int) strtol(&(token[0]), NULL, 16);
+        mac[i++] = octet;
+    }
+}
+
 
 #endif

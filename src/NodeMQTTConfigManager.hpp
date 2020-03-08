@@ -14,6 +14,8 @@ enum NodeMQTTPropertyType {
     INT_PROPERTY,
     STRING_PROPERTY,
     BOOL_PROPERTY,
+    IP_PROPERTY,
+    MAC_PROPERTY,
 };
 
 struct NodeMQTTProperty {
@@ -24,7 +26,7 @@ struct NodeMQTTProperty {
     uint8_t isStored;
     NodeMQTTPropertyType type = BYTE_PROPERTY;
 
-    NodeMQTTProperty(uint8_t propertyId, const char *propertyName)
+    NodeMQTTProperty(uint16_t propertyId, const char *propertyName)
             : id(propertyId),
               name(propertyName),
               isStored(0) {};
@@ -81,6 +83,8 @@ public:
 
     void print(NodeMQTTConfig *configuration);
 
+    void  printArraySeparated(uint8_t *array, uint8_t length, char separator);
+
     void registerProperty(uint16_t propertyId, const char *propertyName,
                           uint8_t *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type = BYTE_PROPERTY);
 
@@ -93,6 +97,12 @@ public:
     void registerBoolProperty(uint16_t propertyId, const char *propertyName,
                               uint8_t propertyDefaultValue);
 
+    void registerIPProperty(uint16_t propertyId, const char *propertyName,
+                            uint8_t propertyDefaultValue[4]);
+
+    void registerMACProperty(uint16_t propertyId, const char *propertyName,
+                             uint8_t propertyDefaultValue[6]);
+
     uint8_t *getProperty(uint16_t propertyId);
 
     int getIntProperty(uint16_t propertyId);
@@ -100,6 +110,10 @@ public:
     String getStringProperty(uint16_t propertyId);
 
     uint8_t getBoolProperty(uint16_t propertyId);
+
+    void getIPProperty(uint16_t propertyId, uint8_t ipArray[4]);
+
+    void getMACProperty(uint16_t propertyId, uint8_t ipArray[6]);
 
     LinkedList<NodeMQTTProperty> *getProperties();
 
@@ -110,6 +124,10 @@ public:
     void setStringProperty(uint16_t propertyId, const char *propertyValue);
 
     void setBoolProperty(uint16_t propertyId, uint8_t propertyValue);
+
+    void setIPProperty(uint16_t propertyId, uint8_t propertyValue[4]);
+
+    void setMACProperty(uint16_t propertyId, uint8_t propertyValue[6]);
 
     void storePropertiesInEEPROM();
 
