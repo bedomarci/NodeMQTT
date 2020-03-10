@@ -16,15 +16,30 @@ class I2CInterface : public ArrayInterface<T, LENGTH> {
 public:
     I2CInterface(String publishTopic, String subscribeTopic);
 
+    I2CInterface(String publishTopic, String subscribeTopic, TwoWire *i2c);
+
+    I2CInterface(String publishTopic, String subscribeTopic, uint8_t sda, uint8_t scl);
+
+    I2CInterface(String publishTopic, String subscribeTopic, uint8_t address);
+
+    I2CInterface(String publishTopic, String subscribeTopic, TwoWire *i2c, uint8_t address);
+
+    I2CInterface(String publishTopic, String subscribeTopic, uint8_t sda, uint8_t scl, uint8_t address);
+
+
     void init();
 
     void setI2C(TwoWire *i2c);
 
-    void setPins(uint8_t sda, uint8_t scl);
+    void setI2C(uint8_t sda, uint8_t scl);
+
+    void setAddress(uint8_t address);
+
+    uint8_t getAddress();
 
 protected:
-    TwoWire *_i2c;
-    uint8_t _address;
+
+    TwoWire *getWire();
 
     uint8_t i2cReadByte();
 
@@ -33,24 +48,62 @@ protected:
     void i2cWrite2Bytes(uint8_t data1, uint8_t data2);
 
 private:
-    uint8_t _sdaPin;
-    uint8_t _sclPin;
+    TwoWire *_i2c;
+    uint8_t _sdaPin = 255;
+    uint8_t _sclPin = 255;
+    uint8_t _address;
 };
 
 template<typename T, uint16_t LENGTH>
-inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic)
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic): ArrayInterface<T, LENGTH>(
+        publishTopic, subscribeTopic) {}
+
+template<typename T, uint16_t LENGTH>
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic, TwoWire *i2c)
         : ArrayInterface<T, LENGTH>(publishTopic, subscribeTopic) {
+    setI2C(i2c);
 }
+
+template<typename T, uint16_t LENGTH>
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic, uint8_t sda, uint8_t scl)
+        : ArrayInterface<T, LENGTH>(publishTopic, subscribeTopic) {
+    setI2C(sda, scl);
+}
+
+template<typename T, uint16_t LENGTH>
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic, uint8_t address)
+        : ArrayInterface<T, LENGTH>(publishTopic, subscribeTopic) {
+    setAddress(address);
+}
+
+template<typename T, uint16_t LENGTH>
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic, TwoWire *i2c, uint8_t address)
+        : ArrayInterface<T, LENGTH>(publishTopic, subscribeTopic) {
+    setI2C(i2c);
+    setAddress(address);
+}
+
+template<typename T, uint16_t LENGTH>
+inline I2CInterface<T, LENGTH>::I2CInterface(String publishTopic, String subscribeTopic, uint8_t sda, uint8_t scl,
+                                             uint8_t address): ArrayInterface<T, LENGTH>(publishTopic, subscribeTopic) {
+    setI2C(sda, scl);
+    setAddress(address);
+}
+
 
 template<typename T, uint16_t LENGTH>
 inline void I2CInterface<T, LENGTH>::init() {
     if (!this->_i2c) {
         _i2c = &Wire;
-        Wire.begin(_sdaPin, _sclPin);
     }
-    Wire.setClock(I2C_CLOCK_SPEED);
+    if (_sdaPin != 255 && _sclPin != 255) {
+        _i2c->begin(_sdaPin, _sclPin);
+    } else {
+        _i2c->begin();
+    }
+    _i2c->setClock(I2C_CLOCK_SPEED);
     if (!isI2CDeviceWorking(_address)) {
-        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. Expander interface shuts down!"), _address);
+        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. %s interface shuts down!"), _address, this->_interfaceName.c_str());
         String devices = find_i2c_devices();
         Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
         this->setEnabled(false);
@@ -59,7 +112,7 @@ inline void I2CInterface<T, LENGTH>::init() {
 }
 
 template<typename T, uint16_t LENGTH>
-inline void I2CInterface<T, LENGTH>::setPins(uint8_t sda, uint8_t scl) {
+inline void I2CInterface<T, LENGTH>::setI2C(uint8_t sda, uint8_t scl) {
     _sdaPin = sda;
     _sclPin = scl;
 }
@@ -67,8 +120,8 @@ inline void I2CInterface<T, LENGTH>::setPins(uint8_t sda, uint8_t scl) {
 
 template<typename T, uint16_t LENGTH>
 inline uint8_t I2CInterface<T, LENGTH>::i2cReadByte() {
-    Wire.requestFrom(this->_address, 1);
-    while (Wire.available() < 1);
+    _i2c->requestFrom(this->_address, (uint8_t) 1);
+    while (_i2c->available() < 1);
     return _i2c->read();
 }
 
@@ -88,7 +141,22 @@ inline void I2CInterface<T, LENGTH>::i2cWrite2Bytes(uint8_t data1, uint8_t data2
 }
 
 template<typename T, uint16_t LENGTH>
-inline uint8_t I2CInterface<T, LENGTH>::setI2C(TwoWire *i2c) {
+inline void I2CInterface<T, LENGTH>::setI2C(TwoWire *i2c) {
     _i2c = i2c;
+}
+
+template<typename T, uint16_t LENGTH>
+inline void I2CInterface<T, LENGTH>::setAddress(uint8_t address) {
+    _address = address;
+}
+
+template<typename T, uint16_t LENGTH>
+inline uint8_t I2CInterface<T, LENGTH>::getAddress() {
+    return _address;
+}
+
+template<typename T, uint16_t LENGTH>
+inline TwoWire *I2CInterface<T, LENGTH>::getWire() {
+    return _i2c;
 }
 #endif

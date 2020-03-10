@@ -112,7 +112,7 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String 
 {
     _sdaPin = sdaPin;
     _sclPin = sclPin;
-    _address = address;
+    this->setAddress(address);
     _debounceDelay = debounceDelay;
     _interruptPin = interruptPin;
     _hasInterrupt = (_interruptPin != NO_INTERRUPT_PIN);
@@ -139,7 +139,7 @@ inline void ExpanderInterface<LENGTH>::init()
 //        this->setEnabled(false);
 //        return;
 //    }
-    I2CInterface::init();
+    I2CInterface<uint8_t, LENGTH>::init();
 
     readGPIO();
 

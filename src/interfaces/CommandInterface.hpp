@@ -20,6 +20,7 @@ class CommandInterface : public StringInterface
 
 inline CommandInterface::CommandInterface() : StringInterface(COMMAND_TOPIC)
 {
+    this->setInterfaceName(COMMAND_NAME);
 }
 
 inline void CommandInterface::init() {
