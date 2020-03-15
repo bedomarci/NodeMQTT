@@ -199,6 +199,8 @@ extern const char configAttribute_isLogging[] PROGMEM;
 #define ATTR_LOGGING FPSTR(configAttribute_isLogging)
 extern const char configAttribute_mqttPort[] PROGMEM;
 #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
+extern const char configAttribute_timezone[] PROGMEM;
+#define ATTR_TIMEZONE FPSTR(configAttribute_timezone)
 
 //MESSAGES
 extern const char message_Introduction[] PROGMEM;
@@ -229,6 +231,7 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define PROP_SYS_SERVICEMODE 1000
 #define PROP_SYS_ONLINE 1001
 #define PROP_SYS_LOGGING 1002
+#define PROP_SYS_TIMEZONE 1002
 
 #define PROP_WIFI_SSID 2000
 #define PROP_WIFI_BSSID 2001

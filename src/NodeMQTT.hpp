@@ -24,12 +24,12 @@ public:
   void addInterface(NodeInterfaceBase *);
   void addIO(AbstractIO * io);
 
-  void setNetworkConnectingCallback(NodeMQTTCallback);
-  void setNetworkConnectedCallback(NodeMQTTCallback);
-  void setNetworkDisconnectedCallback(NodeMQTTCallback);
-  void setBrokerConnectingCallback(NodeMQTTCallback);
-  void setBrokerConnectedCallback(NodeMQTTCallback);
-  void setBrokerDisconnectedCallback(NodeMQTTCallback);
+  void setNetworkConnectingCallback(const NodeMQTTCallback&);
+  void setNetworkConnectedCallback(const NodeMQTTCallback&);
+  void setNetworkDisconnectedCallback(const NodeMQTTCallback&);
+  void setBrokerConnectingCallback(const NodeMQTTCallback&);
+  void setBrokerConnectedCallback(const NodeMQTTCallback&);
+  void setBrokerDisconnectedCallback(const NodeMQTTCallback&);
   void setTimeSyncedCallback(NodeMQTTCallback);
   void setTimeReceivedCallback(NodeMQTTCallback);
 

@@ -21,8 +21,8 @@ enum NodeMQTTPropertyType {
 struct NodeMQTTProperty {
     uint16_t id = 0;
     const char *name;
-    uint8_t value[EEPROM_MAX_WORD_LENGTH];
-    uint8_t length;
+    uint8_t value[EEPROM_MAX_WORD_LENGTH]{};
+    uint8_t length{};
     uint8_t isStored;
     NodeMQTTPropertyType type = BYTE_PROPERTY;
 
@@ -33,7 +33,7 @@ struct NodeMQTTProperty {
 
     NodeMQTTProperty()
             : id(0),
-              name(0),
+              name(nullptr),
               isStored(0) {};
 };
 

@@ -20,13 +20,13 @@ template<typename T>
 class NodeInterface : public NodeInterfaceBase {
 public:
     NodeInterface(String publishTopic, String subscribeTopic);
-    NodeInterface(String topic);
+    explicit NodeInterface(String topic);
     void write(T newValue, bool publishable = true);
     T read();
     void onChange(NodeMQTTChangeCallback);
     void writeRaw(String value, bool publishable) override;
-    void handle();
-    void setSamplingRate(unsigned long samplingRate);
+    void handle() override;
+    void setSamplingRate(unsigned long samplingRate) override;
     void setContext(ApplicationContext *context) override;
     void setInterfaceName(String name);
     void setEnabled(bool enabled = true) override;
@@ -38,18 +38,18 @@ public:
     bool hasMQTTPublish();
     bool hasMQTTSubscribe();
 
-    bool hasInitializedValue();
-    void setMQTTPublish(bool publish);
-    void setMQTTSubscribe(bool subscribe);
+    bool hasInitializedValue() override;
+    void setMQTTPublish(bool publish) override;
+    void setMQTTSubscribe(bool subscribe) override;
     void setMQTTPublishSubscribe(bool publish, bool subscribe);
-    void setBaseTopic(String baseTopic);
+    void setBaseTopic(String baseTopic) override;
     void triggerCallback();
     void preventDebugLogging(bool prevent = true);
-    void republish();
+    void republish() override;
 
     String getBaseTopic();
-    String getSubscribeTopic();
-    String getPublishTopic();
+    String getSubscribeTopic() override;
+    String getPublishTopic() override;
 
 protected:
     NodeMQTTChangeCallback
@@ -211,12 +211,6 @@ inline String NodeInterface<T>::toString(JsonObject rootObject) {
     serializeJson(rootObject, jsonStr);
     return jsonStr;
 }
-
-// template <typename T>
-// inline String NodeInterface<T>::valueToString()
-// {
-//    return String(this->read());
-// }
 
 template<typename T>
 inline void NodeInterface<T>::setSamplingRate(unsigned long samplingRate) {

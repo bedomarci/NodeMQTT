@@ -217,27 +217,27 @@ void NodeMQTT::onBrokerDisconnected() {
         heartbeatInterface->setEnabled(false);
 }
 
-void NodeMQTT::setNetworkConnectingCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setNetworkConnectingCallback(const NodeMQTTCallback& cb) {
     networkConnectingCallback = cb;
 }
 
-void NodeMQTT::setNetworkConnectedCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setNetworkConnectedCallback(const NodeMQTTCallback& cb) {
     networkConnectedCallback = cb;
 }
 
-void NodeMQTT::setNetworkDisconnectedCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setNetworkDisconnectedCallback(const NodeMQTTCallback& cb) {
     networkDisconnectedCallback = cb;
 }
 
-void NodeMQTT::setBrokerConnectingCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setBrokerConnectingCallback(const NodeMQTTCallback& cb) {
     brokerConnectingCallback = cb;
 }
 
-void NodeMQTT::setBrokerConnectedCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setBrokerConnectedCallback(const NodeMQTTCallback& cb) {
     brokerConnectedCallback = cb;
 }
 
-void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb) {
+void NodeMQTT::setBrokerDisconnectedCallback(const NodeMQTTCallback& cb) {
     brokerDisconnectedCallback = cb;
 }
 
