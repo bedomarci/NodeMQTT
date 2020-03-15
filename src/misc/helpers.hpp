@@ -240,6 +240,7 @@ inline void printIp(Print &p, uint8_t *ip) {
 
 inline void printMac(Print &p, uint8_t *mac) {
     for (int i = 0; i < 6; i++) {
+        if (mac[i]<16) p.print(0);
         p.print(mac[i], HEX);
         if (i < 5)
             p.print(':');
