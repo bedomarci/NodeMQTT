@@ -7,7 +7,6 @@
 #include "../misc/helpers.hpp"
 #include "../constants.hpp"
 #include <Arduino.h>
-#include <PubSubClient.h>
 #include <LinkedList.h>
 #include <ArduinoJson.h>
 #include <TaskScheduler.h>
@@ -25,12 +24,12 @@ public:
     void write(T newValue, bool publishable = true);
     T read();
     void onChange(NodeMQTTChangeCallback);
-    void writeRaw(String value, bool publishable);
+    void writeRaw(String value, bool publishable) override;
     void handle();
     void setSamplingRate(unsigned long samplingRate);
-    void setContext(ApplicationContext *context);
+    void setContext(ApplicationContext *context) override;
     void setInterfaceName(String name);
-    void setEnabled(bool enabled = true);
+    void setEnabled(bool enabled = true) override;
     void enable();
     void disable();
     bool isEnabled();

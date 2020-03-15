@@ -23,7 +23,7 @@ uint32_t NodeMQTTConfigManagerClass::calculateEEPROMPropertyChkSum() {
         address += sizeof(uint16_t); //skipping property id
         EEPROM.get(address, length);
         address += sizeof(uint8_t);
-        for (int i = 0; i < length; i++)
+        for (int j = 0; j < length; j++)
             sum += EEPROM.read(address++);
     }
     return sum;

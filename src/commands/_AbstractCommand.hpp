@@ -9,7 +9,7 @@ struct ApplicationContext;
 class AbstractCommand
 {
 public:
-  AbstractCommand(ApplicationContext *context);
+  explicit AbstractCommand(ApplicationContext *context);
   virtual void handle() = 0;
   virtual const char * getHelpText() = 0;
   void setCommandParameter(const char* parameter);

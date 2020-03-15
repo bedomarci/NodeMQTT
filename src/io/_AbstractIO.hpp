@@ -10,8 +10,8 @@
 class AbstractIO : public Print
 {
 public:
-    void onReceive(NodeMQTTStringCallback cb);
-    virtual size_t write(uint8_t c) = 0;
+    void onReceive(const NodeMQTTStringCallback& cb);
+    size_t write(uint8_t c) override = 0;
     virtual void init(ApplicationContext * context);
 protected:
     virtual void handle() = 0;
@@ -26,7 +26,7 @@ private:
     NodeMQTTStringCallback _cb = nullptr;
 };
 
-inline void AbstractIO::onReceive(NodeMQTTStringCallback cb) {
+inline void AbstractIO::onReceive(const NodeMQTTStringCallback& cb) {
     _cb = cb;
 }
 

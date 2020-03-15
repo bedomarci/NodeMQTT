@@ -203,7 +203,7 @@ void NodeMQTT::onBrokerConnected() {
 
     this->subscribeTopics();
     heartbeatInterface->setEnabled(true);
-//    nodeConfigInterface->publishCurrentConfig(*_config);
+    nodeConfigInterface->publishCurrentConfig();
     logInterface->enable();
     buzz(TONE_SYSTEM_ONLINE);
 }

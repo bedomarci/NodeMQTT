@@ -8,10 +8,10 @@ class SerialIO : public AbstractIO
 {
     public:
         SerialIO();
-        size_t write(uint8_t c);
+        size_t write(uint8_t c) override;
     protected:
-        void handle();
-        void printHeader();
+        void handle() override;
+        void printHeader() override;
     private:
         char *_serialBuffer = new char[SERIAL_BUFFER_SIZE];
         uint16_t index = 0;

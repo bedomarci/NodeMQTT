@@ -6,10 +6,10 @@
 #include "PubSubCLient.h"
 #include "../misc/helpers.hpp"
 
-#define MQTT_MAX_PACKET_SIZE NODEMQTT_MAX_PACKET_SIZE
-
 #ifdef ESP8266
+
 #include <ESP8266WiFi.h>
+
 #endif
 #ifdef ESP32
 #include <WiFi.h>
@@ -18,38 +18,54 @@
 class WifiTransport : public AbstractTransport {
 public:
     WifiTransport();
+
     void init();
+
     void loop();
+
     void connectNetwork();
+
     bool isNetworkConnected();
+
     String getNetworkAddressString();
+
     String getState();
+
     bool wasConnectedToNetwork = false;
-    bool wasConnectedToServer  = false;
+    bool wasConnectedToServer = false;
 
     void publish(const char *topic, const char *msg);
+
     void subscribe(const char *topic);
 
 protected:
     void loadConfiguration();
 
     void registerConfiguration();
+
     void reconnectBroker();
+
     void reconnectWifi();
+
     static int32_t getRSSI();
+
     int32_t RSSIToPercentage(int32_t rssi);
+
     void logWifiInfo();
+
     bool isIPvalid(uint8_t ip[4]);
+
     void setOutputPower(float power);
+
     void setSleepMode();
 
-    WiFiClient   espClient;
+    WiFiClient espClient;
     PubSubClient client;
 
     Task _tWifiConnect;
     Task _tBrokerConnect;
 
-    uint8_t wifiConnectionAttampt   = 1;
+    uint8_t wifiConnectionAttampt = 1;
     uint8_t brokerConnectionAttampt = 1;
 
     String wifiSsid;
@@ -131,6 +147,7 @@ inline void WifiTransport::registerConfiguration() {
     NodeMQTTConfigManager.registerStringProperty(PROP_MQTT_PASSWORD, (const char *) ATTR_MQTTPASS, DEFAULT_MQTT_PASSWORD);
 
 }
+
 inline void WifiTransport::loadConfiguration() {
     this->wifiSsid = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_SSID);
     this->wifiPassword = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_PASSWORD);
@@ -151,7 +168,10 @@ inline void WifiTransport::loadConfiguration() {
 }
 
 inline void WifiTransport::publish(const char *topic, const char *msg) {
-    client.publish(topic, msg);
+    bool published = client.publish(topic, msg);
+    if (!published) {
+        Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d / %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
+    }
 }
 
 inline void WifiTransport::subscribe(const char *topic) {
@@ -172,7 +192,7 @@ inline void WifiTransport::reconnectBroker() {
         i(F("We are all set. Let's go!"));
         this->onBrokerConnected();
         _tBrokerConnect.disable();
-        wasConnectedToServer    = true;
+        wasConnectedToServer = true;
         brokerConnectionAttampt = 1;
     } else {
         this->onBrokerDisconnected();
@@ -191,7 +211,7 @@ inline void WifiTransport::reconnectWifi() {
     IPAddress gateway(this->gateway[0], this->gateway[1], this->gateway[2], this->gateway[3]);            //IP Address of your WiFi Router (Gateway)
     IPAddress subnet(this->subnetMask[0], this->subnetMask[1], this->subnetMask[2], this->subnetMask[3]); //Subnet mask
     IPAddress dns(this->dns[0], this->dns[1], this->dns[2], this->dns[3]);
-    
+
     //    SET STATIC CONFIGURATION IF AVAILABLE
     if (useStaticIp)
         WiFi.config(localIp, gateway, subnet, dns);
@@ -279,15 +299,15 @@ inline String WifiTransport::getNetworkAddressString() {
 }
 
 inline bool WifiTransport::isIPvalid(uint8_t ip[4]) {
-    int      sum = 0;
-    for (int i   = 0; i < 4; i++) {
+    int sum = 0;
+    for (int i = 0; i < 4; i++) {
         sum += ip[i];
     }
     return sum;
 }
 
 inline String WifiTransport::getState() {
-    char     s[64];
+    char s[64];
     uint32_t rssi = WifiTransport::getRSSI();
     sprintf(s, PSTR("IP: %s; RX pwr: %d dBm (%d%%); TX pwr: %.2f dBm"), this->getNetworkAddressString().c_str(), rssi,
             RSSIToPercentage(rssi), WIFI_TRANSMISSION_POWER);

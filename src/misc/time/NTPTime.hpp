@@ -62,7 +62,6 @@ inline void NTPTime::getNtpTime()
     int size = Udp.parsePacket();
     if (size >= NTP_PACKET_SIZE) {
         bool isFirstTime = !_context->currentTime;
-        // Serial.println("Receive NTP Response");
         Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
         unsigned long secsSince1900;
         // convert four bytes starting at location 40 to a long integer

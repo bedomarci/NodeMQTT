@@ -1,83 +1,84 @@
 {
-    "name": "NodeMQTT",
-    "keywords": "mqtt, iot, esp",
-    "version": "1.0.2",
-    "authors": {
-        "name": "Marci Bedo",
-        "email": "bedomarci@gmail.com"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/bedomarci/NodeMQTT.git"
-    },
-    "license": "AGPL-3.0-or-later",
-    "frameworks": "arduino",
-    "platforms": [
-        "espressif32",
-        "espressif8266",
-        "atmelavr"
-    ],
-    "build": {
-        "flags": ""
-    },
-    
-    "dependencies": [
-        {
-            "SPI": "*",
-            "TaskScheduler": "*",
-            "LinkedList": "*",
-            "PubSubClient": "*",
-            "ArduinoJson": "*",
-            "JC_Button": "*",
-            "NTPClient": "*",
-            "DFRobotDFPlayerMini": "*"
-        },
-        {
-            "name": "ccronexpr",
-            "platforms": "espressif8266",
-            "repository": {
-                "type": "git",
-                "url": "https://github.com/staticlibs/ccronexpr"
-            }
-        },
-        {
-            "name": "RF24",
-            "platforms": "atmelavr",
-            "repository": {
-                "type": "git",
-                "url": "https://github.com/nRF24/RF24.git"
-            }
-        },
-        {
-            "name": "RF24Network",
-            "platforms": "atmelavr",
-            "repository": {
-                "type": "git",
-                "url": "https://github.com/nRF24/RF24Network.git"
-            }
-        },
-        {
-            "name": "RF24Mesh",
-            "platforms": "atmelavr",
-            "repository": {
-                "type": "git",
-                "url": "https://github.com/nRF24/RF24Mesh.git"
-            }
-        },
-        {
-            "name": "ESP8266WiFi",
-            "version": "*",
-            "platforms": "espressif8266"
-        },
-        {
-            "name": "ESP8266HTTPClient",
-            "version": "*",
-            "platforms": "espressif8266"
-        },
-        {
-            "name": "ESP8266httpUpdate",
-            "version": "*",
-            "platforms": "espressif8266"
-        }
+  "name": "NodeMQTT",
+  "keywords": "mqtt, iot, esp",
+  "version": "1.0.3",
+  "authors": {
+    "name": "Marci Bedo",
+    "email": "bedomarci@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bedomarci/NodeMQTT.git"
+  },
+  "license": "AGPL-3.0-or-later",
+  "frameworks": "arduino",
+  "platforms": [
+    "espressif32",
+    "espressif8266",
+    "atmelavr"
+  ],
+  "build": {
+    "flags": [
+      "-D MQTT_MAX_PACKET_SIZE=1024"
     ]
+  },
+  "dependencies": [
+    {
+      "SPI": "*",
+      "TaskScheduler": "*",
+      "LinkedList": "*",
+      "PubSubClient": "*",
+      "ArduinoJson": "*",
+      "JC_Button": "*",
+      "NTPClient": "*",
+      "DFRobotDFPlayerMini": "*"
+    },
+    {
+      "name": "ccronexpr",
+      "platforms": "espressif8266",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/staticlibs/ccronexpr"
+      }
+    },
+    {
+      "name": "RF24",
+      "platforms": "atmelavr",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/nRF24/RF24.git"
+      }
+    },
+    {
+      "name": "RF24Network",
+      "platforms": "atmelavr",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/nRF24/RF24Network.git"
+      }
+    },
+    {
+      "name": "RF24Mesh",
+      "platforms": "atmelavr",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/nRF24/RF24Mesh.git"
+      }
+    },
+    {
+      "name": "ESP8266WiFi",
+      "version": "*",
+      "platforms": "espressif8266"
+    },
+    {
+      "name": "ESP8266HTTPClient",
+      "version": "*",
+      "platforms": "espressif8266"
+    },
+    {
+      "name": "ESP8266httpUpdate",
+      "version": "*",
+      "platforms": "espressif8266"
+    }
+  ]
 }
