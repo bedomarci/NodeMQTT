@@ -20,7 +20,6 @@ class NodeMQTT
 public:
   NodeMQTT();
   void begin();
-  void begin(NodeMQTTConfig *configuration);
   void handle();
   void addInterface(NodeInterfaceBase *);
   void addIO(AbstractIO * io);
@@ -35,6 +34,8 @@ public:
   void setTimeReceivedCallback(NodeMQTTCallback);
 
   void setBaseTopic(String baseTopic);
+  void setInterfaceBaseTopic();
+
   String getBaseTopic();
 
   void buzz(int);
@@ -50,21 +51,19 @@ protected:
   TRANSPORT_CLASS _transport;
   PARSER_CLASS _parser;
   Scheduler _scheduler;
-  NodeMQTTConfig * _config;
   ApplicationContext _context;
 
   LinkedList<NodeInterfaceBase *> interfaceList;
-  String _baseTopic = String(UUID);
+  String baseTopic = String(UUID);
 
-  void reconnectBroker();
-  bool isConnectionAlive();
-  void reconnectWifi();
+  void registerConfiguration();
+  void loadConfiguration();
+
   void parse(char *topic, char *payload, unsigned int length);
   void subscribeTopics();
   void addDefaultInterfaces();
 
   void initializeInterfaces();
-  void initializeIOs();
 
   void onNetworkConnecting();
   void onNetworkConnected();
@@ -93,6 +92,10 @@ private:
   NodeMQTTCallback brokerConnectedCallback;
   NodeMQTTCallback brokerDisconnectedCallback;
   NTPTime ntpTime;
+
+  bool isLogging = true;
+  bool isServiceMode = true;
+  bool isOnline = true;
 
 };
 

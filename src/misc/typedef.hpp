@@ -14,25 +14,25 @@ class Scheduler;
 
 struct ApplicationContext;
 
-struct NodeMQTTConfig {
-    uint8_t  configVersion    = DEFAULT_CONFIGURATION_VERSION;
-    char     wifiSsid[32]     = DEFAULT_WIFI_SSID;
-    uint8_t  wifiBssid[6]     = DEFAULT_WIFI_BSSID;
-    uint8_t  ipAddress[4]     = DEFAULT_IP_ADDRESS;
-    uint8_t  gateway[4]       = DEFAULT_GATEWAY;
-    uint8_t  subnetMask[4]    = DEFAULT_SUBNET;
-    uint8_t  dns[4]           = DEFAULT_GATEWAY;
-    uint8_t  wifiChannel      = DEFAULT_WIFI_CHANNEL;
-    char     wifiPassword[32] = DEFAULT_WIFI_PASSWORD;
-    char     mqttServer[64]   = DEFAULT_MQTT_SERVER;
-    char     mqttUser[32]     = DEFAULT_MQTT_USER;
-    char     mqttPassword[32] = DEFAULT_MQTT_PASSWORD;
-    char     baseTopic[32]    = DEFAULT_MQTT_BASE_TOPIC;
-    bool isOnline      = DEFAULT_ISONLINE;
-    bool isServiceMode = DEFAULT_ISSERVICEMODE;
-    bool isLogging     = DEFAULT_ISLOGGING;
-    uint16_t mqttPort         = DEFAULT_MQTT_PORT;
-};
+//struct NodeMQTTConfig {
+//    uint8_t  configVersion    = DEFAULT_CONFIGURATION_VERSION;
+//    char     wifiSsid[32]     = DEFAULT_WIFI_SSID;
+//    uint8_t  wifiBssid[6]     = DEFAULT_WIFI_BSSID;
+//    uint8_t  ipAddress[4]     = DEFAULT_IP_ADDRESS;
+//    uint8_t  gateway[4]       = DEFAULT_GATEWAY;
+//    uint8_t  subnetMask[4]    = DEFAULT_SUBNET;
+//    uint8_t  dns[4]           = DEFAULT_GATEWAY;
+//    uint8_t  wifiChannel      = DEFAULT_WIFI_CHANNEL;
+//    char     wifiPassword[32] = DEFAULT_WIFI_PASSWORD;
+//    char     mqttServer[64]   = DEFAULT_MQTT_SERVER;
+//    char     mqttUser[32]     = DEFAULT_MQTT_USER;
+//    char     mqttPassword[32] = DEFAULT_MQTT_PASSWORD;
+//    char     baseTopic[32]    = DEFAULT_MQTT_BASE_TOPIC;
+//    bool isOnline      = DEFAULT_ISONLINE;
+//    bool isServiceMode = DEFAULT_ISSERVICEMODE;
+//    bool isLogging     = DEFAULT_ISLOGGING;
+//    uint16_t mqttPort         = DEFAULT_MQTT_PORT;
+//};
 
 struct NodeMQTTCronJob {
     const char       *cronString;
@@ -83,7 +83,7 @@ public:
 
 struct ApplicationContext {
     Scheduler                       *scheduler;
-    NodeMQTTConfig                  *configuration;
+//    NodeMQTTConfig                  *configuration;
     LinkedList<NodeInterfaceBase *> *interfaces;
     time_t                          currentTime = 0;
 

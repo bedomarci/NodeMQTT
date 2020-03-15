@@ -8,17 +8,16 @@
 #include "NodeMQTTCron.hpp"
 #include "NodeMQTTIOContainer.hpp"
 
-NodeMQTT::NodeMQTT()
-{
-    _config = new NodeMQTTConfig();
+NodeMQTT::NodeMQTT() {
+//    _config = new NodeMQTTConfig();
     interfaceList = LinkedList<NodeInterfaceBase *>();
     _scheduler.init();
     _context.scheduler = &_scheduler;
     _context.transport = &_transport;
     _context.parser = &_parser;
-    _context.configuration = _config;
+//    _context.configuration = _config;
     _context.interfaces = &interfaceList;
-    
+
     NodeMQTTIO.init(&_context);
     NodeMQTTCommandProcessor.init(&_context);
     NodeMQTTScheduler.init(&_context);
@@ -27,25 +26,19 @@ NodeMQTT::NodeMQTT()
 
     printHeader(NodeMQTTIO);
     Logger.setFatalCallback([=]() { onFatalError(); });
-}
-void NodeMQTT::begin()
-{
-    // NodeMQTTConfig * loadedConfig; = new NodeMQTTConfig();
+    registerConfiguration();
 
-    // NodeMQTTConfigManager.loadInto(loadedConfig);
-    NodeMQTTConfigManager.loadInto(_config);
-    begin(_config);
 }
-void NodeMQTT::begin(NodeMQTTConfig *configuration)
-{
-    _config = configuration;
-    NodeMQTTConfigManager.loadPropertiesFromEEPROM();
 
-    Logger.logf(INFO, MSG_INTRODUCTION, getContext()->configuration->baseTopic, toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
+void NodeMQTT::begin() {
+    NodeMQTTConfigManager.load();
+    loadConfiguration();
+
+    Logger.logf(INFO, MSG_INTRODUCTION, this->baseTopic.c_str(), toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
     d(F("Initializing NodeMQTT"));
 
     _transport.setContext(&_context);
-    _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char *)p, l); });
+    _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char *) p, l); });
     _transport.setBrokerConnectedCallback([=]() { onBrokerConnected(); });
     _transport.setBrokerConnectingCallback([=]() { onBrokerConnecting(); });
     _transport.setBrokerDisconnectedCallback([=]() { onBrokerDisconnected(); });
@@ -53,39 +46,37 @@ void NodeMQTT::begin(NodeMQTTConfig *configuration)
     _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
     _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
 
-    if (_config->isOnline) {
+    if (this->isOnline) {
         _transport.init();
     }
 
     _parser.setContext(&_context);
     _parser.setInterfaces(&interfaceList);
 
-    Logger.setLogging(_config->isLogging);
+    Logger.setLogging(this->isLogging);
 #ifdef NODEMQTT_SERVICE_MODE
-    _config->isServiceMode = true;
+    this->isServiceMode = true;
 #endif
 
-    if (_config->isServiceMode)
-        NodeMQTTConfigManager.print(_config);
+    if (this->isServiceMode)
+//        NodeMQTTConfigManager.print(_config);
+        NodeMQTTConfigManager.print();
 
     this->addDefaultInterfaces();
-    this->setBaseTopic(String(_config->baseTopic));
+    setInterfaceBaseTopic();
     this->initializeInterfaces();
 
-    if (_context.configuration->isOnline)
+    if (this->isOnline)
         _transport.connectNetwork();
 
     buzz(TONE_SYSTEM_BOOT);
 }
 
-void NodeMQTT::handle()
-{
-    if (_config->isOnline)
-    {
+void NodeMQTT::handle() {
+    if (this->isOnline) {
         _transport.loop();
 #ifdef WIFI_TRANSPORT
-        if (_config->isServiceMode && _transport.isNetworkConnected())
-        {
+        if (this->isServiceMode && _transport.isNetworkConnected()) {
             NodeMQTTUpdateManager.checkForUpload();
         }
 #endif
@@ -95,23 +86,18 @@ void NodeMQTT::handle()
     yield();
 }
 
-void NodeMQTT::addInterface(NodeInterfaceBase *interface)
-{
+void NodeMQTT::addInterface(NodeInterfaceBase *interface) {
     interfaceList.add(interface);
     interface->setContext(&_context);
 }
 
 
-
-void NodeMQTT::subscribeTopics()
-{
+void NodeMQTT::subscribeTopics() {
     NodeInterfaceBase *interface;
     String topics = "";
-    for (int i = 0; i < interfaceList.size(); i++)
-    {
+    for (int i = 0; i < interfaceList.size(); i++) {
         interface = interfaceList.get(i);
-        if (interface->hasMQTTSubscribe())
-        {
+        if (interface->hasMQTTSubscribe()) {
             _transport.subscribe((interface->getSubscribeTopic()).c_str());
             if (topics.length() > 0)
                 topics += ", ";
@@ -121,43 +107,40 @@ void NodeMQTT::subscribeTopics()
     Logger.logf(INFO, F("Subscribed to: %s"), topics.c_str());
 }
 
-void NodeMQTT::initializeInterfaces()
-{
+void NodeMQTT::initializeInterfaces() {
     for (int i = 0; i < interfaceList.size(); i++)
         interfaceList.get(i)->init();
 }
 
 
-
-void NodeMQTT::parse(char *topic, char *payload, unsigned int length)
-{
+void NodeMQTT::parse(char *topic, char *payload, unsigned int length) {
     payload[length] = '\0';
     String s_payload = String(payload);
     Logger.logf(DEBUG, F("Receiving payload: %s"), s_payload.c_str());
     _parser.parse(topic, payload);
 }
 
-void NodeMQTT::setBaseTopic(String baseTopic)
-{
-    _baseTopic = baseTopic;
+void NodeMQTT::setBaseTopic(String baseTopic) {
+    this->baseTopic = baseTopic;
+    setInterfaceBaseTopic();
+}
+
+
+void NodeMQTT::setInterfaceBaseTopic() {
     NodeInterfaceBase *interface;
-    for (int i = 0; i < interfaceList.size(); i++)
-    {
+    for (int i = 0; i < interfaceList.size(); i++) {
         interface = interfaceList.get(i);
-        if (interface->getBaseTopic().length() == 0)
-        {
-            interface->setBaseTopic(baseTopic);
+        if (interface->getBaseTopic().length() == 0) {
+            interface->setBaseTopic(this->baseTopic);
         }
     }
 }
 
-String NodeMQTT::getBaseTopic()
-{
-    return _baseTopic;
+String NodeMQTT::getBaseTopic() {
+    return this->baseTopic;
 }
 
-void NodeMQTT::addDefaultInterfaces()
-{
+void NodeMQTT::addDefaultInterfaces() {
     heartbeatInterface = new HeartbeatInterface();
     nodeConfigInterface = new NodeConfigInterface();
     logInterface = new LogInterface();
@@ -169,43 +152,38 @@ void NodeMQTT::addDefaultInterfaces()
     addInterface(commandInterface);
 }
 
-void NodeMQTT::setSystemBuzzer(BuzzerInterface *interface)
-{
+void NodeMQTT::setSystemBuzzer(BuzzerInterface *interface) {
     buzzerInterface = interface;
 }
 
-void NodeMQTT::addTask(Task &task)
-{
+void NodeMQTT::addTask(Task &task) {
     _scheduler.addTask(task);
 }
 
-void NodeMQTT::buzz(int noteId)
-{
-    if (buzzerInterface)
-    {
+void NodeMQTT::buzz(int noteId) {
+    if (buzzerInterface) {
         buzzerInterface->preventDebugLogging(true);
         buzzerInterface->write(noteId, false);
         buzzerInterface->preventDebugLogging(false);
     }
 }
 
-void NodeMQTT::onNetworkConnecting()
-{
+void NodeMQTT::onNetworkConnecting() {
     if (networkConnectingCallback != nullptr)
         networkConnectingCallback();
 }
-void NodeMQTT::onNetworkConnected()
-{
-    
-    #ifdef WIFI_TRANSPORT
+
+void NodeMQTT::onNetworkConnected() {
+
+#ifdef WIFI_TRANSPORT
     NodeMQTTUpdateManager.init(getContext());
     ntpTime.init(getContext());
-    #endif
+#endif
     if (networkConnectedCallback != nullptr)
         networkConnectedCallback();
 }
-void NodeMQTT::onNetworkDisconnected()
-{
+
+void NodeMQTT::onNetworkDisconnected() {
     if (networkDisconnectedCallback != nullptr)
         networkDisconnectedCallback();
 
@@ -213,24 +191,24 @@ void NodeMQTT::onNetworkDisconnected()
         heartbeatInterface->setEnabled(false);
     buzz(TONE_WARNING);
 }
-void NodeMQTT::onBrokerConnecting()
-{
+
+void NodeMQTT::onBrokerConnecting() {
     if (brokerConnectingCallback != nullptr)
         brokerConnectingCallback();
 }
-void NodeMQTT::onBrokerConnected()
-{
+
+void NodeMQTT::onBrokerConnected() {
     if (brokerConnectedCallback != nullptr)
         brokerConnectedCallback();
 
     this->subscribeTopics();
     heartbeatInterface->setEnabled(true);
-    nodeConfigInterface->publishCurrentConfig(*_config);
+//    nodeConfigInterface->publishCurrentConfig(*_config);
     logInterface->enable();
     buzz(TONE_SYSTEM_ONLINE);
 }
-void NodeMQTT::onBrokerDisconnected()
-{
+
+void NodeMQTT::onBrokerDisconnected() {
     logInterface->disable();
     if (brokerDisconnectedCallback != nullptr)
         brokerDisconnectedCallback();
@@ -239,45 +217,60 @@ void NodeMQTT::onBrokerDisconnected()
         heartbeatInterface->setEnabled(false);
 }
 
-void NodeMQTT::setNetworkConnectingCallback(NodeMQTTCallback cb)
-{
+void NodeMQTT::setNetworkConnectingCallback(NodeMQTTCallback cb) {
     networkConnectingCallback = cb;
 }
-void NodeMQTT::setNetworkConnectedCallback(NodeMQTTCallback cb)
-{
+
+void NodeMQTT::setNetworkConnectedCallback(NodeMQTTCallback cb) {
     networkConnectedCallback = cb;
 }
-void NodeMQTT::setNetworkDisconnectedCallback(NodeMQTTCallback cb)
-{
+
+void NodeMQTT::setNetworkDisconnectedCallback(NodeMQTTCallback cb) {
     networkDisconnectedCallback = cb;
 }
-void NodeMQTT::setBrokerConnectingCallback(NodeMQTTCallback cb)
-{
+
+void NodeMQTT::setBrokerConnectingCallback(NodeMQTTCallback cb) {
     brokerConnectingCallback = cb;
 }
-void NodeMQTT::setBrokerConnectedCallback(NodeMQTTCallback cb)
-{
+
+void NodeMQTT::setBrokerConnectedCallback(NodeMQTTCallback cb) {
     brokerConnectedCallback = cb;
 }
-void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
-{
+
+void NodeMQTT::setBrokerDisconnectedCallback(NodeMQTTCallback cb) {
     brokerDisconnectedCallback = cb;
 }
 
 void NodeMQTT::setTimeSyncedCallback(NodeMQTTCallback cb) {
     ntpTime.setTimeSyncedCallback(cb);
 }
+
 void NodeMQTT::setTimeReceivedCallback(NodeMQTTCallback cb) {
     ntpTime.setTimeReceivedCallback(cb);
 }
 
-void NodeMQTT::onFatalError()
-{
+void NodeMQTT::onFatalError() {
     buzz(TONE_FAIL);
 }
 
-ApplicationContext *NodeMQTT::getContext()
-{
+ApplicationContext *NodeMQTT::getContext() {
     return &_context;
 }
+
+void NodeMQTT::registerConfiguration() {
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_ONLINE, (const char *) ATTR_ONLINE, true);
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_SERVICEMODE, (const char *) ATTR_SERVICEMODE, true);
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_LOGGING, (const char *) ATTR_LOGGING, true);
+    NodeMQTTConfigManager.registerStringProperty(PROP_SYS_BASETOPIC, (const char *) ATTR_BASETOPIC, DEFAULT_MQTT_BASE_TOPIC);
+
+}
+
+void NodeMQTT::loadConfiguration() {
+    this->isOnline = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_ONLINE);
+    this->isLogging = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_LOGGING);
+    this->isServiceMode = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_SERVICEMODE);
+    this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
+
+}
+
 

@@ -26,7 +26,7 @@ struct NodeMQTTProperty {
     uint8_t isStored;
     NodeMQTTPropertyType type = BYTE_PROPERTY;
 
-    NodeMQTTProperty(uint16_t propertyId, const char *propertyName)
+    NodeMQTTProperty(uint16_t propertyId, const char *const propertyName)
             : id(propertyId),
               name(propertyName),
               isStored(0) {};
@@ -39,15 +39,12 @@ struct NodeMQTTProperty {
 
 class NodeMQTTConfigManagerClass {
 private:
-    uint32_t calculateChkSum(NodeMQTTConfig *configuration);
 
     void EEPROMWriteChkSum(uint32_t chksum);
 
-    void setStaticFlagDefaultValues();
+//    void setStaticFlagDefaultValues();
 
     uint32_t EEPROMReadChkSum();
-
-    void printIp(uint8_t ip[4]);
 
     void printAttributeWithTab(String s);
 
@@ -56,7 +53,6 @@ private:
     void commit();
 
     uint32_t calculateEEPROMPropertyChkSum();
-    uint32_t calculateRAMPropertyChkSum();
 
     uint8_t isEEPROMValid();
 
@@ -64,26 +60,26 @@ private:
 
     NodeMQTTProperty getRAMPropertyById(uint16_t propertyId);
 
-    const int EEPROM_CONFIGURATION_CHCKSUM_ADDRESS = 32;
-    int EEPROM_PROPERTY_CHCKSUM_ADDRESS;
-    int EEPROM_CONFIGURATION_ADDRESS;
-    int EEPROM_PROPERTIES_ADDRESS;
+    const int EEPROM_PROPERTY_CHCKSUM_ADDRESS = 32;
+    const int EEPROM_PROPERTIES_ADDRESS = EEPROM_PROPERTY_CHCKSUM_ADDRESS + sizeof(uint32_t);
     bool isPropertyDirty = false;
-    NodeMQTTConfig *defaultConfig;
+    bool isLoaded = false;
     LinkedList<NodeMQTTProperty> *properties;
+
+    void storePropertiesInEEPROM();
+
+    void loadPropertiesFromEEPROM();
 
 public:
     NodeMQTTConfigManagerClass();
 
-    void save(NodeMQTTConfig *configuration);
+    void save();
 
-    void loadInto(NodeMQTTConfig *configuration);
+    void load();
 
-    void loadDefaultsInto(NodeMQTTConfig *configuration);
+    void print();
 
-    void print(NodeMQTTConfig *configuration);
-
-    void  printArraySeparated(uint8_t *array, uint8_t length, char separator);
+    void printArraySeparated(uint8_t *array, uint8_t length, char separator);
 
     void registerProperty(uint16_t propertyId, const char *propertyName,
                           uint8_t *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type = BYTE_PROPERTY);
@@ -128,10 +124,6 @@ public:
     void setIPProperty(uint16_t propertyId, uint8_t propertyValue[4]);
 
     void setMACProperty(uint16_t propertyId, uint8_t propertyValue[6]);
-
-    void storePropertiesInEEPROM();
-
-    void loadPropertiesFromEEPROM();
 
     void factoryReset();
 

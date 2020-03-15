@@ -20,7 +20,7 @@ inline WhoAmICommand::WhoAmICommand(ApplicationContext *context) :  AbstractComm
 
 inline void WhoAmICommand::handle()
 {
-    NodeMQTTIO.printf(message_Introduction, getContext()->configuration->baseTopic, toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
+    NodeMQTTIO.printf(message_Introduction, NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC).c_str(), toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
     NodeMQTTIO.println();
 }
 

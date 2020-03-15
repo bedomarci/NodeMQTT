@@ -179,7 +179,7 @@ inline void NodeInterface<T>::republish() {
 template<typename T>
 inline void NodeInterface<T>::writeRaw(String newValue, bool publishable) {
     DynamicJsonDocument jsonDocument(JSON_DOCUMENT_SIZE);
-    auto                error = deserializeJson(jsonDocument, newValue);
+    auto error = deserializeJson(jsonDocument, newValue);
     if (error) {
         Logger.logf(DEBUG, MSG_FAILED_TO_PARSE, getSubscribeTopic().c_str());
     } else {

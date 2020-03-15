@@ -230,6 +230,24 @@ inline void printHeader(Print &p) {
     p.println(FPSTR(TERMINAL_HR));
 }
 
+inline void printIp(Print &p, uint8_t *ip) {
+    for (int i = 0; i < 4; i++) {
+        p.print(ip[i]);
+        if (i < 3)
+            p.print('.');
+    }
+}
+
+inline void printMac(Print &p, uint8_t *mac) {
+    for (int i = 0; i < 6; i++) {
+        p.print(mac[i], HEX);
+        if (i < 5)
+            p.print(':');
+    }
+}
+
+
+
 inline String toTimeString(time_t t) {
     char buffer[13];
     tm* calendar = gmtime(&t);
@@ -250,7 +268,8 @@ inline void parseIpAddress(char *strIp, uint8_t ip[4]) {
     int  i         = 0;
     char *strSplit = strIp;
     while ((token = strtok_r(strSplit, ".", &strSplit))) {
-        uint8_t octet = atoi(token);
+        int parsedOctet = atoi(token);
+        uint8_t octet = constrain(parsedOctet, 0, 255);
         ip[i++] = octet;
     }
 }
