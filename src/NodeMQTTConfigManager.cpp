@@ -51,10 +51,7 @@ void NodeMQTTConfigManagerClass::load() {
 }
 
 
-void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const char *propertyName,
-                                                  uint8_t *propertyDefaultValue, uint8_t length,
-                                                  NodeMQTTPropertyType type) {
-
+void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const char *propertyName, uint8_t *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type) {
     if (isLoaded) {
         e(F("Registering property after EEPROM load is prohibited! Move property registration before loading!"));
         return;
@@ -66,24 +63,20 @@ void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const cha
     this->properties->add(property);
 }
 
-void NodeMQTTConfigManagerClass::registerIntProperty(uint16_t propertyId, const char *propertyName,
-                                                     int propertyDefaultValue) {
+void NodeMQTTConfigManagerClass::registerIntProperty(uint16_t propertyId, const char *propertyName, int propertyDefaultValue) {
     this->registerProperty(propertyId, propertyName, (uint8_t *) &propertyDefaultValue, sizeof(int), INT_PROPERTY);
 }
 
-void NodeMQTTConfigManagerClass::registerStringProperty(uint16_t propertyId, const char *propertyName,
-                                                        const char *propertyDefaultValue) {
+void NodeMQTTConfigManagerClass::registerStringProperty(uint16_t propertyId, const char *propertyName, const char *propertyDefaultValue) {
     this->registerProperty(propertyId, propertyName, (uint8_t *) propertyDefaultValue, strlen(propertyDefaultValue) + 1,
                            STRING_PROPERTY);
 }
 
-void NodeMQTTConfigManagerClass::registerBoolProperty(uint16_t propertyId, const char *propertyName,
-                                                      uint8_t propertyDefaultValue) {
+void NodeMQTTConfigManagerClass::registerBoolProperty(uint16_t propertyId, const char *propertyName, uint8_t propertyDefaultValue) {
     this->registerProperty(propertyId, propertyName, &propertyDefaultValue, sizeof(uint8_t), BOOL_PROPERTY);
 }
 
-void NodeMQTTConfigManagerClass::registerIPProperty(uint16_t propertyId, const char *propertyName,
-                                                    uint8_t propertyDefaultValue[4]) {
+void NodeMQTTConfigManagerClass::registerIPProperty(uint16_t propertyId, const char *propertyName, uint8_t propertyDefaultValue[4]) {
     this->registerProperty(propertyId, propertyName, propertyDefaultValue, 4, IP_PROPERTY);
 }
 
@@ -180,8 +173,7 @@ void NodeMQTTConfigManagerClass::print() {
                 break;
         }
     }
-    if (this->properties->size() > 0)
-        NodeMQTTIO.println(TERMINAL_HR);
+    NodeMQTTIO.println(TERMINAL_HR);
 }
 
 void NodeMQTTConfigManagerClass::printArraySeparated(uint8_t *array, uint8_t length, char separator) {

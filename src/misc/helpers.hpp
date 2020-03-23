@@ -280,7 +280,8 @@ inline void parseMacAddress(char *strMac, uint8_t mac[6]) {
     int  i         = 0;
     char *strSplit = strMac;
     while ((token = strtok_r(strSplit, ":", &strSplit))) {
-        uint8_t octet = (int) strtol(&(token[0]), NULL, 16);
+        int parsedOctet = strtol(&(token[0]), NULL, 16);
+        uint8_t octet = constrain(parsedOctet, 0, 255);
         mac[i++] = octet;
     }
 }
