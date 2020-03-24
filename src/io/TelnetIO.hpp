@@ -8,12 +8,12 @@ class TelnetIO : public AbstractIO
 {
   public:
     TelnetIO();
-    virtual void init(ApplicationContext *context);
-    size_t write(uint8_t c);
+    void init(ApplicationContext *context) override;
+    size_t write(uint8_t c) override;
 
   protected:
-    void handle();
-    void printHeader();
+    void handle() override;
+    void printHeader() override;
     void printErrorMessage();
 
   private:
@@ -23,7 +23,7 @@ class TelnetIO : public AbstractIO
 
     SERVER_CLASS * telnetServer;
     CLIENT_CLASS telnetClient;
-    boolean connectFlag = 0; //we'll use a flag separate from client.connected, so we can recognize when a new connection has been created
+    boolean connectFlag = false; //we'll use a flag separate from client.connected, so we can recognize when a new connection has been created
     unsigned long timeOfLastActivity; //time in milliseconds of last activity
     unsigned long allowedConnectTime = 300000; //five minutes
     void checkConnectionTimeout();
@@ -32,7 +32,6 @@ class TelnetIO : public AbstractIO
     void loop();
 };
 inline TelnetIO::TelnetIO() {
-    telnetServer = new SERVER_CLASS(TELNET_SERVER_PORT);
 }
 
 inline void TelnetIO::printHeader(){
@@ -50,6 +49,8 @@ inline size_t TelnetIO::write(uint8_t c) {
 
 inline void TelnetIO::init(ApplicationContext *context)
 {
+    telnetServer = new SERVER_CLASS(TELNET_SERVER_PORT);
+    //TODO: telnet begin must be called after transport setup. otherwise ESP32 fails on boot. event handler is required.
     telnetServer->begin();
     telnetServer->setNoDelay(true);
     AbstractIO::init(context);
@@ -61,7 +62,7 @@ inline void TelnetIO::checkConnectionTimeout()
   if(millis() - timeOfLastActivity > allowedConnectTime) {
     this->println(PSTR("Timeout disconnect."));
     telnetClient.stop();
-    connectFlag = 0;
+    connectFlag = false;
   }
 }
 
@@ -77,7 +78,7 @@ inline void TelnetIO::checkNewConnection() {
       if(telnetClient) telnetClient.stop();
       telnetClient = telnetServer->available(); // ready for new client
 
-      connectFlag = 1;
+      connectFlag = true;
       loop();
       this->printHeader();
       this->printPrompt();
@@ -86,9 +87,9 @@ inline void TelnetIO::checkNewConnection() {
     }
   } else {
     if(!telnetClient.connected()) {
-      if(connectFlag == 1) {
+      if(connectFlag == true) {
         telnetClient.stop(); //client disconnects
-        connectFlag = 0;
+        connectFlag = false;
       }
     }
   }

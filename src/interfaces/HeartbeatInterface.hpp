@@ -25,9 +25,9 @@ class HeartbeatInterface : public NodeInterface<NodeStatus>
     NodeStatus status;
     virtual NodeStatus sample() override;
     virtual void updatePhisicalInterface(NodeStatus newValue) override;
-    virtual NodeStatus fromJSON(JsonObject &root) override;
-    virtual JsonObject &toJSON(NodeStatus value, JsonObject &root) override;
-    virtual int cmp(NodeStatus oldValue, NodeStatus newValue) override;
+    NodeStatus fromJSON(JsonObject &root) override;
+    JsonObject &toJSON(NodeStatus value, JsonObject &root) override;
+    int cmp(NodeStatus oldValue, NodeStatus newValue) override;
 
     const char *uptimeKey = "uptime";
     const char *nodeIdKey = "nodeid";

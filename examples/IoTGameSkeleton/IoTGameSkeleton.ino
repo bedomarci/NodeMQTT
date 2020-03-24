@@ -31,13 +31,14 @@ void maintainGame();
 void disableGame();
 void boot();
 
-NodeMQTT thisNode;
+NodeMQTT *thisNode;
 FiniteStateMachineInterface *controlInterface;
 DFPlayerInterface *playerInterface;
 BuzzerInterface *buzzerInterface;
 
 void setup()
 {
+    thisNode = new NodeMQTT();
     controlInterface = new FiniteStateMachineInterface("control");
     controlInterface->addState(0, "INIT", initGame, nullptr, nullptr, true);
     controlInterface->addState(1, "UNLOCK", unlockGame);
@@ -46,17 +47,17 @@ void setup()
 
     buzzerInterface = new BuzzerInterface("buz", PIN_BUZZER);
     playerInterface = new DFPlayerInterface("player", DF_SERIAL_RX, DF_SERIAL_TX);
-    thisNode.addInterface(controlInterface);
-    thisNode.addInterface(playerInterface);
-    thisNode.addInterface(buzzerInterface);
-    thisNode.setSystemBuzzer(buzzerInterface);
+    thisNode->addInterface(controlInterface);
+    thisNode->addInterface(playerInterface);
+    thisNode->addInterface(buzzerInterface);
+    thisNode->setSystemBuzzer(buzzerInterface);
     boot();
-    thisNode.begin();
+    thisNode->begin();
 }
 
 void loop()
 {
-    thisNode.handle();
+    thisNode->handle();
 }
 
 void boot()

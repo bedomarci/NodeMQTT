@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <time.h>
-#include "NodeMQTTLogger.hpp"
+#include "../NodeMQTTLogger.hpp"
 #include "../constants.hpp"
 
 #define d(x) Logger.log(DEBUG, x)
@@ -230,6 +230,25 @@ inline void printHeader(Print &p) {
     p.println(FPSTR(TERMINAL_HR));
 }
 
+inline void printIp(Print &p, uint8_t *ip) {
+    for (int i = 0; i < 4; i++) {
+        p.print(ip[i]);
+        if (i < 3)
+            p.print('.');
+    }
+}
+
+inline void printMac(Print &p, uint8_t *mac) {
+    for (int i = 0; i < 6; i++) {
+        if (mac[i]<16) p.print(0);
+        p.print(mac[i], HEX);
+        if (i < 5)
+            p.print(':');
+    }
+}
+
+
+
 inline String toTimeString(time_t t) {
     char buffer[13];
     tm* calendar = gmtime(&t);
@@ -243,6 +262,28 @@ inline String toDateTimeString(time_t t) {
     sprintf(buffer, "%04d/%02d/%02d %02d:%02d:%02d", calendar->tm_year, calendar->tm_mon, calendar->tm_mday,
             calendar->tm_hour, calendar->tm_min, calendar->tm_sec);
     return String(buffer);
+}
+
+inline void parseIpAddress(char *strIp, uint8_t ip[4]) {
+    char *token;
+    int  i         = 0;
+    char *strSplit = strIp;
+    while ((token = strtok_r(strSplit, ".", &strSplit))) {
+        int parsedOctet = atoi(token);
+        uint8_t octet = constrain(parsedOctet, 0, 255);
+        ip[i++] = octet;
+    }
+}
+
+inline void parseMacAddress(char *strMac, uint8_t mac[6]) {
+    char *token;
+    int  i         = 0;
+    char *strSplit = strMac;
+    while ((token = strtok_r(strSplit, ":", &strSplit))) {
+        int parsedOctet = strtol(&(token[0]), NULL, 16);
+        uint8_t octet = constrain(parsedOctet, 0, 255);
+        mac[i++] = octet;
+    }
 }
 
 

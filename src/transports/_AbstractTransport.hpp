@@ -43,7 +43,6 @@ class AbstractTransport
 
 
     Scheduler *getScheduler();
-    NodeMQTTConfig *getConfiguration();
   protected:
     // AbstractTransport();
 

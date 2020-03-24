@@ -15,8 +15,8 @@ NodeMQTTUpdateManagerClass::NodeMQTTUpdateManagerClass()
 void NodeMQTTUpdateManagerClass::init(ApplicationContext *context)
 {
     _context = context;
-    ArduinoOTA.setPassword(_context->configuration->mqttPassword);
-    ArduinoOTA.setHostname(String(String(UUID) + "-" + String(_context->configuration->baseTopic)).c_str());
+    ArduinoOTA.setPassword(NodeMQTTConfigManager.getStringProperty(PROP_MQTT_PASSWORD).c_str());
+    ArduinoOTA.setHostname(String(String(UUID) + "-" + NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC)).c_str());
     ArduinoOTA.begin();
 }
 
@@ -61,7 +61,7 @@ void NodeMQTTUpdateManagerClass::checkForUpload()
 void NodeMQTTUpdateManagerClass::checkForUpdates()
 {
     String fwURL = String(fwUrlBase);
-    fwURL.concat(String(_context->configuration->baseTopic));
+    fwURL.concat(NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC));
     String fwVersionURL = fwURL;
     fwVersionURL.concat(F(".ver"));
     Logger.logf(INFO,F("Checking for new update at %s."), fwVersionURL.c_str());

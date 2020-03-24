@@ -6,10 +6,10 @@
 #include "PubSubCLient.h"
 #include "../misc/helpers.hpp"
 
-#define MQTT_MAX_PACKET_SIZE NODEMQTT_MAX_PACKET_SIZE
-
 #ifdef ESP8266
+
 #include <ESP8266WiFi.h>
+
 #endif
 #ifdef ESP32
 #include <WiFi.h>
@@ -18,39 +18,74 @@
 class WifiTransport : public AbstractTransport {
 public:
     WifiTransport();
+
     void init();
+
     void loop();
+
     void connectNetwork();
+
     bool isNetworkConnected();
+
     String getNetworkAddressString();
+
     String getState();
+
     bool wasConnectedToNetwork = false;
-    bool wasConnectedToServer  = false;
+    bool wasConnectedToServer = false;
 
     void publish(const char *topic, const char *msg);
+
     void subscribe(const char *topic);
 
 protected:
+    void loadConfiguration();
+
+    void registerConfiguration();
+
     void reconnectBroker();
+
     void reconnectWifi();
+
     static int32_t getRSSI();
+
     int32_t RSSIToPercentage(int32_t rssi);
+
     void logWifiInfo();
+
     bool isIPvalid(uint8_t ip[4]);
+
     void setOutputPower(float power);
+
     void setSleepMode();
 
-    WiFiClient   espClient;
+    CLIENT_CLASS espClient;
     PubSubClient client;
 
     Task _tWifiConnect;
     Task _tBrokerConnect;
 
-    uint8_t wifiConnectionAttampt   = 1;
+    uint8_t wifiConnectionAttampt = 1;
     uint8_t brokerConnectionAttampt = 1;
+
+    String wifiSsid;
+    uint8_t wifiBssid[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    String wifiPassword;
+    int wifiChannel = DEFAULT_WIFI_CHANNEL;
+    uint8_t ipAddress[4] = {0, 0, 0, 0};
+    uint8_t gateway[4] = {0, 0, 0, 0};
+    uint8_t dns[4] = {0, 0, 0, 0};
+    uint8_t subnetMask[4] = {0, 0, 0, 0};
+    String mqttServer;
+    String mqttUser;
+    String mqttPassword;
+    int mqttPort = DEFAULT_MQTT_PORT;
+    String baseTopic;
 };
 
 inline WifiTransport::WifiTransport() : AbstractTransport() {
+//
+    registerConfiguration();
     _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
     _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
 
@@ -60,6 +95,8 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     this->setOutputPower(WIFI_TRANSMISSION_POWER);
     WiFi.persistent(false);
     this->setSleepMode();
+
+    //TODO: move wifi setup to init()
 
     // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
 
@@ -86,17 +123,54 @@ inline void WifiTransport::setSleepMode() {
 }
 
 inline void WifiTransport::init() {
+
+    loadConfiguration();
     this->getScheduler()->addTask(_tWifiConnect);
     this->getScheduler()->addTask(_tBrokerConnect);
-    if (this->getConfiguration() == nullptr) {
-        e(("No configuration set for Wifi transport layer!"));
-        return;
-    }
-    client.setServer(this->getConfiguration()->mqttServer, this->getConfiguration()->mqttPort);
+    client.setServer(this->mqttServer.c_str(), this->mqttPort);
+}
+
+inline void WifiTransport::registerConfiguration() {
+    NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_SSID, (const char *) ATTR_WIFISSID, DEFAULT_WIFI_SSID);
+    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, this->wifiBssid);
+    NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_PASSWORD, (const char *) ATTR_WIFIPASS, DEFAULT_WIFI_PASSWORD);
+    NodeMQTTConfigManager.registerIntProperty(PROP_WIFI_CHANNEL, (const char *) ATTR_WIFICHANNEL, DEFAULT_WIFI_CHANNEL);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, this->ipAddress);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_SUBNET, (const char *) ATTR_SUBNET, this->subnetMask);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_GATEWAY, (const char *) ATTR_GATEWAY, this->gateway);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_DNS, (const char *) ATTR_DNS, this->dns);
+
+    NodeMQTTConfigManager.registerStringProperty(PROP_MQTT_SERVER, (const char *) ATTR_MQTTSERV, DEFAULT_MQTT_SERVER);
+    NodeMQTTConfigManager.registerIntProperty(PROP_MQTT_PORT, (const char *) ATTR_MQTTPORT, DEFAULT_MQTT_PORT);
+    NodeMQTTConfigManager.registerStringProperty(PROP_MQTT_USER, (const char *) ATTR_MQTTUSER, DEFAULT_MQTT_USER);
+    NodeMQTTConfigManager.registerStringProperty(PROP_MQTT_PASSWORD, (const char *) ATTR_MQTTPASS, DEFAULT_MQTT_PASSWORD);
+
+}
+
+inline void WifiTransport::loadConfiguration() {
+    this->wifiSsid = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_SSID);
+    this->wifiPassword = NodeMQTTConfigManager.getStringProperty(PROP_WIFI_PASSWORD);
+    this->wifiChannel = NodeMQTTConfigManager.getIntProperty(PROP_WIFI_CHANNEL);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_IPADDRESS, this->ipAddress);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_SUBNET, this->subnetMask);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_GATEWAY, this->gateway);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_IPADDRESS, this->dns);
+    NodeMQTTConfigManager.getMACProperty(PROP_WIFI_BSSID, this->wifiBssid);
+    this->mqttServer = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_SERVER);
+    this->mqttPort = NodeMQTTConfigManager.getIntProperty(PROP_MQTT_PORT);
+    this->mqttUser = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_USER);
+    this->mqttPassword = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_PASSWORD);
+    this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
+
+    //TODO nodemqtt begin utan kell hivni a gettert, kulonben nem lesz elerheto az adat
+
 }
 
 inline void WifiTransport::publish(const char *topic, const char *msg) {
-    client.publish(topic, msg);
+    bool published = client.publish(topic, msg);
+    if (!published) {
+        Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d, Buffer: %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
+    }
 }
 
 inline void WifiTransport::subscribe(const char *topic) {
@@ -109,23 +183,19 @@ inline void WifiTransport::reconnectBroker() {
     Logger.logf(INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
     this->onBrokerConnecting();
     bool brokerConnected = false;
-    if (strlen(this->getConfiguration()->mqttUser))
-        brokerConnected = client.connect(sUUID.c_str(), (const char *) this->getConfiguration()->mqttUser,
-                                         (const char *) this->getConfiguration()->mqttPassword,
-                                         (const char *) this->getConfiguration()->baseTopic, 1, false,
-                                         String(OFFLINE_MESSAGE).c_str());
+    if (this->mqttUser.length())
+        brokerConnected = client.connect(sUUID.c_str(), this->mqttUser.c_str(), this->mqttPassword.c_str(), this->baseTopic.c_str(), 1, false, String(OFFLINE_MESSAGE).c_str());
     else
         brokerConnected = client.connect(sUUID.c_str());
     if (brokerConnected) {
         i(F("We are all set. Let's go!"));
         this->onBrokerConnected();
         _tBrokerConnect.disable();
-        wasConnectedToServer    = true;
+        wasConnectedToServer = true;
         brokerConnectionAttampt = 1;
     } else {
         this->onBrokerDisconnected();
         Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client.state());
-        brokerConnectionAttampt = 1;
     }
     brokerConnectionAttampt++;
 }
@@ -133,14 +203,12 @@ inline void WifiTransport::reconnectBroker() {
 inline void WifiTransport::reconnectWifi() {
     this->onNetworkConnecting();
     WiFi.disconnect();
-    NodeMQTTConfig *c = this->getConfiguration();
-    bool      useStaticIp = isIPvalid(c->ipAddress);
-    IPAddress localIp(c->ipAddress[0], c->ipAddress[1], c->ipAddress[2], c->ipAddress[3]);   //ESP static ip
-    IPAddress gateway(c->gateway[0], c->gateway[1], c->gateway[2],
-                      c->gateway[3]);            //IP Address of your WiFi Router (Gateway)
-    IPAddress subnet(c->subnetMask[0], c->subnetMask[1], c->subnetMask[2], c->subnetMask[3]); //Subnet mask
-    IPAddress dns(c->dns[0], c->dns[1], c->dns[2], c->dns[3]);
-    
+    bool useStaticIp = isIPvalid(this->ipAddress);
+    IPAddress localIp(this->ipAddress[0], this->ipAddress[1], this->ipAddress[2], this->ipAddress[3]);   //ESP static ip
+    IPAddress gateway(this->gateway[0], this->gateway[1], this->gateway[2], this->gateway[3]);            //IP Address of your WiFi Router (Gateway)
+    IPAddress subnet(this->subnetMask[0], this->subnetMask[1], this->subnetMask[2], this->subnetMask[3]); //Subnet mask
+    IPAddress dns(this->dns[0], this->dns[1], this->dns[2], this->dns[3]);
+
     //    SET STATIC CONFIGURATION IF AVAILABLE
     if (useStaticIp)
         WiFi.config(localIp, gateway, subnet, dns);
@@ -148,23 +216,19 @@ inline void WifiTransport::reconnectWifi() {
         WiFi.config(localIp, localIp, localIp, localIp); //resets for dhcp in case of 0.0.0.0
     }
 
-    if (hasBSSID(c->wifiBssid)) {
-        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, c->wifiSsid, wifiConnectionAttampt);
-        WiFi.begin(c->wifiSsid, c->wifiPassword, c->wifiChannel, c->wifiBssid);
+    if (hasBSSID(this->wifiBssid)) {
+        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, this->wifiSsid.c_str(), wifiConnectionAttampt);
+        WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str(), this->wifiChannel, this->wifiBssid);
     } else {
-        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI, c->wifiSsid, wifiConnectionAttampt);
-        WiFi.begin(c->wifiSsid, c->wifiPassword);
+        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI, this->wifiSsid.c_str(), wifiConnectionAttampt);
+        WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str());
     }
 
-//    if (useStaticIp)
-//        WiFi.config(staticIP, gateway, subnet, dns);
-
     wifiConnectionAttampt++;
-
 }
 
 inline void WifiTransport::loop() {
-    if (this->getConfiguration()->isOnline) {
+    if (NodeMQTTConfigManager.getBoolProperty(PROP_SYS_ONLINE)) {
         if (WiFi.status() == WL_CONNECTED) {
             if (_tWifiConnect.isEnabled()) {
                 _tWifiConnect.disable();
@@ -198,7 +262,7 @@ inline void WifiTransport::loop() {
 
 inline void WifiTransport::logWifiInfo() {
     Logger.logf(INFO, F("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
-    if (this->getConfiguration()->isServiceMode) {
+    if (NodeMQTTConfigManager.getBoolProperty(PROP_SYS_SERVICEMODE)) {
         int32_t signalStrength = WifiTransport::getRSSI();
         Logger.logf(DEBUG, F("Signal strength: %d dBm, TX power: %.2f dBm"), signalStrength, WIFI_TRANSMISSION_POWER);
         if (signalStrength <= -80)
@@ -232,15 +296,15 @@ inline String WifiTransport::getNetworkAddressString() {
 }
 
 inline bool WifiTransport::isIPvalid(uint8_t ip[4]) {
-    int      sum = 0;
-    for (int i   = 0; i < 4; i++) {
+    int sum = 0;
+    for (int i = 0; i < 4; i++) {
         sum += ip[i];
     }
     return sum;
 }
 
 inline String WifiTransport::getState() {
-    char     s[64];
+    char s[64];
     uint32_t rssi = WifiTransport::getRSSI();
     sprintf(s, PSTR("IP: %s; RX pwr: %d dBm (%d%%); TX pwr: %.2f dBm"), this->getNetworkAddressString().c_str(), rssi,
             RSSIToPercentage(rssi), WIFI_TRANSMISSION_POWER);

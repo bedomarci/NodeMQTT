@@ -80,6 +80,7 @@ struct Note
 #define TONE_SYSTEM_BOOT 8
 #define TONE_SYSTEM_ONLINE 9
 
+
 extern const Note infoTone[1] PROGMEM;
 extern const Note successTone[4] PROGMEM;
 extern const Note warningTone[2] PROGMEM;
@@ -202,6 +203,8 @@ extern const char configAttribute_isLogging[] PROGMEM;
 #define ATTR_LOGGING FPSTR(configAttribute_isLogging)
 extern const char configAttribute_mqttPort[] PROGMEM;
 #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
+extern const char configAttribute_timezone[] PROGMEM;
+#define ATTR_TIMEZONE FPSTR(configAttribute_timezone)
 
 //MESSAGES
 extern const char message_Introduction[] PROGMEM;
@@ -228,6 +231,27 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define MSG_CONNECT_TO_WIFI_BSSID FPSTR(message_ConnetctToWifiWithBSSID)
 
 
+//CONFIGURATION IDS
+#define PROP_SYS_SERVICEMODE 1000
+#define PROP_SYS_ONLINE 1001
+#define PROP_SYS_LOGGING 1002
+#define PROP_SYS_TIMEZONE 1002
+
+#define PROP_WIFI_SSID 2000
+#define PROP_WIFI_BSSID 2001
+#define PROP_WIFI_PASSWORD 2002
+#define PROP_WIFI_CHANNEL 2003
+#define PROP_WIFI_IPADDRESS 2004
+#define PROP_WIFI_SUBNET 2005
+#define PROP_WIFI_GATEWAY 2006
+#define PROP_WIFI_DNS 2007
+
+
+#define PROP_MQTT_SERVER 3000
+#define PROP_MQTT_PORT 3001
+#define PROP_MQTT_USER 3002
+#define PROP_MQTT_PASSWORD 3003
+#define PROP_SYS_BASETOPIC 3004
 
 
 extern const long FIRMWARE_BUILD_TIME PROGMEM;

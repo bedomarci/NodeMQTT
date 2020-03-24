@@ -12,10 +12,7 @@ Scheduler *AbstractTransport::getScheduler()
 {
     return _context->scheduler;
 }
-NodeMQTTConfig *AbstractTransport::getConfiguration()
-{
-    return _context->configuration;
-}
+
 void AbstractTransport::setNetworkConnectingCallback(NodeMQTTCallback cb)
 {
     networkConnectingCallback = cb;

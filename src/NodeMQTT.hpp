@@ -20,21 +20,22 @@ class NodeMQTT
 public:
   NodeMQTT();
   void begin();
-  void begin(NodeMQTTConfig *configuration);
   void handle();
   void addInterface(NodeInterfaceBase *);
   void addIO(AbstractIO * io);
 
-  void setNetworkConnectingCallback(NodeMQTTCallback);
-  void setNetworkConnectedCallback(NodeMQTTCallback);
-  void setNetworkDisconnectedCallback(NodeMQTTCallback);
-  void setBrokerConnectingCallback(NodeMQTTCallback);
-  void setBrokerConnectedCallback(NodeMQTTCallback);
-  void setBrokerDisconnectedCallback(NodeMQTTCallback);
+  void setNetworkConnectingCallback(const NodeMQTTCallback&);
+  void setNetworkConnectedCallback(const NodeMQTTCallback&);
+  void setNetworkDisconnectedCallback(const NodeMQTTCallback&);
+  void setBrokerConnectingCallback(const NodeMQTTCallback&);
+  void setBrokerConnectedCallback(const NodeMQTTCallback&);
+  void setBrokerDisconnectedCallback(const NodeMQTTCallback&);
   void setTimeSyncedCallback(NodeMQTTCallback);
   void setTimeReceivedCallback(NodeMQTTCallback);
 
   void setBaseTopic(String baseTopic);
+  void setInterfaceBaseTopic();
+
   String getBaseTopic();
 
   void buzz(int);
@@ -50,21 +51,19 @@ protected:
   TRANSPORT_CLASS _transport;
   PARSER_CLASS _parser;
   Scheduler _scheduler;
-  NodeMQTTConfig * _config;
   ApplicationContext _context;
 
   LinkedList<NodeInterfaceBase *> interfaceList;
-  String _baseTopic = String(UUID);
+  String baseTopic = String(UUID);
 
-  void reconnectBroker();
-  bool isConnectionAlive();
-  void reconnectWifi();
+  void registerConfiguration();
+  void loadConfiguration();
+
   void parse(char *topic, char *payload, unsigned int length);
   void subscribeTopics();
   void addDefaultInterfaces();
 
   void initializeInterfaces();
-  void initializeIOs();
 
   void onNetworkConnecting();
   void onNetworkConnected();
@@ -79,11 +78,11 @@ protected:
   static String _MQTTDeviceName;
 
   //BUILTIN INTERFACES
-  HeartbeatInterface *heartbeatInterface;
-  CommandInterface *commandInterface;
-  NodeConfigInterface *nodeConfigInterface;
-  LogInterface *logInterface;
-  BuzzerInterface *buzzerInterface;
+  HeartbeatInterface *heartbeatInterface = nullptr;
+  CommandInterface *commandInterface = nullptr;
+  NodeConfigInterface *nodeConfigInterface = nullptr;
+  LogInterface *logInterface = nullptr;
+  BuzzerInterface *buzzerInterface = nullptr;
 
 private:
   NodeMQTTCallback networkConnectingCallback;
@@ -93,6 +92,10 @@ private:
   NodeMQTTCallback brokerConnectedCallback;
   NodeMQTTCallback brokerDisconnectedCallback;
   NTPTime ntpTime;
+
+  bool isLogging = true;
+  bool isServiceMode = true;
+  bool isOnline = true;
 
 };
 
