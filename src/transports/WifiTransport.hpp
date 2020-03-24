@@ -59,7 +59,7 @@ protected:
 
     void setSleepMode();
 
-    WiFiClient espClient;
+    CLIENT_CLASS espClient;
     PubSubClient client;
 
     Task _tWifiConnect;
@@ -71,7 +71,7 @@ protected:
     String wifiSsid;
     uint8_t wifiBssid[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     String wifiPassword;
-    int wifiChannel;
+    int wifiChannel = DEFAULT_WIFI_CHANNEL;
     uint8_t ipAddress[4] = {0, 0, 0, 0};
     uint8_t gateway[4] = {0, 0, 0, 0};
     uint8_t dns[4] = {0, 0, 0, 0};
@@ -79,12 +79,12 @@ protected:
     String mqttServer;
     String mqttUser;
     String mqttPassword;
-    int mqttPort;
+    int mqttPort = DEFAULT_MQTT_PORT;
     String baseTopic;
 };
 
 inline WifiTransport::WifiTransport() : AbstractTransport() {
-
+//
     registerConfiguration();
     _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
     _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
@@ -95,6 +95,8 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     this->setOutputPower(WIFI_TRANSMISSION_POWER);
     WiFi.persistent(false);
     this->setSleepMode();
+
+    //TODO: move wifi setup to init()
 
     // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
 
@@ -121,13 +123,10 @@ inline void WifiTransport::setSleepMode() {
 }
 
 inline void WifiTransport::init() {
+
     loadConfiguration();
     this->getScheduler()->addTask(_tWifiConnect);
     this->getScheduler()->addTask(_tBrokerConnect);
-//    if (this->getConfiguration() == nullptr) {
-//        e(("No configuration set for Wifi transport layer!"));
-//        return;
-//    }
     client.setServer(this->mqttServer.c_str(), this->mqttPort);
 }
 
@@ -170,7 +169,7 @@ inline void WifiTransport::loadConfiguration() {
 inline void WifiTransport::publish(const char *topic, const char *msg) {
     bool published = client.publish(topic, msg);
     if (!published) {
-        Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d / %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
+        Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d, Buffer: %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
     }
 }
 
@@ -197,7 +196,6 @@ inline void WifiTransport::reconnectBroker() {
     } else {
         this->onBrokerDisconnected();
         Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client.state());
-        brokerConnectionAttampt = 1;
     }
     brokerConnectionAttampt++;
 }
@@ -205,7 +203,6 @@ inline void WifiTransport::reconnectBroker() {
 inline void WifiTransport::reconnectWifi() {
     this->onNetworkConnecting();
     WiFi.disconnect();
-//    NodeMQTTConfig *c = this->getConfiguration();
     bool useStaticIp = isIPvalid(this->ipAddress);
     IPAddress localIp(this->ipAddress[0], this->ipAddress[1], this->ipAddress[2], this->ipAddress[3]);   //ESP static ip
     IPAddress gateway(this->gateway[0], this->gateway[1], this->gateway[2], this->gateway[3]);            //IP Address of your WiFi Router (Gateway)
@@ -221,10 +218,10 @@ inline void WifiTransport::reconnectWifi() {
 
     if (hasBSSID(this->wifiBssid)) {
         Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, this->wifiSsid.c_str(), wifiConnectionAttampt);
-        WiFi.begin(this->wifiSsid, this->wifiPassword, this->wifiChannel, this->wifiBssid);
+        WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str(), this->wifiChannel, this->wifiBssid);
     } else {
         Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI, this->wifiSsid.c_str(), wifiConnectionAttampt);
-        WiFi.begin(this->wifiSsid, this->wifiPassword);
+        WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str());
     }
 
     wifiConnectionAttampt++;

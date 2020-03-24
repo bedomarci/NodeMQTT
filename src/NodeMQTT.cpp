@@ -8,14 +8,13 @@
 #include "NodeMQTTCron.hpp"
 #include "NodeMQTTIOContainer.hpp"
 
+
 NodeMQTT::NodeMQTT() {
-//    _config = new NodeMQTTConfig();
     interfaceList = LinkedList<NodeInterfaceBase *>();
     _scheduler.init();
     _context.scheduler = &_scheduler;
     _context.transport = &_transport;
     _context.parser = &_parser;
-//    _context.configuration = _config;
     _context.interfaces = &interfaceList;
 
     NodeMQTTIO.init(&_context);
@@ -266,10 +265,10 @@ void NodeMQTT::registerConfiguration() {
 }
 
 void NodeMQTT::loadConfiguration() {
+    this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
     this->isOnline = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_ONLINE);
     this->isLogging = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_LOGGING);
     this->isServiceMode = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_SERVICEMODE);
-    this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
 
 }
 

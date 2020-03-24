@@ -50,7 +50,6 @@ inline NTPTime::NTPTime() {
     _tTick.set(TASK_SECOND, TASK_FOREVER, [=]() { this->tick(); });
     _tGetNtpTime.set(TASK_SECOND / 5, 50, [=]() { this->getNtpTime(); });
     NodeMQTTConfigManager.registerIntProperty(PROP_SYS_TIMEZONE, (const char *)ATTR_TIMEZONE, NTP_DEFAULT_TIMEZONE);
-    Udp.begin(NTP_TIME_SERVER_PORT);
 }
 
 inline void NTPTime::init(ApplicationContext *context) {
@@ -59,6 +58,7 @@ inline void NTPTime::init(ApplicationContext *context) {
     context->scheduler->addTask(_tTick);
     context->scheduler->addTask(_tGetNtpTime);
     _tGetNtpTime.restartDelayed(TASK_SECOND * 5);
+    Udp.begin(NTP_TIME_SERVER_PORT);
 }
 
 inline void NTPTime::getNtpTime() {

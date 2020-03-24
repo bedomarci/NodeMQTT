@@ -20,86 +20,118 @@ template<typename T>
 class NodeInterface : public NodeInterfaceBase {
 public:
     NodeInterface(String publishTopic, String subscribeTopic);
+
     explicit NodeInterface(String topic);
+
     void write(T newValue, bool publishable = true);
+
     T read();
+
     void onChange(NodeMQTTChangeCallback);
+
     void writeRaw(String value, bool publishable) override;
+
     void handle() override;
+
     void setSamplingRate(unsigned long samplingRate) override;
+
     void setContext(ApplicationContext *context) override;
+
     void setInterfaceName(String name);
+
     void setEnabled(bool enabled = true) override;
+
     void enable();
+
     void disable();
+
     bool isEnabled();
+
     void setSamplingEnabled(bool enabled);
+
     bool isSamplingEnabled();
+
     bool hasMQTTPublish();
+
     bool hasMQTTSubscribe();
 
     bool hasInitializedValue() override;
+
     void setMQTTPublish(bool publish) override;
+
     void setMQTTSubscribe(bool subscribe) override;
+
     void setMQTTPublishSubscribe(bool publish, bool subscribe);
+
     void setBaseTopic(String baseTopic) override;
+
     void triggerCallback();
+
     void preventDebugLogging(bool prevent = true);
+
     void republish() override;
 
     String getBaseTopic();
+
     String getSubscribeTopic() override;
+
     String getPublishTopic() override;
 
 protected:
     NodeMQTTChangeCallback
-    _onChangeCallback;
+            _onChangeCallback;
 
     //JSON
     String toString(JsonObject rootObject);
 
     //MQTT
-    bool   _hasMQTTPublish   = true;
-    bool   _hasMQTTSubscribe = true;
-    String _interfaceName    = INTERFACE_NAME;
+    bool _hasMQTTPublish = true;
+    bool _hasMQTTSubscribe = true;
+    String _interfaceName = INTERFACE_NAME;
+
     void publish(T value);
 
     //SAMPLING + SCHEDULER
     Scheduler *getScheduler();
-    T      currentValue;
+
+    T currentValue;
+
     void forceResample();
 
     ApplicationContext *getContext();
 
     //VIRTUAL
     virtual T sample();
+
     virtual void updatePhisicalInterface(T newValue);
 
     //PURE VIRTUAL
     virtual int cmp(T oldValue, T newValue) = 0;
+
     virtual T fromJSON(JsonObject &value) = 0;
+
     virtual JsonObject &toJSON(T value, JsonObject &root) = 0;
 
     Task _task;
 
 private:
-    bool          _samplingEnabled     = true;
-    bool          _forceResample       = false;
-    bool          _preventDebugLogging = false;
-    bool          _enabled             = true;
-    bool          _valueInitialized    = false;
-    unsigned long _samplingRate        = DEFAULT_SAMPLE_RATE;
+    bool _samplingEnabled = true;
+    bool _forceResample = false;
+    bool _preventDebugLogging = false;
+    bool _enabled = true;
+    bool _valueInitialized = false;
+    unsigned long _samplingRate = DEFAULT_SAMPLE_RATE;
 
-    String             _baseTopic = String();
-    String             _publishTopic;
-    String             _subscribeTopic;
+    String _baseTopic = String();
+    String _publishTopic;
+    String _subscribeTopic;
     // Scheduler *_scheduler = nullptr;
-    ApplicationContext *_context  = nullptr;
+    ApplicationContext *_context = nullptr;
 };
 
 template<typename T>
 inline NodeInterface<T>::NodeInterface(String publishTopic, String subscribeTopic) {
-    _publishTopic   = publishTopic;
+    _publishTopic = publishTopic;
     _subscribeTopic = subscribeTopic;
     _task.set(_samplingRate, TASK_FOREVER, [this]() { handle(); });
 }
@@ -164,8 +196,8 @@ inline void NodeInterface<T>::publish(T value) {
 
     if (_hasMQTTPublish && getContext()->transport->isNetworkConnected()) {
         DynamicJsonDocument jsonDocument(JSON_DOCUMENT_SIZE);
-        JsonObject          root = jsonDocument.to<JsonObject>();
-        String              msg  = toString(toJSON(value, root));
+        JsonObject root = jsonDocument.to<JsonObject>();
+        String msg = toString(toJSON(value, root));
         getContext()->transport->publish(this->getPublishTopic().c_str(), msg.c_str());
     }
 }
@@ -200,10 +232,12 @@ inline void NodeInterface<T>::handle() {
 }
 
 template<typename T>
-inline void NodeInterface<T>::forceResample() { _forceResample = true; }
+inline void NodeInterface<T>::forceResample() { this->_forceResample = true; }
 
 template<typename T>
-inline void NodeInterface<T>::preventDebugLogging(bool prevent) { _preventDebugLogging = prevent; }
+inline void NodeInterface<T>::preventDebugLogging(bool prevent) {
+    this->_preventDebugLogging = prevent;
+}
 
 template<typename T>
 inline String NodeInterface<T>::toString(JsonObject rootObject) {
@@ -295,7 +329,7 @@ inline void NodeInterface<T>::setMQTTSubscribe(bool subscribe) {
 
 template<typename T>
 inline void NodeInterface<T>::setMQTTPublishSubscribe(bool publish, bool subscribe) {
-    _hasMQTTPublish   = publish;
+    _hasMQTTPublish = publish;
     _hasMQTTSubscribe = subscribe;
 }
 

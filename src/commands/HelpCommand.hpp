@@ -31,7 +31,7 @@ inline void HelpCommand::handle()
         String commandWord = FPSTR(cmd->getCommandWord()); 
         NodeMQTTIO.print(commandWord);
         if (commandWord.length()<8)
-            Serial.print(TERMINAL_TAB);
+            NodeMQTTIO.print(TERMINAL_TAB);
         NodeMQTTIO.print(TERMINAL_TAB);
         NodeMQTTIO.println(FPSTR(cmd->getHelpText()));
     }

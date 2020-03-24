@@ -81,31 +81,25 @@ public:
 
     void printArraySeparated(uint8_t *array, uint8_t length, char separator);
 
-    void registerProperty(uint16_t propertyId, const char *propertyName,
-                          uint8_t *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type = BYTE_PROPERTY);
+    void registerProperty(uint16_t propertyId, const char *propertyName, void *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type = BYTE_PROPERTY);
 
-    void registerIntProperty(uint16_t propertyId, const char *propertyName,
-                             int propertyDefaultValue);
+    void registerIntProperty(uint16_t propertyId, const char *propertyName, int propertyDefaultValue);
 
-    void registerStringProperty(uint16_t propertyId, const char *propertyName,
-                                const char *propertyDefaultValue);
+    void registerStringProperty(uint16_t propertyId, const char *propertyName, const char *propertyDefaultValue);
 
-    void registerBoolProperty(uint16_t propertyId, const char *propertyName,
-                              uint8_t propertyDefaultValue);
+    void registerBoolProperty(uint16_t propertyId, const char *propertyName, bool propertyDefaultValue);
 
-    void registerIPProperty(uint16_t propertyId, const char *propertyName,
-                            uint8_t propertyDefaultValue[4]);
+    void registerIPProperty(uint16_t propertyId, const char *propertyName, uint8_t propertyDefaultValue[4]);
 
-    void registerMACProperty(uint16_t propertyId, const char *propertyName,
-                             uint8_t propertyDefaultValue[6]);
+    void registerMACProperty(uint16_t propertyId, const char *propertyName, uint8_t propertyDefaultValue[6]);
 
-    uint8_t *getProperty(uint16_t propertyId);
+    void getProperty(uint16_t propertyId, void *propertyValue, uint8_t length);
 
     int getIntProperty(uint16_t propertyId);
 
     String getStringProperty(uint16_t propertyId);
 
-    uint8_t getBoolProperty(uint16_t propertyId);
+    bool getBoolProperty(uint16_t propertyId);
 
     void getIPProperty(uint16_t propertyId, uint8_t ipArray[4]);
 
@@ -113,13 +107,13 @@ public:
 
     LinkedList<NodeMQTTProperty> *getProperties();
 
-    void setProperty(uint16_t propertyId, uint8_t *propertyValue, uint8_t length);
+    void setProperty(uint16_t propertyId, const void *propertyValue, uint8_t length);
 
     void setIntProperty(uint16_t propertyId, int propertyValue);
 
     void setStringProperty(uint16_t propertyId, const char *propertyValue);
 
-    void setBoolProperty(uint16_t propertyId, uint8_t propertyValue);
+    void setBoolProperty(uint16_t propertyId, bool propertyValue);
 
     void setIPProperty(uint16_t propertyId, uint8_t propertyValue[4]);
 

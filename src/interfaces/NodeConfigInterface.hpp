@@ -98,7 +98,7 @@ inline JsonObject &NodeConfigInterface::toJSON(bool status, JsonObject &root) {
                 root[FPSTR(property.name)] = NodeMQTTConfigManager.getBoolProperty(property.id);
                 break;
             default:
-                root[FPSTR(property.name)] = NodeMQTTConfigManager.getProperty(property.id);
+//                root[FPSTR(property.name)] = NodeMQTTConfigManager.getProperty(property.id);
                 break;
         }
     }

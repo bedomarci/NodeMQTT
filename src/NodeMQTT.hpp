@@ -78,11 +78,11 @@ protected:
   static String _MQTTDeviceName;
 
   //BUILTIN INTERFACES
-  HeartbeatInterface *heartbeatInterface;
-  CommandInterface *commandInterface;
-  NodeConfigInterface *nodeConfigInterface;
-  LogInterface *logInterface;
-  BuzzerInterface *buzzerInterface;
+  HeartbeatInterface *heartbeatInterface = nullptr;
+  CommandInterface *commandInterface = nullptr;
+  NodeConfigInterface *nodeConfigInterface = nullptr;
+  LogInterface *logInterface = nullptr;
+  BuzzerInterface *buzzerInterface = nullptr;
 
 private:
   NodeMQTTCallback networkConnectingCallback;
