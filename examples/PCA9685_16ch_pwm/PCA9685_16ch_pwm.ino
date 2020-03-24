@@ -7,7 +7,7 @@ void boot();
 
 void pwmTest();
 
-NodeMQTT thisNode;
+NodeMQTT *thisNode;
 PCA9685Interface *pwmInterface;
 
 uint16_t pwmValue = 0;
@@ -15,14 +15,15 @@ uint16_t pwmValue = 0;
 Task tPWMTest(TASK_SECOND / 100, TASK_FOREVER, &pwmTest);
 
 void setup() {
+    thisNode = new NodeMQTT();
     Wire.begin();
 
     pwmInterface = new PCA9685Interface("pwm", &Wire);
 
-    thisNode.addInterface(pwmInterface);
-    thisNode.addTask(tPWMTest);
+    thisNode->addInterface(pwmInterface);
+    thisNode->addTask(tPWMTest);
     boot();
-    thisNode.begin();
+    thisNode->begin();
 }
 
 void pwmTest() {
@@ -36,7 +37,7 @@ void pwmTest() {
 }
 
 void loop() {
-    thisNode.handle();
+    thisNode->handle();
 }
 
 void boot() {

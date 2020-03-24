@@ -2,7 +2,7 @@
 #include <NodeMQTT.hpp>
 #include <interfaces/FiniteStateMachineInterface.hpp>
 
-NodeMQTT thisNode;
+NodeMQTT *thisNode;
 FiniteStateMachineInterface *fsm;
 
 void init();
@@ -13,18 +13,19 @@ void boot();
 
 void setup()
 {
+    thisNode = new NodeMQTT();
     fsm = new FiniteStateMachineInterface("control");
     fsm->addState("INIT", init, nullptr, nullptr, true);
     fsm->addState("UNLOCK", unlock);
     fsm->addState("DISABLE", disable);
     fsm->addState("MAINTAIN", maintain);
-    thisNode.begin();
+    thisNode->begin();
     boot();
 }
 
 void loop()
 {
-    thisNode.handle();
+    thisNode->handle();
 }
 void boot()
 {

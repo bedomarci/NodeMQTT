@@ -3,7 +3,7 @@
 #include <NodeMQTT.hpp>
 #include <BuzzerInterface.hpp>
 
-NodeMQTT thisNode;
+NodeMQTT *thisNode;
 
 #define BUZZERPIN 8
 
@@ -14,17 +14,17 @@ int i = 0;
 
 
 void setup() {
-    Serial.begin(115200);
+    thisNode = new NodeMQTT();
 
     buzzer->onChange(callback);
-    thisNode.addInterface(buzzer);
-    thisNode.setSystemBuzzer(buzzer);
+    thisNode->addInterface(buzzer);
+    thisNode->setSystemBuzzer(buzzer);
     
-    thisNode.begin();
+    thisNode->begin();
 }
 
 void loop() {
-    thisNode.handle();
+    thisNode->handle();
 }
 
 void callback(int oldVal, int newVal) {
