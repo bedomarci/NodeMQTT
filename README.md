@@ -32,5 +32,5 @@ NodeMQTT is an IoT platform for ESP8266 and ESP32 devices on Arduino platform. H
 ### v0.0.0
  - Initial Commit
  - Basic interface
-#TODOs
+# TODOs
  - secured connections

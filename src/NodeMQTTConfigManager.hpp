@@ -70,6 +70,8 @@ private:
 
     void loadPropertiesFromEEPROM();
 
+    bool isIdRegistered(uint16_t id);
+
 public:
     NodeMQTTConfigManagerClass();
 

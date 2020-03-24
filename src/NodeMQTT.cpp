@@ -23,15 +23,19 @@ NodeMQTT::NodeMQTT() {
     NodeMQTTCron.init(&_context);
     Logger.init(&_context);
 
-    printHeader(NodeMQTTIO);
     Logger.setFatalCallback([=]() { onFatalError(); });
     registerConfiguration();
-
 }
 
 void NodeMQTT::begin() {
     NodeMQTTConfigManager.load();
     loadConfiguration();
+
+    Logger.setLogging(this->isLogging);
+
+    if (this->isServiceMode) {
+        printHeader(NodeMQTTIO);
+    }
 
     Logger.logf(INFO, MSG_INTRODUCTION, this->baseTopic.c_str(), toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
     d(F("Initializing NodeMQTT"));
@@ -52,13 +56,12 @@ void NodeMQTT::begin() {
     _parser.setContext(&_context);
     _parser.setInterfaces(&interfaceList);
 
-    Logger.setLogging(this->isLogging);
-#ifdef NODEMQTT_SERVICE_MODE
-    this->isServiceMode = true;
-#endif
+
+//#ifdef NODEMQTT_SERVICE_MODE
+//    this->isServiceMode = true;
+//#endif
 
     if (this->isServiceMode)
-//        NodeMQTTConfigManager.print(_config);
         NodeMQTTConfigManager.print();
 
     this->addDefaultInterfaces();
@@ -257,11 +260,10 @@ ApplicationContext *NodeMQTT::getContext() {
 }
 
 void NodeMQTT::registerConfiguration() {
-    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_ONLINE, (const char *) ATTR_ONLINE, true);
-    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_SERVICEMODE, (const char *) ATTR_SERVICEMODE, true);
-    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_LOGGING, (const char *) ATTR_LOGGING, true);
     NodeMQTTConfigManager.registerStringProperty(PROP_SYS_BASETOPIC, (const char *) ATTR_BASETOPIC, DEFAULT_MQTT_BASE_TOPIC);
-
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_ONLINE, (const char *) ATTR_ONLINE, true);
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_LOGGING, (const char *) ATTR_LOGGING, true);
+    NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_SERVICEMODE, (const char *) ATTR_SERVICEMODE, true);
 }
 
 void NodeMQTT::loadConfiguration() {

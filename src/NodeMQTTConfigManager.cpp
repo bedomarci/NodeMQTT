@@ -15,7 +15,7 @@ uint8_t NodeMQTTConfigManagerClass::isEEPROMValid() {
 }
 
 uint32_t NodeMQTTConfigManagerClass::calculateEEPROMPropertyChkSum() {
-    uint16_t address  = EEPROM_PROPERTIES_ADDRESS;
+    uint16_t address = EEPROM_PROPERTIES_ADDRESS;
     uint32_t sum = 0;
     uint8_t length = 0;
     for (int i = 0; i < this->properties->size(); i++) {
@@ -42,10 +42,10 @@ void NodeMQTTConfigManagerClass::save() {
 
 void NodeMQTTConfigManagerClass::load() {
     EEPROM.begin(EEPROM_SIZE);
-    i(F("Loading configuration from EEPROM."));
     if (!isEEPROMValid())
         Logger.logf(ERROR, F("Broken data integrity in EEPROM! Configuration is still loaded. Please review properties and resave!"));
     loadPropertiesFromEEPROM();
+//    i(F("Loading configuration from EEPROM."));
     EEPROM.end();
 }
 
@@ -53,6 +53,10 @@ void NodeMQTTConfigManagerClass::load() {
 void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const char *propertyName, void *propertyDefaultValue, uint8_t length, NodeMQTTPropertyType type) {
     if (isLoaded) {
         e(F("Registering property after EEPROM load is prohibited! Move property registration before loading!"));
+        return;
+    }
+    if (isIdRegistered(propertyId)) {
+        Logger.logf(ERROR, F("Property ID #%d is already registered."), propertyId);
         return;
     }
     NodeMQTTProperty property = NodeMQTTProperty(propertyId, propertyName);
@@ -162,7 +166,6 @@ void NodeMQTTConfigManagerClass::print() {
             case MAC_PROPERTY:
                 printMac(NodeMQTTIO, property.value);
                 NodeMQTTIO.println();
-
                 break;
             case BYTE_PROPERTY:
             default:
@@ -210,7 +213,7 @@ void NodeMQTTConfigManagerClass::getEEPROMLocationById(uint16_t propertyId, uint
 
 NodeMQTTProperty NodeMQTTConfigManagerClass::getRAMPropertyById(uint16_t propertyId) {
     if (!isLoaded) {
-        e(F("Getting property before EEPROM load! Move getters after loading!"));
+        Logger.logf(ERROR, F("Getting property [id: %d] before EEPROM load! Move getters after loading!"), propertyId);
     }
     for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty property = this->properties->get(i);
@@ -283,6 +286,15 @@ void NodeMQTTConfigManagerClass::setProperty(uint16_t propertyId, const void *pr
             this->properties->set(i, property);
         }
     }
+}
+
+bool NodeMQTTConfigManagerClass::isIdRegistered(uint16_t id) {
+    bool registered = false;
+    for (int i = 0; i < this->properties->size(); i++) {
+        NodeMQTTProperty property = this->properties->get(i);
+        if (property.id == id) registered = true;
+    }
+    return registered;
 }
 
 //TODO duplikalt ID ellenorzes es hibauzenet

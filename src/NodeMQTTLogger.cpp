@@ -1,6 +1,5 @@
 #include "NodeMQTTLogger.hpp"
 #include "NodeMQTTIOContainer.hpp"
-#include "misc/typedef.hpp"
 #include <stdio.h>
 
 NodeMQTTLoggerClass::NodeMQTTLoggerClass()
@@ -36,10 +35,12 @@ int NodeMQTTLoggerClass::queueSize()
 
 void NodeMQTTLoggerClass::log(LOG_LEVEL level, String message)
 {
+    if (!_isLogging) return;
     log(level, message.c_str());
 }
 void NodeMQTTLoggerClass::logf(LOG_LEVEL level, String message, ...)
 {
+    if (!_isLogging) return;
     va_list arg;
     va_start(arg, message);
     logf(level, message.c_str(), arg);
@@ -47,6 +48,7 @@ void NodeMQTTLoggerClass::logf(LOG_LEVEL level, String message, ...)
 
 void NodeMQTTLoggerClass::log(LOG_LEVEL level, int value, uint8_t base)
 {
+    if (!_isLogging) return;
     char buffer[24];
     switch (base)
     {
@@ -66,11 +68,13 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, int value, uint8_t base)
 
 void NodeMQTTLoggerClass::log(LOG_LEVEL level, const __FlashStringHelper *message)
 {
+    if (!_isLogging) return;
     String msg = String(message);
     log(level, msg.c_str());
 }
 void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const __FlashStringHelper *message, ...)
 {
+    if (!_isLogging) return;
     va_list arg;
     va_start(arg, message);
     String msg = String(message);
@@ -78,6 +82,7 @@ void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const __FlashStringHelper *messa
 }
 void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, ...)
 {
+    if (!_isLogging) return;
     va_list arg;
     va_start(arg, message);
     logf(level, message, arg);
@@ -85,6 +90,7 @@ void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, ...)
 
 void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, va_list arg)
 {
+    if (!_isLogging) return;
     char temp[LOG_MAX_MESSAGE_LENGTH];
     char *buffer = temp;
     vsnprintf(temp, sizeof(temp), message, arg);
@@ -98,6 +104,7 @@ void NodeMQTTLoggerClass::logf(LOG_LEVEL level, const char *message, va_list arg
 
 void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
 {
+    if (!_isLogging) return;
     char buffer[LOG_MAX_MESSAGE_LENGTH];
 
     if (level == FATAL)
