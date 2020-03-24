@@ -18,7 +18,9 @@
         "atmelavr"
     ],
     "build": {
-        "flags": ""
+        "flags": [
+            "-D MQTT_MAX_PACKET_SIZE=1024"
+        ]
     },
     
     "dependencies": [

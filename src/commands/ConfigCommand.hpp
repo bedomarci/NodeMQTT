@@ -20,7 +20,7 @@ inline ConfigCommand::ConfigCommand(ApplicationContext *context) :  AbstractComm
 
 inline void ConfigCommand::handle()
 {
-    String topic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC) + "/" + CONFIG_TOPIC;
+    String topic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC) + "/" + CONFIG_SUB_TOPIC;
     getContext()->parser->parse(&topic[0], getCommandParameter());
 }
 

@@ -17,19 +17,21 @@ public:
 
     String valueToString();
 
-  protected:
-    virtual NodeMQTTConfig sample() override;
-    virtual NodeMQTTConfig fromJSON(JsonObject &rootObject) override;
-    virtual JsonObject &toJSON(NodeMQTTConfig value, JsonObject &root) override;
-    virtual int cmp(NodeMQTTConfig oldValue, NodeMQTTConfig newValue) override;
-    virtual void updatePhisicalInterface(NodeMQTTConfig newValue) override;
-    void parseIpAddress(char *strIp, uint8_t ip[4]);
-    void parseMacAddress(char *strMac, uint8_t mac[6]);
+protected:
+    virtual bool sample() override;
+
+    virtual bool fromJSON(JsonObject &rootObject) override;
+
+    virtual JsonObject &toJSON(bool value, JsonObject &root) override;
+
+    virtual int cmp(bool oldValue, bool newValue) override;
+
+    virtual void updatePhisicalInterface(bool newValue) override;
 };
 
 inline NodeConfigInterface::NodeConfigInterface()
-        : NodeInterface<bool>(CONFIG_TOPIC_ECHO, CONFIG_TOPIC) {
-    _interfaceName = CONFIG_TOPIC;
+        : NodeInterface<bool>(CONFIG_PUB_TOPIC, CONFIG_SUB_TOPIC) {
+    setInterfaceName(CONFIG_NAME);
     setSamplingEnabled(false);
     setMQTTSubscribe(true);
     setMQTTPublish(true);

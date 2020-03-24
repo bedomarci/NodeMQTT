@@ -26,15 +26,15 @@
 #include <ESP.h>
 #include <WiFiUdp.h>
 #define UDP WiFiUDP
-typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
-typedef std::function<void()> NodeMQTTCallback;
-typedef std::function<void(const char *)> NodeMQTTStringCallback;
-#define NodeMQTTChangeCallback std::function<void(T, T)>
+//typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
+//typedef std::function<void()> NodeMQTTCallback;
+//typedef std::function<void(const char *)> NodeMQTTStringCallback;
+//#define NodeMQTTChangeCallback std::function<void(T, T)>
 #else
-typedef void (*NodeMQTTMessageCallback)(char *, uint8_t *, unsigned int);
-typedef void (*NodeMQTTCallback)();
-typedef void (*NodeMQTTStringCallback)(const char *);
-#define NodeMQTTChangeCallback void (*)(T, T)
+//typedef void (*NodeMQTTMessageCallback)(char *, uint8_t *, unsigned int);
+//typedef void (*NodeMQTTCallback)();
+//typedef void (*NodeMQTTStringCallback)(const char *);
+//#define NodeMQTTChangeCallback void (*)(T, T)
 #define FPSTR(x) x
 #define F(x) x
 #endif
@@ -166,6 +166,10 @@ extern const char PCF8574InterfaceName[] PROGMEM;
 
 extern const char commandInterfaceName[] PROGMEM;
 #define COMMAND_NAME FPSTR(commandInterfaceName)
+
+extern const char configInterfaceName[] PROGMEM;
+#define CONFIG_NAME FPSTR(configInterfaceName)
+
 extern const char interfaceName[] PROGMEM;
 #define INTERFACE_NAME FPSTR(interfaceName)
 
