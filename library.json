@@ -49,12 +49,6 @@
             "name": "JC_Button"
         },
         {
-            "name": "NTPClient"
-        },
-        {
-            "name": "DFRobotDFPlayerMini"
-        },
-        {
             "name": "ccronexpr",
             "platforms": "espressif8266",
             "repository": {
