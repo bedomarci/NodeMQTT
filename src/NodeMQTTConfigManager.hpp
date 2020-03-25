@@ -3,6 +3,7 @@
 
 #include "misc/config.hpp"
 #include "misc/typedefDeclaration.hpp"
+#include <misc/NodeMQTTComponent.hpp>
 #include "constants.hpp"
 #include "misc/helpers.hpp"
 #include "LinkedList.h"
@@ -37,18 +38,10 @@ struct NodeMQTTProperty {
               isStored(0) {};
 };
 
-class NodeMQTTConfigManagerClass {
+class NodeMQTTConfigManagerClass : public NodeMQTTComponent {
 private:
 
-    void EEPROMWriteChkSum(uint32_t chksum);
-
-//    void setStaticFlagDefaultValues();
-
-    uint32_t EEPROMReadChkSum();
-
     void printAttributeWithTab(String s);
-
-    bool isValid();
 
     void commit();
 
@@ -74,6 +67,10 @@ private:
 
 public:
     NodeMQTTConfigManagerClass();
+
+    void boot() override;
+
+    void init() override;
 
     void save();
 

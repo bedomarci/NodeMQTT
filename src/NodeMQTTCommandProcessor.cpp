@@ -1,5 +1,5 @@
 #include "NodeMQTTCommandProcessor.hpp"
-#include "NodeMQTTIOContainer.hpp"
+#include "misc/typedef.hpp"
 
 #include "commands/RestartCommand.hpp"
 #include "commands/HelpCommand.hpp"
@@ -9,12 +9,14 @@
 #include "commands/StateCommand.hpp"
 #include "commands/FactoryResetCommand.hpp"
 #include "commands/UpdateCommand.hpp"
-#include "misc/helpers.hpp"
 
-void NodeMQTTCommandProcessorClass::init(ApplicationContext *context)
+void NodeMQTTCommandProcessorClass::init()
 {
-    _context = context;
     loadDefaultCommands();
+}
+
+void NodeMQTTCommandProcessorClass::boot() {
+
 }
 void NodeMQTTCommandProcessorClass::registerCommand(AbstractCommand *command)
 {
@@ -54,18 +56,19 @@ void NodeMQTTCommandProcessorClass::execute(const char *command)
 
 void NodeMQTTCommandProcessorClass::loadDefaultCommands()
 {
-    this->registerCommand(new HelpCommand(_context));
-    this->registerCommand(new WhoAmICommand(_context));
-    this->registerCommand(new RestartCommand(_context));
-    this->registerCommand(new ConfigCommand(_context));
-    this->registerCommand(new FactoryResetCommand(_context));
-    this->registerCommand(new PollCommand(_context));
-    this->registerCommand(new StateCommand(_context));
-    this->registerCommand(new UpdateCommand(_context));
+    this->registerCommand(new HelpCommand(getContext()));
+    this->registerCommand(new WhoAmICommand(getContext()));
+    this->registerCommand(new RestartCommand(getContext()));
+    this->registerCommand(new ConfigCommand(getContext()));
+    this->registerCommand(new FactoryResetCommand(getContext()));
+    this->registerCommand(new PollCommand(getContext()));
+    this->registerCommand(new StateCommand(getContext()));
+    this->registerCommand(new UpdateCommand(getContext()));
 }
 
 LinkedList<AbstractCommand*> * NodeMQTTCommandProcessorClass::getCommands() {
     return &commands;
 }
+
 
 NodeMQTTCommandProcessorClass NodeMQTTCommandProcessor;

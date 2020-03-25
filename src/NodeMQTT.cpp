@@ -1,8 +1,4 @@
 #include "NodeMQTT.hpp"
-#include "constants.hpp"
-#include "misc/helpers.hpp"
-#include "NodeMQTTCommandProcessor.hpp"
-#include "NodeMQTTConfigManager.hpp"
 #include "NodeMQTTUpdateManager.hpp"
 #include "NodeMQTTScheduler.hpp"
 #include "NodeMQTTCron.hpp"
@@ -16,13 +12,7 @@ NodeMQTT::NodeMQTT() {
     _context.transport = &_transport;
     _context.parser = &_parser;
     _context.interfaces = &interfaceList;
-
-    NodeMQTTIO.init(&_context);
-    NodeMQTTCommandProcessor.init(&_context);
-    NodeMQTTScheduler.init(&_context);
-    NodeMQTTCron.init(&_context);
-    Logger.init(&_context);
-
+    bootComponents();
     Logger.setFatalCallback([=]() { onFatalError(); });
     registerConfiguration();
 }
@@ -30,6 +20,7 @@ NodeMQTT::NodeMQTT() {
 void NodeMQTT::begin() {
     NodeMQTTConfigManager.load();
     loadConfiguration();
+    initializeComponents();
 
     Logger.setLogging(this->isLogging);
 
@@ -178,7 +169,7 @@ void NodeMQTT::onNetworkConnecting() {
 void NodeMQTT::onNetworkConnected() {
 
 #ifdef WIFI_TRANSPORT
-    NodeMQTTUpdateManager.init(getContext());
+    NodeMQTTUpdateManager.init();
     ntpTime.init(getContext());
 #endif
     if (networkConnectedCallback != nullptr)
@@ -273,5 +264,41 @@ void NodeMQTT::loadConfiguration() {
     this->isServiceMode = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_SERVICEMODE);
 
 }
+
+void NodeMQTT::bootComponents() {
+    NodeMQTTIO.setContext(getContext());
+    NodeMQTTIO.boot();
+
+    Logger.setContext(getContext());
+    Logger.boot();
+
+    NodeMQTTConfigManager.setContext(getContext());
+    NodeMQTTConfigManager.boot();
+
+    NodeMQTTCommandProcessor.setContext(getContext());
+    NodeMQTTCommandProcessor.boot();
+
+    NodeMQTTScheduler.setContext(getContext());
+    NodeMQTTScheduler.boot();
+
+    NodeMQTTCron.setContext(getContext());
+    NodeMQTTCron.boot();
+
+    NodeMQTTUpdateManager.setContext(getContext());
+    NodeMQTTUpdateManager.boot();
+}
+
+void NodeMQTT::initializeComponents() {
+//    NodeMQTTUpdateManager.boot();
+
+
+    NodeMQTTConfigManager.init();
+    NodeMQTTIO.init();
+    NodeMQTTCommandProcessor.init();
+    NodeMQTTScheduler.init();
+    NodeMQTTCron.init();
+    Logger.init();
+}
+
 
 

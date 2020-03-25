@@ -6,9 +6,10 @@
 #include "misc/config.hpp"
 #include "constants.hpp"
 #include "misc/helpers.hpp"
+#include "misc/NodeMQTTComponent.hpp"
 
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
   #include <ArduinoOTA.h>
 #endif
 
@@ -24,22 +25,23 @@
 #include <HTTPUpdate.h>
 #endif
 
-class NodeMQTTUpdateManagerClass
-{
-#if defined(ESP8266) || defined(ESP32)
+class NodeMQTTUpdateManagerClass : public NodeMQTTComponent {
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 protected:
-  const char *fwUrlBase = FIRMWARE_URL_BASE;
+    String fwUrlBase = DEFAULT_FIRMWARE_URL;
   HTTPClient httpClient;
   CLIENT_CLASS client;
   void onOTAStart();
   void onOTAEnd();
   void onOTAError(ota_error_t error);
   void onOTAProgress(unsigned int progress, unsigned int total);
-  ApplicationContext *_context;
 
 public:
   NodeMQTTUpdateManagerClass();
-  void init(ApplicationContext *context);
+
+    void init() override;
+
+    void boot() override;
   void checkForUpdates();
   void checkForUpload();
 #endif

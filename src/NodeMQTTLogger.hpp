@@ -6,6 +6,7 @@
 #include <LinkedList.h>
 #include <stdio.h>
 #include "misc/config.hpp"
+#include "misc/NodeMQTTComponent.hpp"
 #include "misc/typedefDeclaration.hpp"
 #include "constants.hpp"
 
@@ -18,11 +19,15 @@ enum LOG_LEVEL
   FATAL = 'F',
 };
 
-class NodeMQTTLoggerClass
+class NodeMQTTLoggerClass : public NodeMQTTComponent
 {
 
 public:
   NodeMQTTLoggerClass();
+
+    void init() override;
+
+    void boot() override;
   void log(LOG_LEVEL level, const char *message);
   void logf(LOG_LEVEL level, const char *message, ...);
   void log(LOG_LEVEL level, const __FlashStringHelper *message);
@@ -34,7 +39,6 @@ public:
   void setLogging(bool isLogging);
   int queueSize();
   String pop();
-  void init(ApplicationContext * context);
 
 protected:
   void logf(LOG_LEVEL level, const char *message, va_list arg);
@@ -44,7 +48,6 @@ protected:
   uint8_t _queueLength = LOG_MAX_QUEUE_LENGTH;
   NodeMQTTCallback fatalCallback;
   bool _isLogging = true;
-  ApplicationContext * _context;
 };
 
 extern NodeMQTTLoggerClass Logger;

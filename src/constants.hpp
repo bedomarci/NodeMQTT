@@ -6,13 +6,13 @@
 
 //PLATFORM SPECIFIC INCLUDES
 
-#if defined(ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266)
 #include <ESP8266WiFi.h>
 #define SERVER_CLASS WiFiServer
 #define CLIENT_CLASS WiFiClient
 #define UPDATE ESPhttpUpdate
 #endif
-#if defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
 #include <esp_wifi.h>
 #define SERVER_CLASS WiFiServer
@@ -20,9 +20,7 @@
 #define UPDATE httpUpdate
 #endif
 
-#if defined(ESP8266) || defined(ESP32)
-#define _TASK_STD_FUNCTION
-#include <functional>
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #include <ESP.h>
 #include <WiFiUdp.h>
 #define UDP WiFiUDP
@@ -40,13 +38,11 @@
 #endif
 
 
-
-
-#if defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP32)
 #define PWMRANGE 1023
 #endif
 
-#if defined(ESP8266)
+#if defined(ARDUINO_ARCH_ESP8266)
 #endif
 
 template <typename T, unsigned int LENGTH>
@@ -209,6 +205,10 @@ extern const char configAttribute_mqttPort[] PROGMEM;
 #define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
 extern const char configAttribute_timezone[] PROGMEM;
 #define ATTR_TIMEZONE FPSTR(configAttribute_timezone)
+extern const char configAttribute_firmwareUrl[] PROGMEM;
+#define ATTR_FWURL FPSTR(configAttribute_firmwareUrl)
+
+
 
 //MESSAGES
 extern const char message_Introduction[] PROGMEM;
@@ -240,6 +240,7 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define PROP_SYS_ONLINE 1001
 #define PROP_SYS_LOGGING 1002
 #define PROP_SYS_TIMEZONE 1003
+#define PROP_SYS_FWURL 1004
 
 #define PROP_WIFI_SSID 2000
 #define PROP_WIFI_BSSID 2001

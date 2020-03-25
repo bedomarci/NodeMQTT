@@ -190,7 +190,7 @@ LinkedList<NodeMQTTProperty> *NodeMQTTConfigManagerClass::getProperties() {
 }
 
 void NodeMQTTConfigManagerClass::commit() {
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
     EEPROM.commit();
 #endif
 }
@@ -297,6 +297,12 @@ bool NodeMQTTConfigManagerClass::isIdRegistered(uint16_t id) {
     return registered;
 }
 
-//TODO duplikalt ID ellenorzes es hibauzenet
+void NodeMQTTConfigManagerClass::boot() {
+
+}
+
+void NodeMQTTConfigManagerClass::init() {
+
+}
 
 NodeMQTTConfigManagerClass NodeMQTTConfigManager;

@@ -8,7 +8,8 @@ class TelnetIO : public AbstractIO
 {
   public:
     TelnetIO();
-    void init(ApplicationContext *context) override;
+
+    void boot(ApplicationContext *context) override;
     size_t write(uint8_t c) override;
 
   protected:
@@ -47,13 +48,13 @@ inline size_t TelnetIO::write(uint8_t c) {
 }
 
 
-inline void TelnetIO::init(ApplicationContext *context)
+inline void TelnetIO::boot(ApplicationContext *context)
 {
     telnetServer = new SERVER_CLASS(TELNET_SERVER_PORT);
     //TODO: telnet begin must be called after transport setup. otherwise ESP32 fails on boot. event handler is required.
     telnetServer->begin();
     telnetServer->setNoDelay(true);
-    AbstractIO::init(context);
+    AbstractIO::boot(context);
     loop();
 }
 

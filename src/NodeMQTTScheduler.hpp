@@ -6,13 +6,17 @@
 #include "misc/config.hpp"
 #include "constants.hpp"
 #include "misc/typedefDeclaration.hpp"
+#include "misc/NodeMQTTComponent.hpp"
 #include <TaskSchedulerDeclarations.h>
 
-class NodeMQTTSchedulerClass
+class NodeMQTTSchedulerClass : public NodeMQTTComponent
 {
 public:
     NodeMQTTSchedulerClass();
-    void init(ApplicationContext *context);
+
+    void init() override;
+
+    void boot() override;
     void runDelayed(NodeMQTTCallback callback, uint32_t delay);
 
 protected:
@@ -22,7 +26,6 @@ protected:
     void prepareNextTask();
 
     LinkedList<NodeMQTTScheduledTask> *tasks;
-    ApplicationContext *_context;
     NodeMQTTCallback nextTaskCb = nullptr;
     time_t nextTaskExecution;
     uint8_t nextTaskId;

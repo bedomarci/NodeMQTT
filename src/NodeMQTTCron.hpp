@@ -5,28 +5,37 @@
 #ifndef NODEMQTT_NODEMQTTCRON_HPP
 #define NODEMQTT_NODEMQTTCRON_HPP
 
-#include "misc/typedef.hpp"
+#include "misc/NodeMQTTComponent.hpp"
 #include "constants.hpp"
+#include "misc/config.hpp"
 #include "LinkedList.h"
 #include <ctime>
+
 extern "C" {
-    #include "ccronexpr.h"
+#include "ccronexpr.h"
 }
 
 #include <TaskSchedulerDeclarations.h>
 
-class NodeMQTTCronClass {
+class NodeMQTTCronClass : public NodeMQTTComponent {
 public:
     NodeMQTTCronClass();
-    void init(ApplicationContext* context);
-    void create(const char * cronString, NodeMQTTCallback job);
+
+    void init() override;
+
+    void boot() override;
+
+    void create(const char *cronString, NodeMQTTCallback job);
 
 protected:
-    ApplicationContext *_context;
     LinkedList<NodeMQTTCronJob> *jobs;
+
     time_t calculateNextExecution(NodeMQTTCronJob job);
+
     cron_expr expressionBuffer;
+
     void loop();
+
     Task _tLoop;
 };
 

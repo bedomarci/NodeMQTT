@@ -79,6 +79,7 @@ const char configAttribute_isServiceMode[] PROGMEM = "service";
 const char configAttribute_mqttPort[] PROGMEM = "mqttprt";
 const char configAttribute_isLogging[] PROGMEM = "logging";
 const char configAttribute_timezone[] PROGMEM = "timezone";
+const char configAttribute_firmwareUrl[] PROGMEM = "fwurl";
 
 //MESSAGES
 const char message_Introduction[] PROGMEM = "Hello! I am %s. (build time: %s, unix: %d)";

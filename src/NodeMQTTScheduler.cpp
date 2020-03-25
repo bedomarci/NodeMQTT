@@ -8,8 +8,7 @@ NodeMQTTSchedulerClass::NodeMQTTSchedulerClass() {
     tasks = new LinkedList<NodeMQTTScheduledTask>();
 }
 
-void NodeMQTTSchedulerClass::init(ApplicationContext *context) {
-    _context = context;
+void NodeMQTTSchedulerClass::init() {
     executor = new Task(TASK_IMMEDIATE, TASK_ONCE);
     executor->setCallback([=]() {
         if (this->nextTaskCb) {
@@ -20,8 +19,13 @@ void NodeMQTTSchedulerClass::init(ApplicationContext *context) {
             this->prepareNextTask();
         }
     });
-    this->_context->scheduler->addTask(*executor);
+    this->getContext()->scheduler->addTask(*executor);
 }
+
+void NodeMQTTSchedulerClass::boot() {
+
+}
+
 
 void NodeMQTTSchedulerClass::runDelayed(NodeMQTTCallback callback, uint32_t delay) {
     NodeMQTTScheduledTask thisTask = NodeMQTTScheduledTask();

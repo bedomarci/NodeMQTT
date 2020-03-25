@@ -7,9 +7,12 @@ NodeMQTTLoggerClass::NodeMQTTLoggerClass()
     logQueue = LinkedList<String>();
 }
 
+void NodeMQTTLoggerClass::init() {
 
-void NodeMQTTLoggerClass::init(ApplicationContext * context) {
-    _context = context;
+}
+
+void NodeMQTTLoggerClass::boot() {
+
 }
 
 void NodeMQTTLoggerClass::setLogging(bool isLogging)
@@ -109,10 +112,10 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
 
     if (level == FATAL)
         onFatal();
-    if (_context && !_context->currentTime) {
+    if (getContext() && !getContext()->currentTime) {
         sprintf(buffer, LOG_FORMAT_MILLIS, level, millis(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str());
     } else {
-        sprintf(buffer, LOG_FORMAT_NTP, level, toTimeString(_context->currentTime).c_str(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str()); //-3 will make room for dots
+        sprintf(buffer, LOG_FORMAT_NTP, level, toTimeString(getContext()->currentTime).c_str(), String(message).substring(0, LOG_MAX_PRINT_LENGTH).c_str()); //-3 will make room for dots
     }
     String formattedMessage = String(buffer);
     if ((level != DEBUG && !_isLogging) || _isLogging) {
@@ -134,5 +137,6 @@ void NodeMQTTLoggerClass::onFatal()
     if (fatalCallback != nullptr)
         fatalCallback();
 }
+
 
 NodeMQTTLoggerClass Logger;
