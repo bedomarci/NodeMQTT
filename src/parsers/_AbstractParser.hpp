@@ -1,7 +1,6 @@
 #ifndef ABSTRACTPARSER_H
 #define ABSTRACTPARSER_H
 #include "../misc/helpers.hpp"
-
 #include "../misc/typedefDeclaration.hpp"
 
 class AbstractParser {

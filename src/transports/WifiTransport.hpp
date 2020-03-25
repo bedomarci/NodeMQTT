@@ -96,7 +96,7 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     WiFi.persistent(false);
     this->setSleepMode();
 
-    //TODO: move wifi setup to init()
+    //TODO: move wifi setup to boot()
 
     // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
 

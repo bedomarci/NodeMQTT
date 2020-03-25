@@ -3,8 +3,10 @@
 
 #include "config.hpp"
 #include "typedefDeclaration.hpp"
+#include <functional>
 //#include "../constants.hpp"
 #include <LinkedList.h>
+//#include <TaskScheduler.h>
 
 extern "C" {
 #include <ccronexpr.h>
@@ -15,7 +17,7 @@ class Scheduler;
 
 struct ApplicationContext;
 
-//#if defined(ESP8266) || defined(ESP32)
+//#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 //typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
 //typedef std::function<void()> NodeMQTTCallback;
 //typedef std::function<void(const char *)> NodeMQTTStringCallback;

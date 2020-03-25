@@ -55,7 +55,7 @@ inline void HeartbeatInterface::init()
 inline NodeStatus HeartbeatInterface::sample()
 {
     status.uptime = millis();
-    #if defined(ESP32) || defined(ESP8266)
+#if defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)
         status.freeHeap = ESP.getFreeHeap();
     #endif
     strcpy(status.networkAddress, this->getContext()->transport->getNetworkAddressString().c_str());

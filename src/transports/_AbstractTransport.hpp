@@ -1,10 +1,5 @@
 #ifndef ABSTRACTTRANSPORT_H
 #define ABSTRACTTRANSPORT_H
-// #include "../NodeMQTTConfigManager.hpp"
-// #include "../misc/helpers.hpp"
-// // #include "../misc/typedef.hpp"
-// #include "TaskScheduler.h"
-// #include "../NodeMQTT.hpp"
 #include "../constants.hpp"
 #include "../misc/typedefDeclaration.hpp"
 #include "Client.h"
@@ -56,85 +51,4 @@ class AbstractTransport
     NodeMQTTCallback brokerConnectedCallback;
     NodeMQTTCallback brokerDisconnectedCallback;
 };
-
-/*
-inline void AbstractTransport::setContext(ApplicationContext *context) {
-    _context = context;
-}
-inline Scheduler *AbstractTransport::getScheduler()
-{
-    return _context->scheduler;
-}
-inline NodeMQTTConfig *AbstractTransport::getConfiguration()
-{
-    return _context->configuration;
-}
-inline void AbstractTransport::setNetworkConnectingCallback(NodeMQTTCallback cb)
-{
-    networkConnectingCallback = cb;
-}
-inline void AbstractTransport::setNetworkConnectedCallback(NodeMQTTCallback cb)
-{
-    networkConnectedCallback = cb;
-}
-inline void AbstractTransport::setNetworkDisconnectedCallback(NodeMQTTCallback cb)
-{
-    networkDisconnectedCallback = cb;
-}
-inline void AbstractTransport::setBrokerConnectingCallback(NodeMQTTCallback cb)
-{
-    brokerConnectingCallback = cb;
-}
-inline void AbstractTransport::setBrokerConnectedCallback(NodeMQTTCallback cb)
-{
-    brokerConnectedCallback = cb;
-}
-inline void AbstractTransport::setBrokerDisconnectedCallback(NodeMQTTCallback cb)
-{
-    brokerDisconnectedCallback = cb;
-}
-inline void AbstractTransport::setMessageCallback(NodeMQTTMessageCallback cb)
-{
-    messageCallback = cb;
-}
-inline void AbstractTransport::onNetworkConnecting()
-{
-    if (networkConnectingCallback != nullptr)
-        networkConnectingCallback();
-}
-inline void AbstractTransport::onNetworkConnected()
-{
-    if (networkConnectedCallback != nullptr)
-        networkConnectedCallback();
-}
-inline void AbstractTransport::onNetworkDisconnected()
-{
-    if (networkDisconnectedCallback != nullptr)
-        networkDisconnectedCallback();
-}
-inline void AbstractTransport::onBrokerConnecting()
-{
-    if (brokerConnectingCallback != nullptr)
-        brokerConnectingCallback();
-}
-inline void AbstractTransport::onBrokerConnected()
-{
-    if (brokerConnectedCallback != nullptr)
-        brokerConnectedCallback();
-}
-inline void AbstractTransport::onBrokerDisconnected()
-{
-    if (brokerDisconnectedCallback != nullptr)
-        brokerDisconnectedCallback();
-}
-inline void AbstractTransport::onMessage(char *topic, uint8_t *payload, unsigned int length)
-{
-    if (messageCallback != nullptr)
-        messageCallback(topic, payload, length);
-}
-
-inline String AbstractTransport::getState() {
-    return "TRANSPORT STATE N/A";
-}
-*/
 #endif //ABSTRACTTRANSPORT_H

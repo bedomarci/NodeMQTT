@@ -2,39 +2,45 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#if defined(ESP8266)
-    #include <ESP8266WiFi.h>
-    #define TELNET_SERVER_CLASS WiFiServer
-    #define TELNET_CLIENT_CLASS WiFiClient
+#if defined(ARDUINO_ARCH_ESP8266)
+#include <ESP8266WiFi.h>
+#define TELNET_SERVER_CLASS WiFiServer
+#define TELNET_CLIENT_CLASS WiFiClient
 #endif
-#if defined(ESP32)
-    #include <WiFi.h>
+#if defined(ARDUINO_ARCH_ESP32)
+
+#include <WiFi.h>
 #endif
 
 //TASK SCHEDULER CONFIGURATION
-
 #ifdef _TASKSCHEDULER_H_
 #error Must include NodeMQTT.hpp before TaskScheduler.h!
 #include <stophere>
 #endif
-#if defined(ESP32) || defined(ESP8266)
+#if (defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)) && !defined(_TASK_STD_FUNCTION)
 #define _TASK_STD_FUNCTION
-#endif
-// #define _TASK_MICRO_RES
-// #include <TaskScheduler.h>
 
+#include <functional>
+
+#endif
+
+#ifndef NODEMQTT_SERIAL_SPEED
 #define NODEMQTT_SERIAL_SPEED 115200
-#define NODEMQTT_MAX_PACKET_SIZE 1024 //140
+#endif
+
+#ifndef SERIAL_BUFFER_SIZE
 #define SERIAL_BUFFER_SIZE 512
+#endif
+
+#ifndef TELNET_BUFFER_SIZE
 #define TELNET_BUFFER_SIZE 256
+#endif
 
 #define JSON_DOCUMENT_SIZE 2048
 #define PWM_FREQ 5000
 #define PWM_RESOLUTION 10
 
 #define MQTT_CONNECT_ATTEMPT_WAITING 15 * TASK_SECOND //
-#define MQTT_SOCKET_TIMEOUT 1                         // MQTT_SOCKET_TIMEOUT: socket timeout interval in Seconds
-#define SERIAL_READ_INTERVAL 2 * TASK_SECOND
 
 #define LOG_MAX_MESSAGE_LENGTH 128
 #define LOG_PREFIX_LENGTH 18
@@ -70,15 +76,15 @@
 #endif
 
 #if (NODEMQTT_TRANSPORT == RF_TRANSPORT)
-    #define TRANSPORT_CLASS RF24Transport
+#define TRANSPORT_CLASS RF24Transport
 #endif
 
 #if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
-    #define TRANSPORT_CLASS WifiTransport
+#define TRANSPORT_CLASS WifiTransport
 #endif
 
 #if (NODEMQTT_TRANSPORT == NULL_TRANSPORT)
-    #define TRANSPORT_CLASS NullTransport
+#define TRANSPORT_CLASS NullTransport
 #endif
 
 //RF24 CONFIGURATION
@@ -101,7 +107,7 @@
 #define IO_TELNET true
 #endif
 
-#if defined(ESP32) && !defined(IO_BLUETOOTH)
+#if defined(ARDUINO_ARCH_ESP32) && !defined(IO_BLUETOOTH)
 #define IO_BLUETOOTH true
 #endif
 
@@ -133,31 +139,19 @@
 #endif
 
 #ifndef DEFAULT_WIFI_BSSID
-#define DEFAULT_WIFI_BSSID \
-    {                      \
-        0, 0, 0, 0, 0, 0   \
-    }
+#define DEFAULT_WIFI_BSSID  {0, 0, 0, 0, 0, 0}
 #endif
 
 #ifndef DEFAULT_IP_ADDRESS
-#define DEFAULT_IP_ADDRESS \
-    {                      \
-        0, 0, 0, 0         \
-    }
+#define DEFAULT_IP_ADDRESS  {0, 0, 0, 0}
 #endif
 
 #ifndef DEFAULT_GATEWAY
-#define DEFAULT_GATEWAY \
-    {                   \
-        192, 168, 0, 1  \
-    }
+#define DEFAULT_GATEWAY     {192, 168, 0, 1}
 #endif
 
 #ifndef DEFAULT_SUBNET
-#define DEFAULT_SUBNET   \
-    {                    \
-        255, 255, 255, 0 \
-    }
+#define DEFAULT_SUBNET      {255, 255, 255, 0}
 #endif
 
 #ifndef DEFAULT_WIFI_CHANNEL
@@ -188,10 +182,6 @@
 #define DEFAULT_MQTT_BASE_TOPIC "unnamed_device"
 #endif
 
-#ifndef DEFAULT_CONFIGURATION_VERSION
-#define DEFAULT_CONFIGURATION_VERSION 11
-#endif
-
 #ifndef DEFAULT_ISONLINE
 #define DEFAULT_ISONLINE true
 #endif
@@ -206,8 +196,6 @@
 
 //FIRMWARE OTA UPDATE
 
-// #define FIRMWARE_URL_BASE "http://192.168.0.1/fota/"
-#define FIRMWARE_URL_BASE "http://192.168.15.121:3000/fota/"
-
+#define DEFAULT_FIRMWARE_URL "http://192.168.0.1/fota/"
 
 #endif //define CONFIG_H

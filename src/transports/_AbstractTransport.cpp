@@ -2,9 +2,6 @@
 #include "_AbstractTransport.hpp"
 #include "../misc/typedef.hpp"
 
-#include "../misc/helpers.hpp"
-#include "TaskSchedulerDeclarations.h"
-
 void AbstractTransport::setContext(ApplicationContext *context) {
     _context = context;
 }

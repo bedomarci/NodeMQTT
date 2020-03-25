@@ -9,11 +9,11 @@
 #include <Arduino.h>
 #include <LinkedList.h>
 #include <ArduinoJson.h>
-#include <TaskScheduler.h>
 #include "misc/typedef.hpp"
 #include "transports/_AbstractTransport.hpp"
 #include "parsers/_AbstractParser.hpp"
 #include "../NodeMQTTLogger.hpp"
+#include <TaskScheduler.h>
 
 
 template<typename T>

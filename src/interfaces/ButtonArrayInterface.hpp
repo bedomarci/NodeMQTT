@@ -59,7 +59,7 @@ inline void ButtonArrayInterface<LENGTH>::release(uint16_t index)
 template <uint8_t LENGTH>
 inline void ButtonArrayInterface<LENGTH>::init()
 {
-    // IntegerInterface::init();
+    // IntegerInterface::boot();
 }
 
 #endif //BUTTONARAYINTERFACE_H

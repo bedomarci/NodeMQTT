@@ -1,11 +1,11 @@
 #ifndef NTPTIME_H
 #define NTPTIME_H
 
-#include "TaskSchedulerDeclarations.h"
 #include "../typedef.hpp"
 #include "../config.hpp"
 #include "../helpers.hpp"
 #include "time_macros.hpp"
+#include "TaskSchedulerDeclarations.h"
 
 
 #define NTP_PACKET_SIZE 48
