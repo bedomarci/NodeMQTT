@@ -2,7 +2,7 @@
 #define ABSTRACTCOMMAND_H
 
 #include <Arduino.h>
-#include "../misc/typedef.hpp"
+#include "../misc/typedefDeclaration.hpp"
 #include "parsers/_AbstractParser.hpp"
 
 struct ApplicationContext;
@@ -25,28 +25,5 @@ private:
   const char * _commandParameter;
   ApplicationContext *_context;
 };
-
-inline AbstractCommand::AbstractCommand(ApplicationContext *context)
-{
-  _context = context;
-}
-
-inline void AbstractCommand::setCommandWord( const char * commandWord) {
-    _commandWord = commandWord;
-}
-inline const char * AbstractCommand::getCommandWord() {
-    return  _commandWord;
-}
-
-inline void AbstractCommand::setCommandParameter(const char * commandParameter) {
-    _commandParameter = commandParameter;
-}
-inline const char * AbstractCommand::getCommandParameter() {
-    return  _commandParameter;
-}
-
-inline ApplicationContext * AbstractCommand::getContext() {
-    return _context;
-}
 
 #endif //ABSTRACTCOMMAND_H
