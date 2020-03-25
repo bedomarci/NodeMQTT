@@ -127,7 +127,7 @@ void NodeMQTTConfigManagerClass::printAttributeWithTab(String s) {
     NodeMQTTIO.print(s);
     NodeMQTTIO.print(TERMINAL_TAB);
     NodeMQTTIO.print(TERMINAL_TAB);
-    if (s.length() < 8) {
+    if (s.length() <= 9) {
         NodeMQTTIO.print(TERMINAL_TAB);
     }
 }

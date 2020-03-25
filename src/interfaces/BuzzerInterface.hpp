@@ -42,7 +42,7 @@ inline BuzzerInterface::BuzzerInterface(String topic, uint8_t buzzerPin) : DataI
     setSamplingEnabled(false);
     setMQTTPublish(false);
     pinMode(buzzerPin, OUTPUT);
-    _noteTask.set(TASK_IMMEDIATE, TASK_FOREVER, PLAYER_CALLBACK, 0, DISABLE_CALLBACK);
+    _noteTask.set(TASK_MILLISECOND, TASK_FOREVER, PLAYER_CALLBACK, 0, DISABLE_CALLBACK);
     _interfaceName = BUZZER_NAME;
 }
 
