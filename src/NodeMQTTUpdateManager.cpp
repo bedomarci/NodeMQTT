@@ -1,6 +1,7 @@
 #include "NodeMQTTUpdateManager.hpp"
 #include "misc/helpers.hpp"
 #include "misc/typedef.hpp"
+#include "NodeMQTTEventHandler.hpp"
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
@@ -15,7 +16,14 @@ void NodeMQTTUpdateManagerClass::init() {
     this->fwUrlBase = NodeMQTTConfigManager.getStringProperty(PROP_SYS_FWURL);
     ArduinoOTA.setPassword(NodeMQTTConfigManager.getStringProperty(PROP_MQTT_PASSWORD).c_str());
     ArduinoOTA.setHostname(String(String(UUID) + "-" + NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC)).c_str());
-    ArduinoOTA.begin();
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_CONNECTED, [=]() {
+        ArduinoOTA.begin();
+    });
+#ifdef ARDUINO_ARCH_ESP32
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [=]() {
+        ArduinoOTA.end();
+    });
+#endif
 }
 
 void NodeMQTTUpdateManagerClass::boot() {
@@ -23,7 +31,6 @@ void NodeMQTTUpdateManagerClass::boot() {
 }
 
 void NodeMQTTUpdateManagerClass::onOTAStart() {
-    String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
         i(F("Uploading sketch."));
     else // U_SPIFFS

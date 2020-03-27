@@ -16,6 +16,8 @@ NodeMQTT is an IoT platform for ESP8266 and ESP32 devices on Arduino platform. H
  - [JC_Button](https://github.com/JChristensen/JC_Button)
  - [ccronexpr](https://github.com/staticlibs/ccronexpr)
 # Versions
+### v0.5.1
+ - adding global Event Handler
 ### v0.5.0
  - ESP32 compatibility
  - dynamic settings for all interface and user registrable custom properties

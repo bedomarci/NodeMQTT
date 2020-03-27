@@ -1,5 +1,6 @@
 #include "NodeMQTTLogger.hpp"
 #include "NodeMQTTIOContainer.hpp"
+#include "NodeMQTTEventHandler.hpp"
 #include <stdio.h>
 
 NodeMQTTLoggerClass::NodeMQTTLoggerClass()
@@ -111,7 +112,7 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
     char buffer[LOG_MAX_MESSAGE_LENGTH];
 
     if (level == FATAL)
-        onFatal();
+        event(EVENT_SYSTEM_FATAL_ERROR);
     if (getContext() && !getContext()->currentTime) {
         sprintf(buffer, LOG_FORMAT_MILLIS, level, millis(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str());
     } else {
@@ -127,16 +128,5 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
     if (level != DEBUG && _isLogging)
         push(formattedMessage); 
 }
-void NodeMQTTLoggerClass::setFatalCallback(NodeMQTTCallback callback)
-{
-    fatalCallback = callback;
-}
-
-void NodeMQTTLoggerClass::onFatal()
-{
-    if (fatalCallback != nullptr)
-        fatalCallback();
-}
-
 
 NodeMQTTLoggerClass Logger;

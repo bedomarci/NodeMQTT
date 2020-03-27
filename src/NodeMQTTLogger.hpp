@@ -35,7 +35,6 @@ public:
   void log(LOG_LEVEL level, String message);
   void logf(LOG_LEVEL level, String message, ...);
   void log(LOG_LEVEL level, int message, uint8_t base = DEC);
-  void setFatalCallback(NodeMQTTCallback cb);
   void setLogging(bool isLogging);
   int queueSize();
   String pop();
@@ -43,10 +42,8 @@ public:
 protected:
   void logf(LOG_LEVEL level, const char *message, va_list arg);
   void push(String);
-  void onFatal();
   LinkedList<String> logQueue;
   uint8_t _queueLength = LOG_MAX_QUEUE_LENGTH;
-  NodeMQTTCallback fatalCallback;
   bool _isLogging = true;
 };
 

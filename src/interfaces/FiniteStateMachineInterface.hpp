@@ -41,12 +41,13 @@ class FiniteStateMachineInterface : public NodeInterface<int>
     int cmp(int oldValue, int newValue) override;
     struct Transition
     {
-        uint8_t event;
+        uint8_t eventId;
         uint8_t stateFromId;
         uint8_t stateToId;
         void (*onTransition)();
-        Transition(uint8_t event, uint8_t stateFromId, uint8_t stateToId, void (*onTransition)())
-            : event(event), stateFromId(stateFromId), stateToId(stateToId), onTransition(onTransition){};
+
+        Transition(uint8_t eventId, uint8_t stateFromId, uint8_t stateToId, void (*onTransition)())
+                : eventId(eventId), stateFromId(stateFromId), stateToId(stateToId), onTransition(onTransition) {};
     };
     void updatePhisicalInterface(int newValue) override;
     State *getStateByName(const char *stateName);
@@ -184,7 +185,7 @@ inline void FiniteStateMachineInterface::trigger(int event)
         {
             t = transitions.get(i);
             if (t->stateFromId == this->currentStateId &&
-                t->event == event)
+                t->eventId == event)
             {
                 this->write(t->stateToId);
                 return;

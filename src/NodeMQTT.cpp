@@ -3,18 +3,26 @@
 #include "NodeMQTTScheduler.hpp"
 #include "NodeMQTTCron.hpp"
 #include "NodeMQTTIOContainer.hpp"
+#include "NodeMQTTEventHandler.hpp"
 
 
 NodeMQTT::NodeMQTT() {
+    Serial.println(11);
     interfaceList = LinkedList<NodeInterfaceBase *>();
+    Serial.println(12);
     _scheduler.init();
+    Serial.println(13);
     _context.scheduler = &_scheduler;
+    Serial.println(14);
     _context.transport = &_transport;
+    Serial.println(15);
     _context.parser = &_parser;
+    Serial.println(16);
     _context.interfaces = &interfaceList;
+    Serial.println(17);
     bootComponents();
-    Logger.setFatalCallback([=]() { onFatalError(); });
     registerConfiguration();
+    registerEvents();
 }
 
 void NodeMQTT::begin() {
@@ -33,12 +41,6 @@ void NodeMQTT::begin() {
 
     _transport.setContext(&_context);
     _transport.setMessageCallback([=](char *t, byte *p, unsigned int l) { parse(t, (char *) p, l); });
-    _transport.setBrokerConnectedCallback([=]() { onBrokerConnected(); });
-    _transport.setBrokerConnectingCallback([=]() { onBrokerConnecting(); });
-    _transport.setBrokerDisconnectedCallback([=]() { onBrokerDisconnected(); });
-    _transport.setNetworkConnectedCallback([=]() { onNetworkConnected(); });
-    _transport.setNetworkConnectingCallback([=]() { onNetworkConnecting(); });
-    _transport.setNetworkDisconnectedCallback([=]() { onNetworkDisconnected(); });
 
     if (this->isOnline) {
         _transport.init();
@@ -47,6 +49,7 @@ void NodeMQTT::begin() {
     _parser.setContext(&_context);
     _parser.setInterfaces(&interfaceList);
 
+    ntpTime.init(getContext());
 
 //#ifdef NODEMQTT_SERVICE_MODE
 //    this->isServiceMode = true;
@@ -75,7 +78,6 @@ void NodeMQTT::handle() {
 #endif
     }
     _scheduler.execute(); //TASK EXECUTION
-//    ESP.wdtFeed();
     yield();
 }
 
@@ -83,7 +85,6 @@ void NodeMQTT::addInterface(NodeInterfaceBase *interface) {
     interfaceList.add(interface);
     interface->setContext(&_context);
 }
-
 
 void NodeMQTT::subscribeTopics() {
     NodeInterfaceBase *interface;
@@ -161,39 +162,12 @@ void NodeMQTT::buzz(int noteId) {
     }
 }
 
-void NodeMQTT::onNetworkConnecting() {
-    if (networkConnectingCallback != nullptr)
-        networkConnectingCallback();
-}
-
-void NodeMQTT::onNetworkConnected() {
-
-#ifdef WIFI_TRANSPORT
-    NodeMQTTUpdateManager.init();
-    ntpTime.init(getContext());
-#endif
-    if (networkConnectedCallback != nullptr)
-        networkConnectedCallback();
-}
-
 void NodeMQTT::onNetworkDisconnected() {
-    if (networkDisconnectedCallback != nullptr)
-        networkDisconnectedCallback();
-
     if (heartbeatInterface->isEnabled())
         heartbeatInterface->setEnabled(false);
-    buzz(TONE_WARNING);
-}
-
-void NodeMQTT::onBrokerConnecting() {
-    if (brokerConnectingCallback != nullptr)
-        brokerConnectingCallback();
 }
 
 void NodeMQTT::onBrokerConnected() {
-    if (brokerConnectedCallback != nullptr)
-        brokerConnectedCallback();
-
     this->subscribeTopics();
     heartbeatInterface->setEnabled(true);
     nodeConfigInterface->publishCurrentConfig();
@@ -203,44 +177,10 @@ void NodeMQTT::onBrokerConnected() {
 
 void NodeMQTT::onBrokerDisconnected() {
     logInterface->disable();
-    if (brokerDisconnectedCallback != nullptr)
-        brokerDisconnectedCallback();
-
     if (heartbeatInterface->isEnabled())
         heartbeatInterface->setEnabled(false);
 }
 
-void NodeMQTT::setNetworkConnectingCallback(const NodeMQTTCallback& cb) {
-    networkConnectingCallback = cb;
-}
-
-void NodeMQTT::setNetworkConnectedCallback(const NodeMQTTCallback& cb) {
-    networkConnectedCallback = cb;
-}
-
-void NodeMQTT::setNetworkDisconnectedCallback(const NodeMQTTCallback& cb) {
-    networkDisconnectedCallback = cb;
-}
-
-void NodeMQTT::setBrokerConnectingCallback(const NodeMQTTCallback& cb) {
-    brokerConnectingCallback = cb;
-}
-
-void NodeMQTT::setBrokerConnectedCallback(const NodeMQTTCallback& cb) {
-    brokerConnectedCallback = cb;
-}
-
-void NodeMQTT::setBrokerDisconnectedCallback(const NodeMQTTCallback& cb) {
-    brokerDisconnectedCallback = cb;
-}
-
-void NodeMQTT::setTimeSyncedCallback(NodeMQTTCallback cb) {
-    ntpTime.setTimeSyncedCallback(cb);
-}
-
-void NodeMQTT::setTimeReceivedCallback(NodeMQTTCallback cb) {
-    ntpTime.setTimeReceivedCallback(cb);
-}
 
 void NodeMQTT::onFatalError() {
     buzz(TONE_FAIL);
@@ -257,6 +197,13 @@ void NodeMQTT::registerConfiguration() {
     NodeMQTTConfigManager.registerBoolProperty(PROP_SYS_SERVICEMODE, (const char *) ATTR_SERVICEMODE, true);
 }
 
+void NodeMQTT::registerEvents() {
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [this]() { this->onNetworkDisconnected(); });
+    NodeMQTTEventHandler.addListener(EVENT_SERVER_CONNECTED, [this]() { this->onBrokerConnected(); });
+    NodeMQTTEventHandler.addListener(EVENT_SERVER_DISCONNECTED, [this]() { this->onBrokerDisconnected(); });
+    NodeMQTTEventHandler.addListener(EVENT_SYSTEM_FATAL_ERROR, [this]() { this->onFatalError(); });
+}
+
 void NodeMQTT::loadConfiguration() {
     this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
     this->isOnline = NodeMQTTConfigManager.getBoolProperty(PROP_SYS_ONLINE);
@@ -271,6 +218,9 @@ void NodeMQTT::bootComponents() {
 
     Logger.setContext(getContext());
     Logger.boot();
+
+    NodeMQTTEventHandler.setContext(getContext());
+    NodeMQTTEventHandler.boot();
 
     NodeMQTTConfigManager.setContext(getContext());
     NodeMQTTConfigManager.boot();
@@ -289,9 +239,8 @@ void NodeMQTT::bootComponents() {
 }
 
 void NodeMQTT::initializeComponents() {
-//    NodeMQTTUpdateManager.boot();
-
-
+    NodeMQTTEventHandler.init();
+    NodeMQTTUpdateManager.init();
     NodeMQTTConfigManager.init();
     NodeMQTTIO.init();
     NodeMQTTCommandProcessor.init();

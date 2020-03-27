@@ -16,10 +16,6 @@ public:
 
     void init(ApplicationContext *context);
 
-    void setTimeSyncedCallback(NodeMQTTCallback);
-
-    void setTimeReceivedCallback(NodeMQTTCallback);
-
 protected:
     byte packetBuffer[NTP_PACKET_SIZE]{};
     int timeZone = 0;
@@ -36,12 +32,6 @@ protected:
 
     void sendNTPpacket();
 
-    void onTimeSynced();
-
-    void onTimeReceived();
-
-    NodeMQTTCallback timeSyncedCallback;
-    NodeMQTTCallback timeReceivedCallback;
 private:
     uint32_t beginWait{};
 };
@@ -49,16 +39,21 @@ private:
 inline NTPTime::NTPTime() {
     _tTick.set(TASK_SECOND, TASK_FOREVER, [=]() { this->tick(); });
     _tGetNtpTime.set(TASK_SECOND / 5, 50, [=]() { this->getNtpTime(); });
-    NodeMQTTConfigManager.registerIntProperty(PROP_SYS_TIMEZONE, (const char *)ATTR_TIMEZONE, NTP_DEFAULT_TIMEZONE);
+    NodeMQTTConfigManager.registerIntProperty(PROP_SYS_TIMEZONE, (const char *) ATTR_TIMEZONE, NTP_DEFAULT_TIMEZONE);
 }
 
 inline void NTPTime::init(ApplicationContext *context) {
     _context = context;
-     timeZone = NodeMQTTConfigManager.getIntProperty(PROP_SYS_TIMEZONE);
+    timeZone = NodeMQTTConfigManager.getIntProperty(PROP_SYS_TIMEZONE);
     context->scheduler->addTask(_tTick);
     context->scheduler->addTask(_tGetNtpTime);
-    _tGetNtpTime.restartDelayed(TASK_SECOND * 5);
-    Udp.begin(NTP_TIME_SERVER_PORT);
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_CONNECTED, [=]() {
+        _tGetNtpTime.restartDelayed(TASK_SECOND * 5);
+        Udp.begin(NTP_TIME_SERVER_PORT);
+    });
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [=]() {
+        _tGetNtpTime.disable();
+    });
 }
 
 inline void NTPTime::getNtpTime() {
@@ -81,9 +76,9 @@ inline void NTPTime::getNtpTime() {
         Logger.logf(INFO, F("Time server synced. Current time is %s."), toTimeString(time).c_str());
 
         //EVENTS
-        onTimeSynced();
+        event(EVENT_TIME_SYNCED);
         if (isFirstTime) //If time was 0, we have NTP for first time.
-            onTimeReceived();
+            event(EVENT_TIME_RECEIVED);
 
         _tTick.enable();
         _tGetNtpTime.disable();
@@ -123,24 +118,6 @@ inline void NTPTime::sendNTPpacket() {
 
 inline void NTPTime::tick() {
     _context->currentTime++;
-}
-
-inline void NTPTime::setTimeSyncedCallback(NodeMQTTCallback cb) {
-    timeSyncedCallback = cb;
-}
-
-inline void NTPTime::setTimeReceivedCallback(NodeMQTTCallback cb) {
-    timeReceivedCallback = cb;
-}
-
-inline void NTPTime::onTimeSynced() {
-    if (timeSyncedCallback != nullptr)
-        timeSyncedCallback();
-}
-
-inline void NTPTime::onTimeReceived() {
-    if (timeReceivedCallback != nullptr)
-        timeReceivedCallback();
 }
 
 

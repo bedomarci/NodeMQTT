@@ -27,22 +27,6 @@ public:
 
     void addIO(AbstractIO *io);
 
-    void setNetworkConnectingCallback(const NodeMQTTCallback &);
-
-    void setNetworkConnectedCallback(const NodeMQTTCallback &);
-
-    void setNetworkDisconnectedCallback(const NodeMQTTCallback &);
-
-    void setBrokerConnectingCallback(const NodeMQTTCallback &);
-
-    void setBrokerConnectedCallback(const NodeMQTTCallback &);
-
-    void setBrokerDisconnectedCallback(const NodeMQTTCallback &);
-
-    void setTimeSyncedCallback(NodeMQTTCallback);
-
-    void setTimeReceivedCallback(NodeMQTTCallback);
-
     void setBaseTopic(String baseTopic);
 
     void setInterfaceBaseTopic();
@@ -55,12 +39,9 @@ public:
 
     void addTask(Task &task);
 
-
     ApplicationContext *getContext();
 
 protected:
-    char *_serialBuffer = 0;
-
     TRANSPORT_CLASS _transport;
     PARSER_CLASS _parser;
     Scheduler _scheduler;
@@ -70,6 +51,8 @@ protected:
     String baseTopic = String(UUID);
 
     void registerConfiguration();
+
+    void registerEvents();
 
     void loadConfiguration();
 
@@ -85,22 +68,13 @@ protected:
 
     void bootComponents();
 
-    void onNetworkConnecting();
-
-    void onNetworkConnected();
-
     void onNetworkDisconnected();
-
-    void onBrokerConnecting();
 
     void onBrokerConnected();
 
     void onBrokerDisconnected();
 
     void onFatalError();
-
-    //STATIC
-    static String _MQTTDeviceName;
 
     //BUILTIN INTERFACES
     HeartbeatInterface *heartbeatInterface = nullptr;
@@ -110,12 +84,6 @@ protected:
     BuzzerInterface *buzzerInterface = nullptr;
 
 private:
-    NodeMQTTCallback networkConnectingCallback;
-    NodeMQTTCallback networkConnectedCallback;
-    NodeMQTTCallback networkDisconnectedCallback;
-    NodeMQTTCallback brokerConnectingCallback;
-    NodeMQTTCallback brokerConnectedCallback;
-    NodeMQTTCallback brokerDisconnectedCallback;
     NTPTime ntpTime;
 
     bool isLogging = true;

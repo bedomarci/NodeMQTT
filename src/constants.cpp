@@ -1,4 +1,5 @@
 #include "constants.hpp"
+#include "misc/typedef.hpp"
 
 //MELODY
 const Note infoTone[1] PROGMEM = {{300, NOTE_C5, 0}};

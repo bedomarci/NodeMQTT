@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 #include <Arduino.h>
 #include "misc/pitches.hpp"
+#include "misc/typedefDeclaration.hpp"
 #include "misc/time/compile_time.hpp"
 
 //PLATFORM SPECIFIC INCLUDES
@@ -24,15 +25,7 @@
 #include <ESP.h>
 #include <WiFiUdp.h>
 #define UDP WiFiUDP
-//typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
-//typedef std::function<void()> NodeMQTTCallback;
-//typedef std::function<void(const char *)> NodeMQTTStringCallback;
-//#define NodeMQTTChangeCallback std::function<void(T, T)>
 #else
-//typedef void (*NodeMQTTMessageCallback)(char *, uint8_t *, unsigned int);
-//typedef void (*NodeMQTTCallback)();
-//typedef void (*NodeMQTTStringCallback)(const char *);
-//#define NodeMQTTChangeCallback void (*)(T, T)
 #define FPSTR(x) x
 #define F(x) x
 #endif
@@ -45,23 +38,7 @@
 #if defined(ARDUINO_ARCH_ESP8266)
 #endif
 
-template <typename T, unsigned int LENGTH>
-struct Array
-{
-    uint16_t length = LENGTH;
-    T item[LENGTH];
 
-    //Array subscript operator
-    inline T &operator[](uint16_t idx) { return item[idx]; }
-    inline const T &operator[](uint16_t idx) const { return item[idx]; }
-};
-
-struct Note
-{
-    uint16_t duration;
-    uint16_t frequency;
-    uint16_t pause;
-};
 
 
 //BUZZER
@@ -233,6 +210,18 @@ extern const char message_ConnetctToWifi[] PROGMEM;
 #define MSG_CONNECT_TO_WIFI FPSTR(message_ConnetctToWifi)
 extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define MSG_CONNECT_TO_WIFI_BSSID FPSTR(message_ConnetctToWifiWithBSSID)
+
+
+//EVENTS
+#define EVENT_NETWORK_CONNECTING 1000
+#define EVENT_NETWORK_CONNECTED 1001
+#define EVENT_NETWORK_DISCONNECTED 1002
+#define EVENT_SERVER_CONNECTING 1003
+#define EVENT_SERVER_CONNECTED 1004
+#define EVENT_SERVER_DISCONNECTED 1005
+#define EVENT_TIME_RECEIVED 1006
+#define EVENT_TIME_SYNCED 1007
+#define EVENT_SYSTEM_FATAL_ERROR 1008
 
 
 //CONFIGURATION IDS

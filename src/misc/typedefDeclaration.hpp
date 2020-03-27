@@ -1,6 +1,7 @@
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 
 #include <functional>
+
 typedef std::function<void(char *, uint8_t *, unsigned int)> NodeMQTTMessageCallback;
 typedef std::function<void()> NodeMQTTCallback;
 typedef std::function<void(const char *)> NodeMQTTStringCallback;
@@ -12,12 +13,17 @@ typedef void (*NodeMQTTStringCallback)(const char *);
 #define NodeMQTTChangeCallback void (*)(T, T)
 #endif
 
-class Scheduler;
+template<typename T, unsigned int LENGTH>
+struct Array;
+struct Note;
 struct ApplicationContext;
-class NodeInterfaceBase;
 struct NodeMQTTProperty;
 struct NodeMQTTCronJob;
 struct NodeMQTTScheduledTask;
+
+class Scheduler;
+
+class NodeInterfaceBase;
 
 class AbstractParser;
 

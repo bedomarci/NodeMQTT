@@ -6,6 +6,7 @@
 #include <Wire.h>
 #include <time.h>
 #include "../NodeMQTTLogger.hpp"
+#include "../NodeMQTTEventHandler.hpp"
 #include "../constants.hpp"
 
 #define d(x) Logger.log(DEBUG, x)
@@ -21,6 +22,8 @@
 #define error(x) Logger.log(ERROR, x)
 
 #define fatal(x) Logger.log(FATAL, x)
+
+#define event(x) NodeMQTTEventHandler.triggerEvent(x)
 
 //DEVICE NAME
 inline void formatUUID(char buffer[9]) {

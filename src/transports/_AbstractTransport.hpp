@@ -21,21 +21,7 @@ class AbstractTransport
 
     void setMessageCallback(NodeMQTTMessageCallback);
 
-    void setNetworkConnectingCallback(NodeMQTTCallback);
-    void setNetworkConnectedCallback(NodeMQTTCallback);
-    void setNetworkDisconnectedCallback(NodeMQTTCallback);
-
-    void setBrokerConnectingCallback(NodeMQTTCallback);
-    void setBrokerConnectedCallback(NodeMQTTCallback);
-    void setBrokerDisconnectedCallback(NodeMQTTCallback);
     void onMessage(char *, uint8_t *, unsigned int);
-    void onNetworkConnecting();
-    void onNetworkConnected();
-    void onNetworkDisconnected();
-    void onBrokerConnecting();
-    void onBrokerConnected();
-    void onBrokerDisconnected();
-
 
     Scheduler *getScheduler();
   protected:
@@ -44,11 +30,5 @@ class AbstractTransport
   private:
     ApplicationContext *_context;
     NodeMQTTMessageCallback messageCallback;
-    NodeMQTTCallback networkConnectingCallback;
-    NodeMQTTCallback networkConnectedCallback;
-    NodeMQTTCallback networkDisconnectedCallback;
-    NodeMQTTCallback brokerConnectingCallback;
-    NodeMQTTCallback brokerConnectedCallback;
-    NodeMQTTCallback brokerDisconnectedCallback;
 };
 #endif //ABSTRACTTRANSPORT_H

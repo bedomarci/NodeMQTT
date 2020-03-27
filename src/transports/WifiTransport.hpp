@@ -5,6 +5,7 @@
 #include "WiFiClient.h"
 #include "PubSubCLient.h"
 #include "../misc/helpers.hpp"
+#include <NodeMQTTEventHandler.hpp>
 
 #ifdef ESP8266
 
@@ -13,6 +14,7 @@
 #endif
 #ifdef ESP32
 #include <WiFi.h>
+
 #endif
 
 class WifiTransport : public AbstractTransport {
@@ -59,8 +61,8 @@ protected:
 
     void setSleepMode();
 
-    CLIENT_CLASS espClient;
-    PubSubClient client;
+    CLIENT_CLASS *espClient;
+    PubSubClient *client;
 
     Task _tWifiConnect;
     Task _tBrokerConnect;
@@ -84,24 +86,9 @@ protected:
 };
 
 inline WifiTransport::WifiTransport() : AbstractTransport() {
-//
     registerConfiguration();
     _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
     _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
-
-    WiFi.mode(WIFI_STA);
-    WiFi.softAPdisconnect(true);
-    WiFi.enableAP(false);
-    this->setOutputPower(WIFI_TRANSMISSION_POWER);
-    WiFi.persistent(false);
-    this->setSleepMode();
-
-    //TODO: move wifi setup to boot()
-
-    // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
-
-    client = PubSubClient(espClient);
-    client.setCallback([this](char *t, byte *p, unsigned int l) { this->onMessage(t, p, l); });
 }
 
 inline void WifiTransport::setOutputPower(float power) {
@@ -123,11 +110,22 @@ inline void WifiTransport::setSleepMode() {
 }
 
 inline void WifiTransport::init() {
-
     loadConfiguration();
     this->getScheduler()->addTask(_tWifiConnect);
     this->getScheduler()->addTask(_tBrokerConnect);
-    client.setServer(this->mqttServer.c_str(), this->mqttPort);
+
+    WiFi.mode(WIFI_STA);
+    WiFi.softAPdisconnect(true);
+    WiFi.enableAP(false);
+    this->setOutputPower(WIFI_TRANSMISSION_POWER);
+    WiFi.persistent(false);
+    this->setSleepMode();
+    // WiFi.setPhyMode(WIFI_PHY_MODE_11B);
+
+    espClient = new CLIENT_CLASS();
+    client = new PubSubClient(*espClient);
+    client->setCallback([this](char *t, byte *p, unsigned int l) { this->onMessage(t, p, l); });
+    client->setServer(this->mqttServer.c_str(), this->mqttPort);
 }
 
 inline void WifiTransport::registerConfiguration() {
@@ -161,47 +159,44 @@ inline void WifiTransport::loadConfiguration() {
     this->mqttUser = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_USER);
     this->mqttPassword = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_PASSWORD);
     this->baseTopic = NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC);
-
-    //TODO nodemqtt begin utan kell hivni a gettert, kulonben nem lesz elerheto az adat
-
 }
 
 inline void WifiTransport::publish(const char *topic, const char *msg) {
-    bool published = client.publish(topic, msg);
+    bool published = client->publish(topic, msg);
     if (!published) {
         Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d, Buffer: %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
     }
 }
 
 inline void WifiTransport::subscribe(const char *topic) {
-    client.subscribe(topic);
+    client->subscribe(topic);
 }
 
 inline void WifiTransport::reconnectBroker() {
     String sUUID;
     formatUUID(sUUID);
     Logger.logf(INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
-    this->onBrokerConnecting();
+    event(EVENT_SERVER_CONNECTING);
     bool brokerConnected = false;
     if (this->mqttUser.length())
-        brokerConnected = client.connect(sUUID.c_str(), this->mqttUser.c_str(), this->mqttPassword.c_str(), this->baseTopic.c_str(), 1, false, String(OFFLINE_MESSAGE).c_str());
+        brokerConnected = client->connect(sUUID.c_str(), this->mqttUser.c_str(), this->mqttPassword.c_str(), this->baseTopic.c_str(), 1, false, String(OFFLINE_MESSAGE).c_str());
     else
-        brokerConnected = client.connect(sUUID.c_str());
+        brokerConnected = client->connect(sUUID.c_str());
     if (brokerConnected) {
         i(F("We are all set. Let's go!"));
-        this->onBrokerConnected();
+        event(EVENT_SERVER_CONNECTED);
         _tBrokerConnect.disable();
         wasConnectedToServer = true;
         brokerConnectionAttampt = 1;
     } else {
-        this->onBrokerDisconnected();
-        Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client.state());
+        event(EVENT_SERVER_DISCONNECTED);
+        Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client->state());
     }
     brokerConnectionAttampt++;
 }
 
 inline void WifiTransport::reconnectWifi() {
-    this->onNetworkConnecting();
+    event(EVENT_NETWORK_CONNECTING);
     WiFi.disconnect();
     bool useStaticIp = isIPvalid(this->ipAddress);
     IPAddress localIp(this->ipAddress[0], this->ipAddress[1], this->ipAddress[2], this->ipAddress[3]);   //ESP static ip
@@ -232,15 +227,15 @@ inline void WifiTransport::loop() {
         if (WiFi.status() == WL_CONNECTED) {
             if (_tWifiConnect.isEnabled()) {
                 _tWifiConnect.disable();
-                this->onNetworkConnected();
+                event(EVENT_NETWORK_CONNECTED);
                 wifiConnectionAttampt = 1;
                 delay(500);
                 this->logWifiInfo();
             } else {
-                if (!client.connected()) {
+                if (!client->connected()) {
                     if (wasConnectedToServer) {
-                        Logger.logf(ERROR, MSG_BROKER_DISCONNECTED, client.state());
-                        this->onBrokerDisconnected();
+                        Logger.logf(ERROR, MSG_BROKER_DISCONNECTED, client->state());
+                        event(EVENT_SERVER_DISCONNECTED);
                         brokerConnectionAttampt = 1;
                     }
                     wasConnectedToServer = false;
@@ -250,13 +245,13 @@ inline void WifiTransport::loop() {
             wasConnectedToNetwork = true;
         } else {
             if (wasConnectedToNetwork)
-                this->onNetworkDisconnected();
+                event(EVENT_NETWORK_DISCONNECTED);
             wasConnectedToNetwork = false;
             _tWifiConnect.enableIfNot();
         }
     }
     noInterrupts();
-    client.loop();
+    client->loop();
     interrupts();
 }
 
@@ -283,7 +278,7 @@ inline void WifiTransport::connectNetwork() {
 }
 
 inline bool WifiTransport::isNetworkConnected() {
-    return WiFi.status() == WL_CONNECTED && client.connected();
+    return WiFi.status() == WL_CONNECTED && client->connected();
 }
 
 

@@ -29,6 +29,23 @@ struct ApplicationContext;
 //#define NodeMQTTChangeCallback void (*)(T, T)
 //#endif
 
+template<typename T, unsigned int LENGTH>
+struct Array {
+    uint16_t length = LENGTH;
+    T item[LENGTH];
+
+    //Array subscript operator
+    inline T &operator[](uint16_t idx) { return item[idx]; }
+
+    inline const T &operator[](uint16_t idx) const { return item[idx]; }
+};
+
+struct Note {
+    uint16_t duration;
+    uint16_t frequency;
+    uint16_t pause;
+};
+
 struct NodeMQTTCronJob {
     const char *cronString;
     NodeMQTTCallback cb;
