@@ -10,6 +10,14 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
+#define regi(x, y, z) NodeMQTTConfigManager.registerIntProperty(x, y, z)
+#define regs(x, y, z) NodeMQTTConfigManager.registerStringProperty(x, y, z)
+#define regb(x, y, z) NodeMQTTConfigManager.registerBoolProperty(x, y, z)
+
+#define geti(x) NodeMQTTConfigManager.getIntProperty(x)
+#define gets(x) NodeMQTTConfigManager.getStringProperty(x)
+#define getb(x) NodeMQTTConfigManager.getBoolProperty(x)
+
 enum NodeMQTTPropertyType {
     BYTE_PROPERTY,
     INT_PROPERTY,
