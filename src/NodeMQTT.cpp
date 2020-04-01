@@ -7,19 +7,12 @@
 
 
 NodeMQTT::NodeMQTT() {
-    Serial.println(11);
     interfaceList = LinkedList<NodeInterfaceBase *>();
-    Serial.println(12);
     _scheduler.init();
-    Serial.println(13);
     _context.scheduler = &_scheduler;
-    Serial.println(14);
     _context.transport = &_transport;
-    Serial.println(15);
     _context.parser = &_parser;
-    Serial.println(16);
     _context.interfaces = &interfaceList;
-    Serial.println(17);
     bootComponents();
     registerConfiguration();
     registerEvents();

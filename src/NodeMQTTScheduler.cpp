@@ -9,6 +9,9 @@ NodeMQTTSchedulerClass::NodeMQTTSchedulerClass() {
 }
 
 void NodeMQTTSchedulerClass::init() {
+}
+
+void NodeMQTTSchedulerClass::boot() {
     executor = new Task(TASK_IMMEDIATE, TASK_ONCE);
     executor->setCallback([=]() {
         if (this->nextTaskCb) {
@@ -20,10 +23,6 @@ void NodeMQTTSchedulerClass::init() {
         }
     });
     this->getContext()->scheduler->addTask(*executor);
-}
-
-void NodeMQTTSchedulerClass::boot() {
-
 }
 
 
