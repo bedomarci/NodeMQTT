@@ -27,7 +27,6 @@ class ExpanderInterface : public I2CInterface<uint8_t, LENGTH>
     ExpanderInterface(String publishTopic, String subscribeTopic, uint8_t sdaPin, uint8_t sclPin, uint8_t address, int8_t interruptPin = NO_INTERRUPT_PIN, uint16_t debounceDelay = DEFAULT_EXPANDER_DEBOUNCE, bool interruptPu = true);
     void init();
 
-//    void begin(uint8_t address = 0x20);
     void pinMode(uint8_t pin, uint8_t mode, bool invert = false);
     void digitalWrite(uint8_t pin, uint8_t value, bool publishable = true);
     uint8_t digitalRead(uint8_t pin);
@@ -125,20 +124,6 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String 
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::init()
 {
-//    // if (!NodeMQTTConfigManagerClass::I2CInitialized)
-//    {
-//        Wire.begin(_sdaPin, _sclPin);
-//        Wire.setClock(I2C_CLOCK_SPEED);
-//        // NodeMQTTConfigManagerClass::I2CInitialized = true;
-//    }
-//    if (!isI2CDeviceWorking(_address))
-//    {
-//        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. Expander interface shuts down!"), _address);
-//        String devices = find_i2c_devices();
-//        Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
-//        this->setEnabled(false);
-//        return;
-//    }
     I2CInterface<uint8_t, LENGTH>::init();
 
     readGPIO();

@@ -35,7 +35,7 @@ inline void PCF8574Interface::readGPIO()
 //    while (Wire.available() < 1)
 //        ;
 //    _PIN = I2CREAD();
-    this->_PIN = this->readByte();
+    this->_PIN = this->i2cReadByte();
 
 }
 

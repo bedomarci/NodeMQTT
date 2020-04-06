@@ -137,6 +137,9 @@ extern const char fsmInterfaceName[] PROGMEM;
 extern const char PCF8574InterfaceName[] PROGMEM;
 #define PCF8574_NAME FPSTR(PCF8574InterfaceName)
 
+extern const char PCA9685InterfaceName[] PROGMEM;
+#define PCA9685_NAME FPSTR(PCA9685InterfaceName)
+
 extern const char commandInterfaceName[] PROGMEM;
 #define COMMAND_NAME FPSTR(commandInterfaceName)
 

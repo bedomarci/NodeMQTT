@@ -95,8 +95,9 @@ void NodeMQTT::subscribeTopics() {
 }
 
 void NodeMQTT::initializeInterfaces() {
-    for (int i = 0; i < interfaceList.size(); i++)
+    for (int i = 0; i < interfaceList.size(); i++) {
         interfaceList.get(i)->init();
+    }
 }
 
 

@@ -27,7 +27,7 @@ public:
     I2CInterface(String publishTopic, String subscribeTopic, uint8_t sda, uint8_t scl, uint8_t address);
 
 
-    void init();
+    virtual void init();
 
     void setI2C(TwoWire *i2c);
 
