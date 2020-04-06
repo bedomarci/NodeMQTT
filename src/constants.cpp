@@ -59,6 +59,7 @@ const char commandInterfaceName[] PROGMEM = "cmd";
 const char configInterfaceName[] PROGMEM = "config";
 const char fsmInterfaceName[] PROGMEM = "FSM";
 const char PCF8574InterfaceName[] PROGMEM = "PCF8574";
+const char PCA9685InterfaceName[] PROGMEM = "PCA9685";
 const char interfaceName[] PROGMEM = "INTERFACE";
 
 //CONFIGURATION

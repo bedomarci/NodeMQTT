@@ -31,10 +31,12 @@ inline void PCF8574Interface::readGPIO()
     /* Store old _PIN value */
     this->_oldPIN = this->_PIN;
     /* Start request, wait for data and receive GPIO values as byte */
-    Wire.requestFrom(this->_address, (uint8_t)0x01);
-    while (Wire.available() < 1)
-        ;
-    _PIN = I2CREAD();
+//    Wire.requestFrom(this->_address, (uint8_t)0x01);
+//    while (Wire.available() < 1)
+//        ;
+//    _PIN = I2CREAD();
+    this->_PIN = this->readByte();
+
 }
 
 inline void PCF8574Interface::updateGPIO()
@@ -43,9 +45,10 @@ inline void PCF8574Interface::updateGPIO()
     uint16_t value = (this->_PIN & ~this->_DDR) | this->_PORT;
 
     /* Start communication and send GPIO values as byte */
-    Wire.beginTransmission(this->_address);
-    I2CWRITE(value);
-    Wire.endTransmission();
+//    Wire.beginTransmission(this->_address);
+//    I2CWRITE(value);
+//    Wire.endTransmission();
+    this->i2cWriteByte(value);
 }
 
 #endif //PCF8574INTERFACE_H
