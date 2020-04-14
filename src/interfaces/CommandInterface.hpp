@@ -4,8 +4,6 @@
 #include "StringInterface.hpp"
 #include "../NodeMQTTCommandProcessor.hpp"
 
-#define COMMAND_NUM 2
-
 class CommandInterface : public StringInterface
 {
   public:

@@ -130,10 +130,10 @@ inline void WifiTransport::init() {
 
 inline void WifiTransport::registerConfiguration() {
     NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_SSID, (const char *) ATTR_WIFISSID, DEFAULT_WIFI_SSID);
-    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, this->wifiBssid);
+    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, DEFAULT_WIFI_BSSID);
     NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_PASSWORD, (const char *) ATTR_WIFIPASS, DEFAULT_WIFI_PASSWORD);
     NodeMQTTConfigManager.registerIntProperty(PROP_WIFI_CHANNEL, (const char *) ATTR_WIFICHANNEL, DEFAULT_WIFI_CHANNEL);
-    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, this->ipAddress);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, DEFAULT_IP_ADDRESS);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_SUBNET, (const char *) ATTR_SUBNET, this->subnetMask);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_GATEWAY, (const char *) ATTR_GATEWAY, this->gateway);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_DNS, (const char *) ATTR_DNS, this->dns);

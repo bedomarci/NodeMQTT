@@ -81,7 +81,7 @@ inline void FiniteStateMachineInterface::init()
 {
     if (currentStateId > -1)
     {
-        this->write(currentStateId, false);
+        this->write(currentStateId);
     }
     else if (states.size() > 0)
     {
