@@ -2,7 +2,6 @@
 #define I2CINTERFACE_H
 
 
-
 #include <Arduino.h>
 #include <Wire.h>
 #include "ArrayInterface.hpp"
@@ -48,6 +47,8 @@ protected:
     void i2cWrite2Bytes(uint8_t data1, uint8_t data2);
 
 private:
+    void notInitializedError();
+
     TwoWire *_i2c;
     uint8_t _sdaPin = 255;
     uint8_t _sclPin = 255;
@@ -95,11 +96,11 @@ template<typename T, uint16_t LENGTH>
 inline void I2CInterface<T, LENGTH>::init() {
     if (!this->_i2c) {
         _i2c = &Wire;
-    }
-    if (_sdaPin != 255 && _sclPin != 255) {
-        _i2c->begin(_sdaPin, _sclPin);
-    } else {
-        _i2c->begin();
+        if (_sdaPin != 255 && _sclPin != 255) {
+            _i2c->begin(_sdaPin, _sclPin);
+        } else {
+            _i2c->begin();
+        }
     }
     _i2c->setClock(I2C_CLOCK_SPEED);
     if (!isI2CDeviceWorking(_address)) {
@@ -120,6 +121,10 @@ inline void I2CInterface<T, LENGTH>::setI2C(uint8_t sda, uint8_t scl) {
 
 template<typename T, uint16_t LENGTH>
 inline uint8_t I2CInterface<T, LENGTH>::i2cReadByte() {
+    if (!_i2c) {
+        notInitializedError();
+        return 0;
+    }
     uint16_t fallback = 0;
     _i2c->requestFrom(this->_address, (uint8_t) 1);
     while (_i2c->available() < 1 && fallback++ < 500) delay(1);
@@ -128,6 +133,10 @@ inline uint8_t I2CInterface<T, LENGTH>::i2cReadByte() {
 
 template<typename T, uint16_t LENGTH>
 inline void I2CInterface<T, LENGTH>::i2cWriteByte(uint8_t data) {
+    if (!_i2c) {
+        notInitializedError();
+        return;
+    }
     _i2c->beginTransmission(this->_address);
     _i2c->write(data);
     _i2c->endTransmission();
@@ -135,10 +144,19 @@ inline void I2CInterface<T, LENGTH>::i2cWriteByte(uint8_t data) {
 
 template<typename T, uint16_t LENGTH>
 inline void I2CInterface<T, LENGTH>::i2cWrite2Bytes(uint8_t data1, uint8_t data2) {
+    if (!_i2c) {
+        notInitializedError();
+        return;
+    }
     _i2c->beginTransmission(this->_address);
     _i2c->write(data1);
     _i2c->write(data2);
     _i2c->endTransmission();
+}
+
+template<typename T, uint16_t LENGTH>
+inline void I2CInterface<T, LENGTH>::notInitializedError() {
+    e(F("I2C operation before I2C was initialized!"));
 }
 
 template<typename T, uint16_t LENGTH>
@@ -160,4 +178,5 @@ template<typename T, uint16_t LENGTH>
 inline TwoWire *I2CInterface<T, LENGTH>::getWire() {
     return _i2c;
 }
+
 #endif
