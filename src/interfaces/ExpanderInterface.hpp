@@ -125,6 +125,7 @@ template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::init()
 {
     I2CInterface<uint8_t, LENGTH>::init();
+    if (!this->isEnabled()) return;
 
     readGPIO();
 

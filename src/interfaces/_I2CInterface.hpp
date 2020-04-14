@@ -120,8 +120,9 @@ inline void I2CInterface<T, LENGTH>::setI2C(uint8_t sda, uint8_t scl) {
 
 template<typename T, uint16_t LENGTH>
 inline uint8_t I2CInterface<T, LENGTH>::i2cReadByte() {
+    uint16_t fallback = 0;
     _i2c->requestFrom(this->_address, (uint8_t) 1);
-    while (_i2c->available() < 1);
+    while (_i2c->available() < 1 && fallback++ < 500) delay(1);
     return _i2c->read();
 }
 
