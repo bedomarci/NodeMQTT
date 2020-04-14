@@ -71,10 +71,10 @@ protected:
     uint8_t brokerConnectionAttampt = 1;
 
     String wifiSsid;
-    uint8_t wifiBssid[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint8_t wifiBssid[6] = DEFAULT_WIFI_BSSID;
     String wifiPassword;
     int wifiChannel = DEFAULT_WIFI_CHANNEL;
-    uint8_t ipAddress[4] = {0, 0, 0, 0};
+    uint8_t ipAddress[4] = DEFAULT_IP_ADDRESS;
     uint8_t gateway[4] = {0, 0, 0, 0};
     uint8_t dns[4] = {0, 0, 0, 0};
     uint8_t subnetMask[4] = {0, 0, 0, 0};
@@ -130,10 +130,10 @@ inline void WifiTransport::init() {
 
 inline void WifiTransport::registerConfiguration() {
     NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_SSID, (const char *) ATTR_WIFISSID, DEFAULT_WIFI_SSID);
-    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, DEFAULT_WIFI_BSSID);
+    NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, this->wifiBssid);
     NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_PASSWORD, (const char *) ATTR_WIFIPASS, DEFAULT_WIFI_PASSWORD);
     NodeMQTTConfigManager.registerIntProperty(PROP_WIFI_CHANNEL, (const char *) ATTR_WIFICHANNEL, DEFAULT_WIFI_CHANNEL);
-    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, DEFAULT_IP_ADDRESS);
+    NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_IPADDRESS, (const char *) ATTR_IPADDRESS, this->ipAddress);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_SUBNET, (const char *) ATTR_SUBNET, this->subnetMask);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_GATEWAY, (const char *) ATTR_GATEWAY, this->gateway);
     NodeMQTTConfigManager.registerIPProperty(PROP_WIFI_DNS, (const char *) ATTR_DNS, this->dns);

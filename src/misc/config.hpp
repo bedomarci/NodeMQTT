@@ -139,7 +139,7 @@
 #endif
 
 #ifndef DEFAULT_WIFI_BSSID
-#define DEFAULT_WIFI_BSSID  {0, 0, 0, 0, 0, 0}
+#define DEFAULT_WIFI_BSSID  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #endif
 
 #ifndef DEFAULT_IP_ADDRESS
