@@ -139,19 +139,23 @@
 #endif
 
 #ifndef DEFAULT_WIFI_BSSID
-#define DEFAULT_WIFI_BSSID  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+#define DEFAULT_WIFI_BSSID  "00:00:00:00:00:00" //{0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #endif
 
 #ifndef DEFAULT_IP_ADDRESS
-#define DEFAULT_IP_ADDRESS  {0, 0, 0, 0}
+#define DEFAULT_IP_ADDRESS  "0.0.0.0"
 #endif
 
 #ifndef DEFAULT_GATEWAY
-#define DEFAULT_GATEWAY     {192, 168, 0, 1}
+#define DEFAULT_GATEWAY     "192.168.0.1" //{192, 168, 0, 1}
 #endif
 
 #ifndef DEFAULT_SUBNET
-#define DEFAULT_SUBNET      {255, 255, 255, 0}
+#define DEFAULT_SUBNET      "255.255.255.0" //{255, 255, 255, 0}
+#endif
+
+#ifndef DEFAULT_DNS
+#define DEFAULT_DNS      "1.1.1.1" //{255, 255, 255, 0}
 #endif
 
 #ifndef DEFAULT_WIFI_CHANNEL
