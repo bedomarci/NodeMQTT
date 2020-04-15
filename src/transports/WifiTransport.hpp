@@ -129,11 +129,11 @@ inline void WifiTransport::init() {
 }
 
 inline void WifiTransport::registerConfiguration() {
-    parseIpAddress((char *)DEFAULT_IP_ADDRESS, this->ipAddress);
-    parseIpAddress((char *)DEFAULT_GATEWAY, this->gateway);
-    parseIpAddress((char *)DEFAULT_SUBNET, this->subnetMask);
-    parseIpAddress((char *)DEFAULT_DNS, this->dns);
-    parseMacAddress((char *)DEFAULT_WIFI_BSSID, this->wifiBssid);
+    parseIpAddress((char *) DEFAULT_IP_ADDRESS, this->ipAddress);
+    parseIpAddress((char *) DEFAULT_GATEWAY, this->gateway);
+    parseIpAddress((char *) DEFAULT_SUBNET, this->subnetMask);
+    parseIpAddress((char *) DEFAULT_DNS, this->dns);
+    parseMacAddress((char *) DEFAULT_WIFI_BSSID, this->wifiBssid);
 
     NodeMQTTConfigManager.registerStringProperty(PROP_WIFI_SSID, (const char *) ATTR_WIFISSID, DEFAULT_WIFI_SSID);
     NodeMQTTConfigManager.registerMACProperty(PROP_WIFI_BSSID, (const char *) ATTR_WIFIBSSID, this->wifiBssid);
@@ -211,9 +211,9 @@ inline void WifiTransport::reconnectWifi() {
     IPAddress dns(this->dns[0], this->dns[1], this->dns[2], this->dns[3]);
 
     //    SET STATIC CONFIGURATION IF AVAILABLE
-    if (useStaticIp)
+    if (useStaticIp) {
         WiFi.config(localIp, gateway, subnet, dns);
-    else {
+    } else {
         WiFi.config(localIp, localIp, localIp, localIp); //resets for dhcp in case of 0.0.0.0
     }
 

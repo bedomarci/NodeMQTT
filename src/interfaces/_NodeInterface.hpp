@@ -133,6 +133,7 @@ template<typename T>
 inline NodeInterface<T>::NodeInterface(String publishTopic, String subscribeTopic) {
     _publishTopic = publishTopic;
     _subscribeTopic = subscribeTopic;
+    if (_publishTopic.equals(_subscribeTopic)) this->setMQTTPublish(false)
     _task.set(_samplingRate, TASK_FOREVER, [this]() { handle(); });
 }
 
