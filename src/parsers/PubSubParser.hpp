@@ -16,7 +16,7 @@ inline void PubSubParser::parse(const char* topic, const char* payload) {
         interface = _interfaces->get(i);
         if (strcmp(interface->getSubscribeTopic().c_str(), topic) == 0)
         {
-            interface->writeRaw(s_payload);
+            interface->writeRaw(s_payload, !interface->hasEqualTopic());
         }
     }
 }

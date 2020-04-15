@@ -90,6 +90,7 @@ public:
     virtual String getBaseTopic() = 0;
     virtual String getSubscribeTopic() = 0;
     virtual String getPublishTopic() = 0;
+    virtual bool hasEqualTopic() = 0;
 
     virtual void republish() = 0;
 };

@@ -77,6 +77,8 @@ public:
 
     String getPublishTopic() override;
 
+    bool hasEqualTopic();
+
 protected:
     NodeMQTTChangeCallback
             _onChangeCallback;
@@ -120,6 +122,7 @@ private:
     bool _preventDebugLogging = false;
     bool _enabled = true;
     bool _valueInitialized = false;
+    bool _hasEqualTopic = false;
     unsigned long _samplingRate = DEFAULT_SAMPLE_RATE;
 
     String _baseTopic = String();
@@ -133,7 +136,7 @@ template<typename T>
 inline NodeInterface<T>::NodeInterface(String publishTopic, String subscribeTopic) {
     _publishTopic = publishTopic;
     _subscribeTopic = subscribeTopic;
-    if (_publishTopic.equals(_subscribeTopic)) this->setMQTTPublish(false)
+    _hasEqualTopic = _publishTopic.equals(_subscribeTopic);
     _task.set(_samplingRate, TASK_FOREVER, [this]() { handle(); });
 }
 
@@ -349,6 +352,10 @@ inline void NodeInterface<T>::triggerCallback() {
 template<typename T>
 inline String NodeInterface<T>::getBaseTopic() {
     return _baseTopic;
+}
+
+bool NodeInterface<T>::hasEqualTopic() {
+    return _hasEqualTopic;
 }
 
 template<typename T>
