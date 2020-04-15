@@ -354,6 +354,7 @@ inline String NodeInterface<T>::getBaseTopic() {
     return _baseTopic;
 }
 
+template<typename T>
 bool NodeInterface<T>::hasEqualTopic() {
     return _hasEqualTopic;
 }
