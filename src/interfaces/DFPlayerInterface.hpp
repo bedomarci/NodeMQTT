@@ -116,6 +116,7 @@ inline DFPlayerInterface::DFPlayerInterface(String publishTopic, String subscrib
     _interfaceName = DFPLAYER_NAME;
     _tReadState.set(STATUS_PULL_RATE, TASK_FOREVER, READ_STATE_CALLBACK);
     this->setSamplingEnabled(false);
+    this->setMQTTSubscribe(false);
 }
 
 inline DFPlayerInterface::DFPlayerInterface(String topic, uint8_t serialRxPin, uint8_t serialTxPin)
