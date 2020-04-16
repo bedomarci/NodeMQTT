@@ -29,8 +29,8 @@ class NodeMQTTUpdateManagerClass : public NodeMQTTComponent {
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 protected:
     String fwUrlBase = DEFAULT_FIRMWARE_URL;
-  HTTPClient httpClient;
-  CLIENT_CLASS client;
+  HTTPClient *httpClient;
+  CLIENT_CLASS *client;
   void onOTAStart();
   void onOTAEnd();
   void onOTAError(ota_error_t error);

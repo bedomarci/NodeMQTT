@@ -72,11 +72,12 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
     fwVersionURL.concat(F(".ver"));
     Logger.logf(INFO, F("Checking for new update at %s."), fwVersionURL.c_str());
 
-    HTTPClient httpClient;
-    httpClient.begin(client, fwVersionURL);
-    int httpCode = httpClient.GET();
-    if (httpCode == 200) {
-        String newFWVersion = httpClient.getString();
+    client = new CLIENT_CLASS();
+    httpClient = new HTTPClient();
+    httpClient->begin(*client, fwVersionURL);
+    int httpCode = httpClient->GET();
+    if (httpCode == HTTP_CODE_NOT_MODIFIED || httpCode == HTTP_CODE_OK) {
+        String newFWVersion = httpClient->getString();
         int newVersion = newFWVersion.toInt();
 
         if (newVersion > FIRMWARE_BUILD_TIME) {
@@ -117,7 +118,9 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
     } else {
         Logger.logf(ERROR, F("Firmware version check failed, got HTTP response code %d."), httpCode);
     }
-    httpClient.end();
+    httpClient->end();
+    free(client);
+    free(httpClient);
 }
 
 
