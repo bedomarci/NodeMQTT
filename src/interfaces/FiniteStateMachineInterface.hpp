@@ -31,6 +31,7 @@ class FiniteStateMachineInterface : public NodeInterface<int>
     void addTransition(int stateIdFrom, int stateIdTo, int event, void (*onTransition)() = nullptr);
     void writeByName(const char *nextStateName);
     void trigger(int event);
+    void enterFSM();
     void init() override;
     String valueToString() override;
 
@@ -77,8 +78,7 @@ inline FiniteStateMachineInterface::FiniteStateMachineInterface()
     : FiniteStateMachineInterface(FSM_PUB_TOPIC, FSM_SUB_TOPIC)
 {
 }
-inline void FiniteStateMachineInterface::init()
-{
+inline void FiniteStateMachineInterface::enterFSM() {
     if (currentStateId > -1)
     {
         this->write(currentStateId);
@@ -93,6 +93,12 @@ inline void FiniteStateMachineInterface::init()
         fatal(F("Could not initialize final state machine! Machine contains zero state."));
     }
     initialized = true;
+}
+inline void FiniteStateMachineInterface::init()
+{
+    NodeMQTTEventHandler.addListener(EVENT_SYSTEM_READY, [=]() {
+        this->enterFSM();
+    });
 }
 
 inline String FiniteStateMachineInterface::valueToString()

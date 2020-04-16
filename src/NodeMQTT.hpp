@@ -89,6 +89,7 @@ private:
     bool isLogging = true;
     bool isServiceMode = true;
     bool isOnline = true;
+    bool booting = true;
 
 };
 

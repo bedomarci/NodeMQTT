@@ -62,6 +62,10 @@ void NodeMQTT::begin() {
 }
 
 void NodeMQTT::handle() {
+    if (booting) {
+        booting = false;
+        event(EVENT_SYSTEM_READY);
+    }
     if (this->isOnline) {
         _transport.loop();
 #ifdef WIFI_TRANSPORT
