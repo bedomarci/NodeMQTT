@@ -200,6 +200,8 @@
 
 //FIRMWARE OTA UPDATE
 
+#ifndef DEFAULT_FIRMWARE_URL
 #define DEFAULT_FIRMWARE_URL "http://192.168.0.1/fota/"
+#endif
 
 #endif //define CONFIG_H
