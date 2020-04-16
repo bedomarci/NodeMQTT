@@ -3,6 +3,7 @@
 
 #include "_AbstractCommand.hpp"
 #include "../NodeMQTTUpdateManager.hpp"
+#include "../NodeMQTTScheduler.hpp"
 
 class UpdateCommand : public AbstractCommand
 {
@@ -20,10 +21,10 @@ inline UpdateCommand::UpdateCommand(ApplicationContext *context) :  AbstractComm
 
 inline void UpdateCommand::handle()
 {
-    // if (getContext() && this->getContext()->transport->isNetworkConnected())
-      NodeMQTTUpdateManager.checkForUpdates();
-    // else
-      // e(F("Node is offline."));
+    //Need to run in main loop, otherwise http client always fails.
+    NodeMQTTScheduler.runDelayed([](){
+        NodeMQTTUpdateManager.checkForUpdates();
+        },0);
 }
 
 inline const char * UpdateCommand::getHelpText()
