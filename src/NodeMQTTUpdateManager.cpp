@@ -100,16 +100,16 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
 
             switch (ret) {
                 case HTTP_UPDATE_FAILED:
-                    e(F("HTTP_UPDATE_FAILD"));
+                    e(F("HTTP UPDATE FAILED"));
                     e(UPDATE.getLastErrorString().c_str());
                     break;
 
                 case HTTP_UPDATE_NO_UPDATES:
-                    w(F("HTTP_UPDATE_NO_UPDATES"));
+                    w(F("HTTP UPDATE NO UPDATES"));
                     break;
 
                 case HTTP_UPDATE_OK:
-                    i(F("HTTP_UPDATE_OK"));
+                    i(F("HTTP UPDATE OK"));
                     break;
             }
         } else {
