@@ -266,9 +266,9 @@ void NodeMQTTConfigManagerClass::getIPProperty(uint16_t propertyId, uint8_t ipAr
     memcpy(ipArray, property.value, 4);
 }
 
-void NodeMQTTConfigManagerClass::getMACProperty(uint16_t propertyId, uint8_t ipArray[6]) {
+void NodeMQTTConfigManagerClass::getMACProperty(uint16_t propertyId, uint8_t macArray[6]) {
     auto property = this->getRAMPropertyById(propertyId);
-    memcpy(ipArray, property.value, 4);
+    memcpy(macArray, property.value, 6);
 }
 
 void NodeMQTTConfigManagerClass::getProperty(uint16_t propertyId, void *propertyValue, uint8_t length) {

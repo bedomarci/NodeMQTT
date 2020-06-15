@@ -158,7 +158,7 @@ inline void WifiTransport::loadConfiguration() {
     NodeMQTTConfigManager.getIPProperty(PROP_WIFI_IPADDRESS, this->ipAddress);
     NodeMQTTConfigManager.getIPProperty(PROP_WIFI_SUBNET, this->subnetMask);
     NodeMQTTConfigManager.getIPProperty(PROP_WIFI_GATEWAY, this->gateway);
-    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_IPADDRESS, this->dns);
+    NodeMQTTConfigManager.getIPProperty(PROP_WIFI_DNS, this->dns);
     NodeMQTTConfigManager.getMACProperty(PROP_WIFI_BSSID, this->wifiBssid);
     this->mqttServer = NodeMQTTConfigManager.getStringProperty(PROP_MQTT_SERVER);
     this->mqttPort = NodeMQTTConfigManager.getIntProperty(PROP_MQTT_PORT);

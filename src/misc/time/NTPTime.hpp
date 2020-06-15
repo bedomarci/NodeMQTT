@@ -19,7 +19,7 @@ public:
 protected:
     byte packetBuffer[NTP_PACKET_SIZE]{};
     int timeZone = 0;
-    // IPAddress timeServer;
+    IPAddress timeServer;
     UDP Udp;
     Task _tTick;
     Task _tGetNtpTime;
@@ -49,7 +49,9 @@ inline void NTPTime::init(ApplicationContext *context) {
     context->scheduler->addTask(_tGetNtpTime);
     NodeMQTTEventHandler.addListener(EVENT_NETWORK_CONNECTED, [=]() {
         _tGetNtpTime.restartDelayed(TASK_SECOND * 5);
-        Udp.begin(NTP_TIME_SERVER_PORT);
+        if (!WiFi.hostByName(NTP_TIME_SERVER_ADDRESS, timeServer)) {
+            Logger.logf(ERROR, F("Unable to resolve time server domain: %s"), NTP_TIME_SERVER_ADDRESS);
+        }
     });
     NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [=]() {
         _tGetNtpTime.disable();
@@ -58,6 +60,7 @@ inline void NTPTime::init(ApplicationContext *context) {
 
 inline void NTPTime::getNtpTime() {
     if (_tGetNtpTime.isFirstIteration()) {
+        Udp.begin(NTP_TIME_SERVER_PORT);
         while (Udp.parsePacket() > 0); // discard any previously received packets
         sendNTPpacket(); //"Transmit NTP Request"
     }
@@ -82,15 +85,15 @@ inline void NTPTime::getNtpTime() {
 
         _tTick.enable();
         _tGetNtpTime.disable();
+        Udp.stop();
         _tGetNtpTime.restartDelayed(NTP_UPDATE_INTERVAL);
     }
-    // }
 
     if (_tGetNtpTime.isLastIteration()) {
         e(F("No NTP Response."));
+        Udp.stop();
         _tGetNtpTime.restartDelayed(NTP_UPDATE_INTERVAL / 4);
     }
-    // return 0; // return 0 if unable to get the time
 }
 
 // send an NTP request to the time server at the given address
@@ -111,7 +114,8 @@ inline void NTPTime::sendNTPpacket() {
     // all NTP fields have been given values, now
     // you can send a packet requesting a timestamp:
     d(F("Requesting NTP time."));
-    Udp.beginPacket(NTP_TIME_SERVER_ADDRESS, 123); //NTP requests are to port 123
+    Udp.beginPacket(timeServer, NTP_TIME_SERVER_PORT); //NTP requests are to port 123
+
     Udp.write(packetBuffer, NTP_PACKET_SIZE);
     Udp.endPacket();
 }

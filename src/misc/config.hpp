@@ -124,7 +124,7 @@
 //NTP TIME SERVER 
 //time-1.timefreq.bldrdoc.gov
 #define NTP_TIME_SERVER_ADDRESS "europe.pool.ntp.org"
-#define NTP_TIME_SERVER_PORT 8888 // local port to listen for UDP packets
+#define NTP_TIME_SERVER_PORT 123 // local port to listen for UDP packets
 #define NTP_UPDATE_INTERVAL (TASK_MINUTE * 30)
 #define NTP_DEFAULT_TIMEZONE 1
 
