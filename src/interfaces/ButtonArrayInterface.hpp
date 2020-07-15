@@ -7,7 +7,7 @@ template <uint8_t LENGTH>
 class ButtonArrayInterface : public ArrayInterface<uint8_t, LENGTH>
 {
   public:
-    ButtonArrayInterface(String topic, uint8_t buttonPins[LENGTH], unsigned long debounceDelay = DEFAULT_BUTTON_DEBOUNCE, bool puEnabled = true, bool invert = false);
+    ButtonArrayInterface(String topic, const uint8_t buttonPins[LENGTH], unsigned long debounceDelay = DEFAULT_BUTTON_DEBOUNCE, bool puEnabled = true, bool invert = false);
     void init();
     void press(uint16_t index);
     void release(uint16_t index);

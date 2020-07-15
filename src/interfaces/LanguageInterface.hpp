@@ -26,7 +26,7 @@ void LanguageInterface::init()
     this->setInterfaceName(LANGUAGE_NAME);
     this->setSamplingEnabled(false);
     this->setMQTTSubscribe(true);
-    this->setMQTTPublish(true);
+    this->setMQTTPublish(false);
 }
 
 #endif //LANGUAGEINTERFACE_H
