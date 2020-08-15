@@ -68,6 +68,7 @@ public:
     void triggerCallback();
 
     void preventDebugLogging(bool prevent = true);
+    void preventRepublishing(bool prevent = true);
 
     void republish() override;
 
@@ -120,6 +121,7 @@ private:
     bool _samplingEnabled = true;
     bool _forceResample = false;
     bool _preventDebugLogging = false;
+    bool _preventRepublishing = true;
     bool _enabled = true;
     bool _valueInitialized = false;
     bool _hasEqualTopic = false;
@@ -169,7 +171,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable) {
     if (!_enabled)
         return;
 
-    if (cmp(newValue, currentValue) != 0 or !_valueInitialized) {
+    if (cmp(newValue, currentValue) != 0 or !_valueInitialized or !_preventRepublishing) {
         T oldValue = currentValue;
         currentValue = newValue;
         updatePhisicalInterface(newValue);
@@ -241,6 +243,11 @@ inline void NodeInterface<T>::forceResample() { this->_forceResample = true; }
 template<typename T>
 inline void NodeInterface<T>::preventDebugLogging(bool prevent) {
     this->_preventDebugLogging = prevent;
+
+}
+template<typename T>
+inline void NodeInterface<T>::preventRepublishing(bool prevent) {
+    this->_preventRepublishing = prevent;
 }
 
 template<typename T>

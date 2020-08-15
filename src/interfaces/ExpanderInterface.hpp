@@ -41,7 +41,6 @@ class ExpanderInterface : public I2CInterface<uint8_t, LENGTH>
     void pullUp(uint8_t pin);
     void pullDown(uint8_t pin);
     void disableInterrupt();
-    void checkForInterrupt();
     void attachPinInterrupt(uint8_t pin, ExpanderPinChangeCallbackSignature userFunc, uint8_t mode);
     void detachPinInterrupt(uint8_t pin);
     Array<uint8_t, LENGTH> sample();
@@ -71,7 +70,7 @@ class ExpanderInterface : public I2CInterface<uint8_t, LENGTH>
 
     volatile uint16_t _oldPIN;
     uint8_t _pcintPin;
-    uint8_t _intMode[8];
+    uint8_t _intMode[LENGTH];
     ExpanderPinChangeCallbackSignature _intCallback[LENGTH];
     ExpanderChangeCallbackSignature _callback = nullptr;
     void internalCallback(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue);
@@ -81,6 +80,7 @@ class ExpanderInterface : public I2CInterface<uint8_t, LENGTH>
     void poll();
     Array<uint8_t, LENGTH> binToArray(uint16_t value);
     void expanderInterruptCallback();
+    void checkForInterrupt(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue);
 
 
     uint8_t _sdaPin;
@@ -117,7 +117,7 @@ inline ExpanderInterface<LENGTH>::ExpanderInterface(String publishTopic, String 
     _hasInterrupt = (_interruptPin != NO_INTERRUPT_PIN);
     _taskPoll.set(_debounceDelay, TASK_FOREVER, [this]() { poll(); });
     _interruptPullup = interruptPu;
-    I2CInterface<uint8_t, LENGTH>::onChange([this](Array<uint8_t, LENGTH> oV, Array<uint8_t, LENGTH> nV) { internalCallback(oV, nV); });
+    I2CInterface<uint8_t, LENGTH>::onChange([this](Array<uint8_t, LENGTH> oV, Array<uint8_t, LENGTH> nV) { internalCallback(oV, nV);});
     this->setMQTTPublish(true);
     this->setMQTTSubscribe(true);
 }
@@ -154,6 +154,7 @@ inline void ExpanderInterface<LENGTH>::updatePhisicalInterface(Array<uint8_t, LE
             data |= (1 << i);
     }
     data |= (~_DDR); //DO NOT WRITE BACK INPUT VALUE;
+
     this->writeChip(data);
 }
 template <uint8_t LENGTH>
@@ -299,50 +300,84 @@ inline void ExpanderInterface<LENGTH>::internalCallback(Array<uint8_t, LENGTH> o
     if (this->_callback != nullptr)
         this->_callback(oldValue, newValue);
 
-    checkForInterrupt();
+    checkForInterrupt(oldValue, newValue);
 }
 
 template <uint8_t LENGTH>
-inline void ExpanderInterface<LENGTH>::checkForInterrupt()
+inline void ExpanderInterface<LENGTH>::checkForInterrupt(Array<uint8_t, LENGTH> oldValue, Array<uint8_t, LENGTH> newValue)
 {
-    uint16_t invPin = _PIN ^ _INV;
-    uint16_t invOldPin = _oldPIN ^ _INV;
-    Array<uint8_t, LENGTH> oldValue, newValue;
-    oldValue = this->binToArray(invOldPin);
-    newValue = this->binToArray(invPin);
-
-    // sei();
     cli();
     for (uint8_t i = 0; i < LENGTH; ++i)
     {
         /* Check for interrupt handler */
-        if (!_intCallback[i])
+        if ( !_intCallback[i] || (_DDR & (1 << i)) > 0 ) //skipping pins without callback and output pins
             continue;
 
         /* Check for interrupt event */
         switch (_intMode[i])
         {
-        case CHANGE:
-            if ((1 << i) & (invPin ^ invOldPin)) {
-                _intCallback[i](i, oldValue, newValue);
-            }
-            break;
-        case LOW:
-            if (!(invPin & (1 << i)))
-                _intCallback[i](i, oldValue, newValue);
-            break;
-        case FALLING:
-            if ((invOldPin & (1 << i)) && !(invPin & (1 << i)))
-                _intCallback[i](i, oldValue, newValue);
-            break;
-        case RISING:
-            if (!(invOldPin & (1 << i)) && (invPin & (1 << i)))
-                _intCallback[i](i, oldValue, newValue);
-            break;
+            case CHANGE:
+                if ((newValue[i] ^ oldValue[i])) {
+                    _intCallback[i](i, oldValue, newValue);
+                }
+                break;
+            case LOW:
+                if (!newValue[i])
+                    _intCallback[i](i, oldValue, newValue);
+                break;
+            case FALLING:
+                if (oldValue[i] && !newValue[i])
+                    _intCallback[i](i, oldValue, newValue);
+                break;
+            case RISING:
+                if (!oldValue[i] && newValue[i])
+                    _intCallback[i](i, oldValue, newValue);
+                break;
         }
     }
     /* Re-enable interrupts to allow Wire library to work */
     sei();
+
+
+
+//    uint16_t invPin = _PIN ^ _INV;
+//    uint16_t invOldPin = _oldPIN ^ _INV;
+
+//    Array<uint8_t, LENGTH> oldValue, newValue;
+//    oldValue = this->binToArray(invOldPin);
+//    newValue = this->binToArray(invPin);
+
+//    cli();
+//    for (uint8_t i = 0; i < LENGTH; ++i)
+//    {
+//        /* Check for interrupt handler */
+//        if ( !_intCallback[i] || (_DDR & (1 << i)) > 0 ) //skipping pins without callback and output pins
+//            continue;
+//
+//        /* Check for interrupt event */
+//        switch (_intMode[i])
+//        {
+//        case CHANGE:
+//            if ((1 << i) & (invPin ^ invOldPin)) {
+//                _intCallback[i](i, oldValue, newValue);
+//            }
+//            break;
+//        case LOW:
+//            if (!(invPin & (1 << i)))
+//                _intCallback[i](i, oldValue, newValue);
+//            break;
+//        case FALLING:
+//            if ((invOldPin & (1 << i)) && !(invPin & (1 << i)))
+//                _intCallback[i](i, oldValue, newValue);
+//            break;
+//        case RISING:
+//            if (!(invOldPin & (1 << i)) && (invPin & (1 << i)))
+//                _intCallback[i](i, oldValue, newValue);
+//            break;
+//        }
+//    }
+//    /* Re-enable interrupts to allow Wire library to work */
+//    sei();
 }
 template <uint8_t LENGTH>
 inline void ExpanderInterface<LENGTH>::attachPinInterrupt(uint8_t pin, ExpanderPinChangeCallbackSignature userFunc, uint8_t mode)

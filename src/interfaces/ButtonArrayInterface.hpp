@@ -19,7 +19,7 @@ class ButtonArrayInterface : public ArrayInterface<uint8_t, LENGTH>
     Button *buttons[LENGTH];
 };
 template <uint8_t LENGTH>
-inline ButtonArrayInterface<LENGTH>::ButtonArrayInterface(String topic, uint8_t buttonPins[LENGTH], unsigned long debounceDelay, bool puEnabled, bool invert)
+inline ButtonArrayInterface<LENGTH>::ButtonArrayInterface(String topic, const uint8_t buttonPins[LENGTH], unsigned long debounceDelay, bool puEnabled, bool invert)
     : ArrayInterface<uint8_t, LENGTH>(topic)
 {
     for (int i = 0; i < LENGTH; i++)
