@@ -26,7 +26,12 @@
       "name": "SPI"
     },
     {
-      "name": "SoftwareSerial"
+      "name": "featherfly/SoftwareSerial",
+      "platforms": "atmelavr"
+    },
+    {
+      "name": "plerup/EspSoftwareSerial",
+      "platforms": "espressif8266"
     },
     {
       "name": "TaskScheduler"

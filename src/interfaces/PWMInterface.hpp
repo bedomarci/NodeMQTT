@@ -72,8 +72,10 @@ inline void PWMInterface::fadeCallback()
 {
     bool publish = false;
     int value = map(tFade.getRunCounter(), 1, _fadeIterations, _fadeFrom, _fadeTo);
-    if (tFade.isLastIteration())
+    if (tFade.isLastIteration()){
         publish = true;
+        value = _fadeTo;
+    }
     NodeInterface<int>::write(value, publish);
 }
 inline void PWMInterface::write(int newValue, bool publishable)
