@@ -26,6 +26,9 @@
       "name": "SPI"
     },
     {
+      "name": "khoih-prog/Functional-Vlpp"
+    },
+    {
       "name": "featherfly/SoftwareSerial",
       "platforms": "atmelavr"
     },
