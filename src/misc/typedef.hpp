@@ -3,7 +3,6 @@
 
 #include "config.hpp"
 #include "typedefDeclaration.hpp"
-#include <functional>
 //#include "../constants.hpp"
 #include <LinkedList.h>
 //#include <TaskScheduler.h>

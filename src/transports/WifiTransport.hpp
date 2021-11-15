@@ -170,7 +170,7 @@ inline void WifiTransport::loadConfiguration() {
 inline void WifiTransport::publish(const char *topic, const char *msg) {
     bool published = client->publish(topic, msg);
     if (!published) {
-        Logger.logf(DEBUG, F("Failed to publish payload on [%s] topic. Length: %d, Buffer: %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
+        Logger.logf(L_DEBUG, F("Failed to publish payload on [%s] topic. Length: %d, Buffer: %d"), topic, strlen(msg), MQTT_MAX_PACKET_SIZE);
     }
 }
 
@@ -181,7 +181,7 @@ inline void WifiTransport::subscribe(const char *topic) {
 inline void WifiTransport::reconnectBroker() {
     String sUUID;
     formatUUID(sUUID);
-    Logger.logf(INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
+    Logger.logf(L_INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
     event(EVENT_SERVER_CONNECTING);
     bool brokerConnected = false;
     if (this->mqttUser.length())
@@ -196,7 +196,7 @@ inline void WifiTransport::reconnectBroker() {
         brokerConnectionAttampt = 1;
     } else {
         event(EVENT_SERVER_DISCONNECTED);
-        Logger.logf(ERROR, MSG_BROKER_COULD_NOT_CONNECT, client->state());
+        Logger.logf(L_ERROR, MSG_BROKER_COULD_NOT_CONNECT, client->state());
     }
     brokerConnectionAttampt++;
 }
@@ -218,10 +218,10 @@ inline void WifiTransport::reconnectWifi() {
     }
 
     if (hasBSSID(this->wifiBssid)) {
-        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI_BSSID, this->wifiSsid.c_str(), wifiConnectionAttampt);
+        Logger.logf(L_DEBUG, MSG_CONNECT_TO_WIFI_BSSID, this->wifiSsid.c_str(), wifiConnectionAttampt);
         WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str(), this->wifiChannel, this->wifiBssid);
     } else {
-        Logger.logf(DEBUG, MSG_CONNECT_TO_WIFI, this->wifiSsid.c_str(), wifiConnectionAttampt);
+        Logger.logf(L_DEBUG, MSG_CONNECT_TO_WIFI, this->wifiSsid.c_str(), wifiConnectionAttampt);
         WiFi.begin(this->wifiSsid.c_str(), this->wifiPassword.c_str());
     }
 
@@ -240,7 +240,7 @@ inline void WifiTransport::loop() {
             } else {
                 if (!client->connected()) {
                     if (wasConnectedToServer) {
-                        Logger.logf(ERROR, MSG_BROKER_DISCONNECTED, client->state());
+                        Logger.logf(L_ERROR, MSG_BROKER_DISCONNECTED, client->state());
                         event(EVENT_SERVER_DISCONNECTED);
                         brokerConnectionAttampt = 1;
                     }
@@ -262,10 +262,10 @@ inline void WifiTransport::loop() {
 }
 
 inline void WifiTransport::logWifiInfo() {
-    Logger.logf(INFO, F("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
+    Logger.logf(L_INFO, F("WiFi connected. IP address: %s"), this->getNetworkAddressString().c_str());
     if (NodeMQTTConfigManager.getBoolProperty(PROP_SYS_SERVICEMODE)) {
         int32_t signalStrength = WifiTransport::getRSSI();
-        Logger.logf(DEBUG, F("Signal strength: %d dBm, TX power: %.2f dBm"), signalStrength, WIFI_TRANSMISSION_POWER);
+        Logger.logf(L_DEBUG, F("Signal strength: %d dBm, TX power: %.2f dBm"), signalStrength, WIFI_TRANSMISSION_POWER);
         if (signalStrength <= -80)
             fatal(F("Wifi signal is too weak!"));
     }

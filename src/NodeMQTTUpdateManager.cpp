@@ -58,7 +58,7 @@ void NodeMQTTUpdateManagerClass::onOTAError(ota_error_t error) {
 
 void NodeMQTTUpdateManagerClass::onOTAProgress(unsigned int progress, unsigned int total) {
     uint16_t percentage = (progress / (total / 100));
-    Logger.logf(INFO, "Progress: %u%%\r", percentage);
+    Logger.logf(L_INFO, "Progress: %u%%\r", percentage);
 }
 
 void NodeMQTTUpdateManagerClass::checkForUpload() {
@@ -70,7 +70,7 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
     fwURL.concat(NodeMQTTConfigManager.getStringProperty(PROP_SYS_BASETOPIC));
     String fwVersionURL = fwURL;
     fwVersionURL.concat(F(".ver"));
-    Logger.logf(INFO, F("Checking for new update at %s."), fwVersionURL.c_str());
+    Logger.logf(L_INFO, F("Checking for new update at %s."), fwVersionURL.c_str());
 
     client = new CLIENT_CLASS();
     httpClient = new HTTPClient();
@@ -82,9 +82,9 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
 
         if (newVersion > FIRMWARE_BUILD_TIME) {
             String fwImageURL = fwURL;
-            Logger.logf(INFO, F("Newer version available: %s."), newFWVersion.c_str());
+            Logger.logf(L_INFO, F("Newer version available: %s."), newFWVersion.c_str());
             fwImageURL.concat(F(".bin"));
-            Logger.logf(INFO, F("Downloading firmware from %s."), fwImageURL.c_str());
+            Logger.logf(L_INFO, F("Downloading firmware from %s."), fwImageURL.c_str());
 
             yield();
 #if defined(ARDUINO_ARCH_ESP8266)
@@ -116,7 +116,7 @@ void NodeMQTTUpdateManagerClass::checkForUpdates() {
             i(F("Already on latest version."));
         }
     } else {
-        Logger.logf(ERROR, F("Firmware version check failed, got HTTP response code %d."), httpCode);
+        Logger.logf(L_ERROR, F("Firmware version check failed, got HTTP response code %d."), httpCode);
     }
     httpClient->end();
     free(client);

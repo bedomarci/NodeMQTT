@@ -180,7 +180,7 @@ inline void NodeInterface<T>::write(T newValue, bool publishable) {
         }
         if (!_preventDebugLogging) {
             String sValue = this->valueToString();
-            Logger.logf(DEBUG, MSG_VALUE_CHANGED, _interfaceName.c_str(), _publishTopic.c_str(), publishable,
+            Logger.logf(L_DEBUG, MSG_VALUE_CHANGED, _interfaceName.c_str(), _publishTopic.c_str(), publishable,
                         sValue.c_str());
         }
         if (_onChangeCallback) {
@@ -218,7 +218,7 @@ inline void NodeInterface<T>::writeRaw(String newValue, bool publishable) {
     DynamicJsonDocument jsonDocument(JSON_DOCUMENT_SIZE);
     auto error = deserializeJson(jsonDocument, newValue);
     if (error) {
-        Logger.logf(DEBUG, MSG_FAILED_TO_PARSE, getSubscribeTopic().c_str());
+        Logger.logf(L_DEBUG, MSG_FAILED_TO_PARSE, getSubscribeTopic().c_str());
     } else {
         JsonObject rootObject = jsonDocument.as<JsonObject>();
         write(fromJSON(rootObject), publishable);
@@ -275,7 +275,7 @@ inline void NodeInterface<T>::setContext(ApplicationContext *context) {
 template<typename T>
 inline ApplicationContext *NodeInterface<T>::getContext() {
     if (!_context)
-        Logger.logf(FATAL, MSG_CONTEXT_IS_MISSING, _interfaceName.c_str(), this->getPublishTopic().c_str());
+        Logger.logf(L_FATAL, MSG_CONTEXT_IS_MISSING, _interfaceName.c_str(), this->getPublishTopic().c_str());
     return _context;
 }
 

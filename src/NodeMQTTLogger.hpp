@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "NodeMQTTConfigManager.hpp"
 #include <LinkedList.h>
-#include <stdio.h>
+#include <cstdio>
 #include "misc/config.hpp"
 #include "misc/NodeMQTTComponent.hpp"
 #include "misc/typedefDeclaration.hpp"
@@ -12,11 +12,11 @@
 
 enum LOG_LEVEL
 {
-  DEBUG = 'D',
-  INFO = 'I',
-  WARNING = 'W',
-  ERROR = 'E',
-  FATAL = 'F',
+  L_DEBUG = 'D',
+  L_INFO = 'I',
+  L_WARNING = 'W',
+  L_ERROR = 'E',
+  L_FATAL = 'F',
 };
 
 class NodeMQTTLoggerClass : public NodeMQTTComponent

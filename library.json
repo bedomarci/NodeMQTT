@@ -26,15 +26,15 @@
       "name": "SPI"
     },
     {
-      "name": "khoih-prog/Functional-Vlpp"
-    },
-    {
       "name": "featherfly/SoftwareSerial",
       "platforms": "atmelavr"
     },
     {
       "name": "plerup/EspSoftwareSerial",
-      "platforms": "espressif8266"
+      "platforms": [
+        "espressif32",
+        "espressif8266"
+      ]
     },
     {
       "name": "TaskScheduler"

@@ -3,6 +3,8 @@
 
 #include "_I2CInterface.hpp"
 #include <FunctionalInterrupt.h>
+//TODO delete following line
+//#include <functional>
 #include "../misc/helpers.hpp"
 #include "../NodeMQTTConfigManager.hpp"
 

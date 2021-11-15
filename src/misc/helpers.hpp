@@ -4,24 +4,24 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <time.h>
+#include <ctime>
 #include "../NodeMQTTLogger.hpp"
 #include "../NodeMQTTEventHandler.hpp"
 #include "../constants.hpp"
 
-#define d(x) Logger.log(DEBUG, x)
-#define debug(x) Logger.log(DEBUG, x)
+#define d(x) Logger.log(L_DEBUG, x)
+//#define debug(x) Logger.log(L_DEBUG, x)
 
-#define i(x) Logger.log(INFO, x)
-#define info(x) Logger.log(INFO, x)
+#define i(x) Logger.log(L_INFO, x)
+//#define info(x) Logger.log(L_INFO, x)
 
-#define w(x) Logger.log(WARNING, x)
-#define warning(x) Logger.log(WARNING, x)
+#define w(x) Logger.log(L_WARNING, x)
+//#define warning(x) Logger.log(L_WARNING, x)
 
-#define e(x) Logger.log(ERROR, x)
-#define error(x) Logger.log(ERROR, x)
+#define e(x) Logger.log(L_ERROR, x)
+//#define error(x) Logger.log(L_ERROR, x)
 
-#define fatal(x) Logger.log(FATAL, x)
+#define fatal(x) Logger.log(L_FATAL, x)
 
 #define event(x) NodeMQTTEventHandler.triggerEvent(x)
 

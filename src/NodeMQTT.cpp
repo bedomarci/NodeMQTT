@@ -29,7 +29,7 @@ void NodeMQTT::begin() {
         printHeader(NodeMQTTIO);
     }
 
-    Logger.logf(INFO, MSG_INTRODUCTION, this->baseTopic.c_str(), toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
+    Logger.logf(L_INFO, MSG_INTRODUCTION, this->baseTopic.c_str(), toDateTimeString(FIRMWARE_BUILD_TIME).c_str(), FIRMWARE_BUILD_TIME);
     d(F("Initializing NodeMQTT"));
 
     _transport.setContext(&_context);
@@ -95,7 +95,7 @@ void NodeMQTT::subscribeTopics() {
             topics += interface->getSubscribeTopic();
         }
     }
-    Logger.logf(INFO, F("Subscribed to: %s"), topics.c_str());
+    Logger.logf(L_INFO, F("Subscribed to: %s"), topics.c_str());
 }
 
 void NodeMQTT::initializeInterfaces() {
@@ -108,7 +108,7 @@ void NodeMQTT::initializeInterfaces() {
 void NodeMQTT::parse(char *topic, char *payload, unsigned int length) {
     payload[length] = '\0';
     String s_payload = String(payload);
-    Logger.logf(DEBUG, F("Receiving payload: %s"), s_payload.c_str());
+    Logger.logf(L_DEBUG, F("Receiving payload: %s"), s_payload.c_str());
     _parser.parse(topic, payload);
 }
 

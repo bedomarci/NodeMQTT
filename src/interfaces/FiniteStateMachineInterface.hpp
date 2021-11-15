@@ -226,7 +226,7 @@ inline State *FiniteStateMachineInterface::getStateByName(const char *stateName)
         if (strcmp(state->stateName, stateName) == 0)
             return state;
     }
-    Logger.logf(ERROR, MSG_UNKNOWN_STATE, stateName);
+    Logger.logf(L_ERROR, MSG_UNKNOWN_STATE, stateName);
     return nullptr;
 }
 
@@ -238,7 +238,7 @@ inline State *FiniteStateMachineInterface::getStateById(int stateId)
         if (stateId == state->stateId)
             return state;
     }
-    Logger.logf(ERROR, MSG_UNKNOWN_STATE, stateId);
+    Logger.logf(L_ERROR, MSG_UNKNOWN_STATE, stateId);
     return nullptr;
 }
 

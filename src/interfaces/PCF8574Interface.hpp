@@ -1,7 +1,8 @@
 #ifndef PCF8574INTERFACE_H
 #define PCF8574INTERFACE_H
 #include "ExpanderInterface.hpp"
-#include <FunctionalInterrupt.h>
+//TODO delete following line
+//#include <FunctionalInterrupt.h>
 #include <Wire.h>
 
 class PCF8574Interface : public ExpanderInterface<8U>

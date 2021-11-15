@@ -36,6 +36,7 @@
 #endif
 
 #if defined(ARDUINO_ARCH_ESP8266)
+#define PWMRANGE 1023
 #endif
 
 

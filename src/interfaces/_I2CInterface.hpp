@@ -104,9 +104,9 @@ inline void I2CInterface<T, LENGTH>::init() {
     }
     _i2c->setClock(I2C_CLOCK_SPEED);
     if (!isI2CDeviceWorking(_address)) {
-        Logger.logf(FATAL, F("Device is not responding at address 0x%02X. %s interface shuts down!"), _address, this->_interfaceName.c_str());
+        Logger.logf(L_FATAL, F("Device is not responding at address 0x%02X. %s interface shuts down!"), _address, this->_interfaceName.c_str());
         String devices = find_i2c_devices();
-        Logger.logf(INFO, F("Following I2C devices are available: %s"), devices.c_str());
+        Logger.logf(L_INFO, F("Following I2C devices are available: %s"), devices.c_str());
         this->setEnabled(false);
         return;
     }

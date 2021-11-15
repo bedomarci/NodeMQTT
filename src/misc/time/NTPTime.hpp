@@ -50,7 +50,7 @@ inline void NTPTime::init(ApplicationContext *context) {
     NodeMQTTEventHandler.addListener(EVENT_NETWORK_CONNECTED, [=]() {
         _tGetNtpTime.restartDelayed(TASK_SECOND * 5);
         if (!WiFi.hostByName(NTP_TIME_SERVER_ADDRESS, timeServer)) {
-            Logger.logf(ERROR, F("Unable to resolve time server domain: %s"), NTP_TIME_SERVER_ADDRESS);
+            Logger.logf(L_ERROR, F("Unable to resolve time server domain: %s"), NTP_TIME_SERVER_ADDRESS);
         }
     });
     NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [=]() {
@@ -76,7 +76,7 @@ inline void NTPTime::getNtpTime() {
         secsSince1900 |= (unsigned long) packetBuffer[43];
         time_t time = secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
         _context->currentTime = time;
-        Logger.logf(INFO, F("Time server synced. Current time is %s."), toTimeString(time).c_str());
+        Logger.logf(L_INFO, F("Time server synced. Current time is %s."), toTimeString(time).c_str());
 
         //EVENTS
         event(EVENT_TIME_SYNCED);

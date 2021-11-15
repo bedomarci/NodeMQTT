@@ -17,11 +17,10 @@
 #error Must include NodeMQTT.hpp before TaskScheduler.h!
 #include <stophere>
 #endif
+
 #if (defined(ARDUINO_ARCH_ESP32) || defined(ARDUINO_ARCH_ESP8266)) && !defined(_TASK_STD_FUNCTION)
 #define _TASK_STD_FUNCTION
-
 #include <functional>
-
 #endif
 
 #ifndef NODEMQTT_SERIAL_SPEED
@@ -40,7 +39,7 @@
 #define PWM_FREQ 5000
 #define PWM_RESOLUTION 10
 
-#define MQTT_CONNECT_ATTEMPT_WAITING 15 * TASK_SECOND //
+#define MQTT_CONNECT_ATTEMPT_WAITING (15 * TASK_SECOND) //
 
 #define LOG_MAX_MESSAGE_LENGTH 128
 #define LOG_PREFIX_LENGTH 18
@@ -72,6 +71,7 @@
 
 
 #if !defined(NODEMQTT_TRANSPORT) //&& !defined(WIFI_TRANSPORT)
+//#define NODEMQTT_TRANSPORT WIFI_TRANSPORT TODO uncomment this and delete following
 #define NODEMQTT_TRANSPORT WIFI_TRANSPORT
 #endif
 

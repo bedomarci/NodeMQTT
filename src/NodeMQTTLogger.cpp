@@ -111,7 +111,7 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
     if (!_isLogging) return;
     char buffer[LOG_MAX_MESSAGE_LENGTH];
 
-    if (level == FATAL)
+    if (level == L_FATAL)
         event(EVENT_SYSTEM_FATAL_ERROR);
     if (getContext() && !getContext()->currentTime) {
         sprintf(buffer, LOG_FORMAT_MILLIS, level, millis(), String(message).substring(0,LOG_MAX_PRINT_LENGTH).c_str());
@@ -119,13 +119,13 @@ void NodeMQTTLoggerClass::log(LOG_LEVEL level, const char *message)
         sprintf(buffer, LOG_FORMAT_NTP, level, toTimeString(getContext()->currentTime).c_str(), String(message).substring(0, LOG_MAX_PRINT_LENGTH).c_str()); //-3 will make room for dots
     }
     String formattedMessage = String(buffer);
-    if ((level != DEBUG && !_isLogging) || _isLogging) {
+    if ((level != L_DEBUG && !_isLogging) || _isLogging) {
     if (formattedMessage.length() == LOG_MAX_MESSAGE_LENGTH-1) {
         formattedMessage = formattedMessage.substring(0, LOG_MAX_MESSAGE_LENGTH-4) + "...";
     } 
     NodeMQTTIO.println(formattedMessage);
     }
-    if (level != DEBUG && _isLogging)
+    if (level != L_DEBUG && _isLogging)
         push(formattedMessage); 
 }
 

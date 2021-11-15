@@ -43,7 +43,7 @@ void NodeMQTTConfigManagerClass::save() {
 void NodeMQTTConfigManagerClass::load() {
     EEPROM.begin(EEPROM_SIZE);
     if (!isEEPROMValid())
-        Logger.logf(ERROR, F("Broken data integrity in EEPROM! Configuration is still loaded. Please review properties and resave!"));
+        Logger.logf(L_ERROR, F("Broken data integrity in EEPROM! Configuration is still loaded. Please review properties and resave!"));
     loadPropertiesFromEEPROM();
 //    i(F("Loading configuration from EEPROM."));
     EEPROM.end();
@@ -56,7 +56,7 @@ void NodeMQTTConfigManagerClass::registerProperty(uint16_t propertyId, const cha
         return;
     }
     if (isIdRegistered(propertyId)) {
-        Logger.logf(ERROR, F("Property ID #%d is already registered."), propertyId);
+        Logger.logf(L_ERROR, F("Property ID #%d is already registered."), propertyId);
         return;
     }
     NodeMQTTProperty property = NodeMQTTProperty(propertyId, propertyName);
@@ -116,7 +116,7 @@ void NodeMQTTConfigManagerClass::loadPropertiesFromEEPROM() {
             ramProperty.isStored = true;
             ramProperty.length = propertyEEPROMLength;
         } else {
-            Logger.logf(ERROR, F("Unable to locate %s in EEPROM. Please alter configuration to overwrite EEPROM."), ramProperty.name);
+            Logger.logf(L_ERROR, F("Unable to locate %s in EEPROM. Please alter configuration to overwrite EEPROM."), ramProperty.name);
         }
         this->properties->set(i, ramProperty);
     }
@@ -213,7 +213,7 @@ void NodeMQTTConfigManagerClass::getEEPROMLocationById(uint16_t propertyId, uint
 
 NodeMQTTProperty NodeMQTTConfigManagerClass::getRAMPropertyById(uint16_t propertyId) {
     if (!isLoaded) {
-        Logger.logf(ERROR, F("Getting property [id: %d] before EEPROM load! Move getters after loading!"), propertyId);
+        Logger.logf(L_ERROR, F("Getting property [id: %d] before EEPROM load! Move getters after loading!"), propertyId);
     }
     for (int i = 0; i < this->properties->size(); i++) {
         NodeMQTTProperty property = this->properties->get(i);
