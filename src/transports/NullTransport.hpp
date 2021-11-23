@@ -15,17 +15,18 @@ public:
     void subscribe(const char *topic);
 };
 
-inline void init() {}
-inline void loop() {}
-inline void connectNetwork() {
-    void onNetworkConnecting();
-    void onNetworkConnected();
-    void onBrokerConnecting();
-    void onBrokerConnected();
-}
-inline bool isNetworkConnected() {}
-inline String getNetworkAddressString() {}
-inline void publish(const char *topic, const char *msg) {}
-inline void subscribe(const char *topic) {}
+inline void NullTransport::init() {}
+
+inline void NullTransport::loop() {}
+
+inline void NullTransport::connectNetwork() {}
+
+inline bool NullTransport::isNetworkConnected() { return false; }
+
+inline String NullTransport::getNetworkAddressString() { return "NULL TRANSPORT"; }
+
+inline void NullTransport::publish(const char *topic, const char *msg) {}
+
+inline void NullTransport::subscribe(const char *topic) {}
 
 #endif //NULLTRANSPORT_H

@@ -46,7 +46,8 @@ inline bool NodeConfigInterface::fromJSON(JsonObject &rootObject) {
     LinkedList<NodeMQTTProperty> *properties = NodeMQTTConfigManager.getProperties();
     for (int i = 0; i < properties->size(); i++) {
         NodeMQTTProperty property = properties->get(i);
-        auto name = FPSTR(property.name);
+        String name = FPSTR(property.name);
+
         if (rootObject.containsKey(name)) {
             switch (property.type) {
                 case INT_PROPERTY:

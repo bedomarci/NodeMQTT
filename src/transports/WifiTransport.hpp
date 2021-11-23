@@ -13,6 +13,7 @@
 
 #endif
 #ifdef ESP32
+
 #include <WiFi.h>
 
 #endif
@@ -61,6 +62,10 @@ protected:
 
     void setSleepMode();
 
+    void onNetworkConnected();
+
+    void onNetworkDisconnected();
+
     CLIENT_CLASS *espClient;
     PubSubClient *client;
 
@@ -89,6 +94,9 @@ inline WifiTransport::WifiTransport() : AbstractTransport() {
     registerConfiguration();
     _tWifiConnect.set(WIFI_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectWifi(); });
     _tBrokerConnect.set(MQTT_CONNECT_ATTEMPT_WAITING, TASK_FOREVER, [this]() { reconnectBroker(); });
+
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_CONNECTED, [this]() { onNetworkConnected(); });
+    NodeMQTTEventHandler.addListener(EVENT_NETWORK_DISCONNECTED, [this]() { onNetworkDisconnected(); });
 }
 
 inline void WifiTransport::setOutputPower(float power) {
@@ -179,6 +187,15 @@ inline void WifiTransport::subscribe(const char *topic) {
 }
 
 inline void WifiTransport::reconnectBroker() {
+    if (!client->connected()) {
+        if (wasConnectedToServer) {
+            Logger.logf(L_ERROR, MSG_BROKER_DISCONNECTED, client->state());
+            event(EVENT_SERVER_DISCONNECTED);
+            brokerConnectionAttampt = 1;
+        }
+        wasConnectedToServer = false;
+    }
+
     String sUUID;
     formatUUID(sUUID);
     Logger.logf(L_INFO, MSG_BROKER_CONNECTION_ATTEMPT, sUUID.c_str(), brokerConnectionAttampt);
@@ -237,16 +254,16 @@ inline void WifiTransport::loop() {
                 wifiConnectionAttampt = 1;
                 delay(500);
                 this->logWifiInfo();
-            } else {
-                if (!client->connected()) {
-                    if (wasConnectedToServer) {
-                        Logger.logf(L_ERROR, MSG_BROKER_DISCONNECTED, client->state());
-                        event(EVENT_SERVER_DISCONNECTED);
-                        brokerConnectionAttampt = 1;
-                    }
-                    wasConnectedToServer = false;
-                    _tBrokerConnect.enableIfNot();
-                }
+//            } else {
+//                if (!client->connected()) {
+//                    if (wasConnectedToServer) {
+//                        Logger.logf(L_ERROR, MSG_BROKER_DISCONNECTED, client->state());
+//                        event(EVENT_SERVER_DISCONNECTED);
+//                        brokerConnectionAttampt = 1;
+//                    }
+//                    wasConnectedToServer = false;
+//                    _tBrokerConnect.enableIfNot();
+//                }
             }
             wasConnectedToNetwork = true;
         } else {
@@ -259,6 +276,15 @@ inline void WifiTransport::loop() {
     noInterrupts();
     client->loop();
     interrupts();
+}
+
+
+inline void WifiTransport::onNetworkConnected() {
+    _tBrokerConnect.enableIfNot();
+}
+
+inline void WifiTransport::onNetworkDisconnected() {
+    _tBrokerConnect.disable();
 }
 
 inline void WifiTransport::logWifiInfo() {

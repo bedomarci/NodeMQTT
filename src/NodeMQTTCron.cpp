@@ -5,6 +5,11 @@
 #include "NodeMQTTCron.hpp"
 #include "misc/typedef.hpp"
 
+extern "C" {
+#include <ccronexpr.h>
+}
+
+
 NodeMQTTCronClass::NodeMQTTCronClass() {
     jobs = new LinkedList<NodeMQTTCronJob>();
 }
@@ -24,9 +29,11 @@ void NodeMQTTCronClass::create(const char *cronString, NodeMQTTCallback cb) {
     job.cronString = cronString;
     job.cb = cb;
     job.enabled = true;
-    memset(&(job.cronExpression), 0, sizeof(job.cronExpression));
     const char *err = NULL;
-    cron_parse_expr(cronString, &(job.cronExpression), &err);
+    memset(&(job.cronExpression), 0, sizeof(job.cronExpression));
+    cron_expr *expression = cron_parse_expr(job.cronString, &err);
+    job.cronExpression = *expression;
+
     if (err) {
         e(err);
         job.enabled = false;
@@ -38,10 +45,12 @@ void NodeMQTTCronClass::create(const char *cronString, NodeMQTTCallback cb) {
 
 void NodeMQTTCronClass::loop() {
     for (int i = 0; i < this->jobs->size(); i++) {
+
         NodeMQTTCronJob job = this->jobs->get(i);
         if (this->getContext()->currentTime == job.nextExecution && job.enabled) {
             job.cb();
         }
+
         if (this->getContext()->currentTime >= job.nextExecution) {
             job.nextExecution = this->calculateNextExecution(job);
             this->jobs->set(i, job);
@@ -54,6 +63,5 @@ time_t NodeMQTTCronClass::calculateNextExecution(NodeMQTTCronJob job) {
     time_t next = cron_next(&expression, this->getContext()->currentTime);
     return next;
 }
-
 
 NodeMQTTCronClass NodeMQTTCron;

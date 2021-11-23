@@ -55,15 +55,7 @@
       "name": "JC_Button"
     },
     {
-      "name": "ccronexpr",
-      "platforms": [
-        "espressif8266",
-        "espressif32"
-      ],
-      "repository": {
-        "type": "git",
-        "url": "https://github.com/staticlibs/ccronexpr"
-      }
+      "name": "shaneapowell/time.ccronexpr"
     },
     {
       "name": "RF24",

@@ -9,11 +9,23 @@
 #include "interfaces/CommandInterface.hpp"
 #include "interfaces/BuzzerInterface.hpp"
 #include "interfaces/LogInterface.hpp"
-#include "transports/WifiTransport.hpp"
 #include "parsers/PubSubParser.hpp"
 #include "misc/time/NTPTime.hpp"
 #include "io/_AbstractIO.hpp"
 #include "NodeMQTTScheduler.hpp"
+
+#if (NODEMQTT_TRANSPORT == RF_TRANSPORT)
+#include "transports/RF24Transport.hpp"
+#endif
+#if (NODEMQTT_TRANSPORT == WIFI_TRANSPORT)
+
+#include "transports/WifiTransport.hpp"
+
+#endif
+#if (NODEMQTT_TRANSPORT == NULL_TRANSPORT)
+#include "transports/NullTransport.hpp"
+#endif
+
 
 class NodeMQTT {
 public:

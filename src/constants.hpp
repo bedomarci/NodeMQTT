@@ -158,6 +158,8 @@ extern const char configAttribute_mqttServer[] PROGMEM;
 #define ATTR_MQTTSERV FPSTR(configAttribute_mqttServer)
 extern const char configAttribute_mqttUser[] PROGMEM;
 #define ATTR_MQTTUSER FPSTR(configAttribute_mqttUser)
+extern const char configAttribute_mqttPort[] PROGMEM;
+#define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
 extern const char configAttribute_wifiPassword[] PROGMEM;
 #define ATTR_WIFIPASS FPSTR(configAttribute_wifiPassword)
 extern const char configAttribute_wifiSsid[] PROGMEM;
@@ -182,8 +184,6 @@ extern const char configAttribute_isServiceMode[] PROGMEM;
 #define ATTR_SERVICEMODE FPSTR(configAttribute_isServiceMode)
 extern const char configAttribute_isLogging[] PROGMEM;
 #define ATTR_LOGGING FPSTR(configAttribute_isLogging)
-extern const char configAttribute_mqttPort[] PROGMEM;
-#define ATTR_MQTTPORT FPSTR(configAttribute_mqttPort)
 extern const char configAttribute_timezone[] PROGMEM;
 #define ATTR_TIMEZONE FPSTR(configAttribute_timezone)
 extern const char configAttribute_firmwareUrl[] PROGMEM;
@@ -235,6 +235,7 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define PROP_SYS_LOGGING 1002
 #define PROP_SYS_TIMEZONE 1003
 #define PROP_SYS_FWURL 1004
+#define PROP_SYS_BASETOPIC 1005
 
 #define PROP_WIFI_SSID 2000
 #define PROP_WIFI_BSSID 2001
@@ -250,7 +251,6 @@ extern const char message_ConnetctToWifiWithBSSID[] PROGMEM;
 #define PROP_MQTT_PORT 3001
 #define PROP_MQTT_USER 3002
 #define PROP_MQTT_PASSWORD 3003
-#define PROP_SYS_BASETOPIC 3004
 
 
 extern const long FIRMWARE_BUILD_TIME PROGMEM;
