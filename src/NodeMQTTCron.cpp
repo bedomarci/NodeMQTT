@@ -31,7 +31,8 @@ void NodeMQTTCronClass::create(const char *cronString, NodeMQTTCallback cb) {
     job.enabled = true;
     const char *err = NULL;
     memset(&(job.cronExpression), 0, sizeof(job.cronExpression));
-    cron_expr *expression = cron_parse_expr(job.cronString, &err);
+    cron_expr *expression;
+    cron_parse_expr(job.cronString, expression, &err);
     job.cronExpression = *expression;
 
     if (err) {
