@@ -55,7 +55,11 @@
       "name": "JC_Button"
     },
     {
-      "name": "shaneapowell/time.ccronexpr"
+      "name": "ccronexpr",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/staticlibs/ccronexpr.git"
+      }
     },
     {
       "name": "RF24",
